@@ -178,6 +178,7 @@ namespace PerpTool
                 OnPropertyChanged("CharactersList");
             }
         }
+
         private Characters _selchar;
         public Characters SelectedChar
         {
@@ -192,11 +193,23 @@ namespace PerpTool
             }
         }
 
+        private int _eptoinject;
+        public int EPToInject
+        {
+            get
+            {
+                return _eptoinject;
+            }
+            set
+            {
+                _eptoinject = value;
+                OnPropertyChanged("EPToInject");
+            }
+        }
+
         private void GetAccounts_Click(object sender, RoutedEventArgs e)
         {
             AccountsList = PerpAccounts.GetAllAccounts();
-            // get characters on account..
-            //CharactersList = PerpChars.GetCharactersOnAccount(1);
         }
 
         private void SaveCharBtn_Click(object sender, RoutedEventArgs e)
@@ -212,6 +225,17 @@ namespace PerpTool
                     MessageBox.Show("Failed to save character!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
                 }
             }
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            if (SelectedAcct == null || SelectedAcct.accountID == 0) { return; }
+            if (EPToInject <= 0)
+            {
+                MessageBox.Show("Really? No EP? Enter EP to inject!", "How much??", 0, MessageBoxImage.Error);
+                return;
+            }
+            this.SelectedAcct.InsertEP(SelectedAcct.accountID, EPToInject);
         }
     }
 }

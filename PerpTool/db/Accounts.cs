@@ -844,6 +844,28 @@ namespace Perptool.db
             return List;
         }
 
+        public void InsertEP(int accountID, int Points)
+        {
+            using (SqlCommand command = new SqlCommand())
+            {
+                command.Parameters.Clear();
+                command.CommandText = "dbo.extensionPointsInject";
+                command.Parameters.AddWithValue("@accountId", accountID);
+                command.Parameters.AddWithValue("@points", Points);
+                using (SqlConnection conn = new SqlConnection(this.ConnString))
+                {
+                    conn.Open();
+
+                    command.Connection = conn;
+                    command.CommandTimeout = 500;
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.ExecuteNonQuery();
+
+                    conn.Close();
+                }
+            }
+        }
+
         /// <summary>
         /// fires when properties are set.
         /// </summary>

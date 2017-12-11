@@ -22,8 +22,12 @@
                     <Button Content="Save Stuff" Margin="216,0,0,9.667" Click="Button_Click" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="75"/>
                 </Grid>
             </TabItem>
-            <TabItem Header="Give Items / Account Stuff">
+            <TabItem Header="Character / Account Stuff">
                 <Grid Background="#FFE5E5E5">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="202*"/>
+                        <RowDefinition Height="81*"/>
+                    </Grid.RowDefinitions>
                     <ComboBox HorizontalAlignment="Left" Margin="112,21,0,0" VerticalAlignment="Top" Width="264" ItemsSource="{Binding AccountsList}" DisplayMemberPath="email" SelectedValuePath="accountID" SelectedItem="{Binding SelectedAcct}"/>
                     <Label Content="Account" HorizontalAlignment="Left" Margin="54,20,0,0" VerticalAlignment="Top"/>
                     <ComboBox HorizontalAlignment="Left" Margin="112,47,0,0" VerticalAlignment="Top" Width="264" ItemsSource="{Binding CharactersList}" DisplayMemberPath="nick" SelectedValuePath="characterID" SelectedItem="{Binding SelectedChar}"/>
@@ -31,7 +35,16 @@
                     <Button Name="GetAccounts" Content="Get Accts" HorizontalAlignment="Left" Margin="381,22,0,0" VerticalAlignment="Top" Width="75" Click="GetAccounts_Click"/>
                     <TextBox HorizontalAlignment="Left" Height="23" Margin="112,83,0,0" TextWrapping="Wrap" Text="{Binding SelectedChar.credit, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="120"/>
                     <Label Content="NIC" HorizontalAlignment="Left" Margin="77,80,0,0" VerticalAlignment="Top"/>
-                    <Button Name="SaveCharBtn" Content="Save Char" HorizontalAlignment="Left" Margin="112,127,0,0" VerticalAlignment="Top" Width="75" Click="SaveCharBtn_Click"/>
+                    <Button Name="SaveCharBtn" Content="Save NIC" HorizontalAlignment="Left" Margin="237,83,0,0" VerticalAlignment="Top" Width="75" Click="SaveCharBtn_Click"/>
+                    <GroupBox Header="EP Insert" HorizontalAlignment="Left" Height="100" Margin="54,111,0,0" VerticalAlignment="Top" Width="402" Grid.RowSpan="2">
+                        <Grid>
+                            <TextBox HorizontalAlignment="Left" Height="23" Margin="75,35,0,0" TextWrapping="Wrap" Text="{Binding EPToInject}" VerticalAlignment="Top" Width="100"/>
+                            <Label Content="Insert" HorizontalAlignment="Left" Margin="30,34,0,0" VerticalAlignment="Top"/>
+                            <Button Content="Go" HorizontalAlignment="Left" Margin="330,37,0,0" VerticalAlignment="Top" Width="40" Click="Button_Click_1"/>
+                            <Label Content="EP Into Account Selected" HorizontalAlignment="Left" Margin="180,34,0,0" VerticalAlignment="Top"/>
+                            <Label Content="Must log out and back into the game to see updated EP balance!" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" FontWeight="Bold" Foreground="Red" />
+                        </Grid>
+                    </GroupBox>
                 </Grid>
             </TabItem>
         </TabControl>
