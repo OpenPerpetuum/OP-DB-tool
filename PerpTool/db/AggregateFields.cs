@@ -17,6 +17,7 @@ namespace Perptool.db
         public int id { get; set; }
         public string name { get; set; }
         public decimal value { get; set; }
+        public int formula { get; set; }
     }
 
     /// <summary>
@@ -373,7 +374,7 @@ namespace Perptool.db
                 command.ExecuteNonQuery();
                 conn.Close();
             }
-        }        
+        }
 
         /// <summary>
         /// fires when properties are set.

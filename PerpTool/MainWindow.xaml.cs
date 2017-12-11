@@ -46,11 +46,13 @@ namespace PerpTool
             AgFields = new AggregateFields(Connstr);
             Entities = new EntityDefaults(Connstr);
             AgValues = new AggregateValues(Connstr);
+            combined = new CombinedQuery(AgValues, AgFields, Connstr);
 
             EntityItems = Entities.GetEntitiesWithFields();
 
             this.DataContext = this;
         }
+        private CombinedQuery combined { get; set; }
 
         private AggregateModifiers AgModifiers { get; set; }
         private AggregateFields AgFields { get; set; }
@@ -58,6 +60,8 @@ namespace PerpTool
         private AggregateValues AgValues { get; set; }
 
         public List<EntityItems> EntityItems { get; set; }
+
+        public List<AgFieldsValues> agfieldsList = new List<AgFieldsValues>();
 
         private List<FieldValuesStuff> _valstuffs;
         public List<FieldValuesStuff> FieldValuesList
@@ -72,6 +76,22 @@ namespace PerpTool
                 OnPropertyChanged("FieldValuesList");
             }
         }
+
+
+        private List<JoinedData> _joinDataStuffs;
+        public List<JoinedData> JoinedDataList
+        {
+            get
+            {
+                return _joinDataStuffs;
+            }
+            set
+            {
+                _joinDataStuffs = value;
+                OnPropertyChanged("JoinedDataList");
+            }
+        }
+
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
@@ -98,7 +118,9 @@ namespace PerpTool
         {
             EntityItems item = (EntityItems)combo.SelectedItem;
             if (item == null) { return; }
-            FieldValuesList = AgValues.GetValuesForEntity(item.Definition);
+
+            JoinedDataList = this.combined.getDataFor(item.Definition);
+
         }
     }
 }
