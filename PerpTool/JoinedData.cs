@@ -36,7 +36,6 @@ namespace PerpTool
         public List<JoinedData> getDataFor(int entityDef)
         {
             List<JoinedData> data = new List<JoinedData>();
-            
             using (SqlConnection conn = new SqlConnection(this.ConnString))
             {
                 using (SqlCommand command = new SqlCommand())
@@ -58,11 +57,8 @@ namespace PerpTool
                             jData.formula = Convert.ToInt32(reader["formula"]);
                             data.Add(jData);
                         }
-
                     }
-
                 }
-
             }
             return data;
         }

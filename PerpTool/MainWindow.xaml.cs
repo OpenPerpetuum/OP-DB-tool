@@ -97,13 +97,20 @@ namespace PerpTool
         {
             try
             {
-                foreach (FieldValuesStuff item in FieldValuesList)
+                foreach (JoinedData item in JoinedDataList)
                 {
-                    AgValues.GetById(item.FieldId);
-                    if (AgValues.value != item.FieldValue)
+                    Console.WriteLine(item);
+                    AgValues.GetById(item.id);
+                    if (AgValues.value != item.value)
                     {
-                        AgValues.value = item.FieldValue;
+                        AgValues.value = item.value;
                         AgValues.Save();
+                    }
+                    if(AgFields.formula!= item.formula)
+                    {
+                        AgFields.formula = item.formula;
+                        AgFields.Save();
+
                     }
                 }
             }
@@ -118,6 +125,10 @@ namespace PerpTool
         {
             EntityItems item = (EntityItems)combo.SelectedItem;
             if (item == null) { return; }
+
+
+            AgValues.GetById(item.Definition);
+            AgFields.GetById(AgValues.field);
 
             JoinedDataList = this.combined.getDataFor(item.Definition);
 
