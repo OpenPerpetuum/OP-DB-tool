@@ -17,6 +17,7 @@ namespace Perptool.db
         public int id { get; set; }
         public string name { get; set; }
         public decimal value { get; set; }
+        public int formula { get; set; }
     }
 
     /// <summary>
@@ -308,6 +309,40 @@ namespace Perptool.db
             this.note = string.Empty;
         }
 
+
+        public void GetById(int agFieldID)
+        {
+            using (SqlConnection conn = new SqlConnection(this.ConnString))
+            {
+                using (SqlCommand command = new SqlCommand())
+                {
+                    StringBuilder sqlCommand = new StringBuilder();
+                    sqlCommand.Append("SELECT * from aggregatefields Where id=@id");
+                    command.CommandText = sqlCommand.ToString();
+                    command.Parameters.AddWithValue("@id", agFieldID);
+                    command.Connection = conn;
+                    conn.Open();
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            this.id = Convert.ToInt32(reader["id"]);
+                            this.name = Convert.ToString(reader["name"]);
+                            this.formula = Convert.ToInt32(reader["formula"]);
+                            this.measurementunit = Convert.ToString(reader["measurementunit"]);
+                            this.measurementmultiplier = Convert.ToDecimal(reader["measurementmultiplier"]);
+                            this.measurementoffset = Convert.ToDecimal(reader["measurementoffset"]);
+                            this.category = Convert.ToInt32(reader["category"]);
+                            this.digits = Convert.ToInt32(reader["digits"]);
+                            this.moreisbetter = Convert.ToInt32(reader["moreisbetter"]);
+                            this.usedinconfig = Convert.ToInt32(reader["usedinconfig"]);
+                            this.note = Convert.ToString(reader["note"]);
+                        }
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// saves a new record
         /// </summary>
@@ -351,12 +386,12 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE aggregatefields Set `name`= @name, `formula`= @formula, `measurementunit`= @measurementunit, `measurementmultiplier`= @measurementmultiplier, `measurementoffset`= @measurementoffset, `category`= @category, `digits`= @digits, `moreisbetter`= @moreisbetter, `usedinconfig`= @usedinconfig, `note`= @note where id = @id");
+                sqlCommand.Append("UPDATE aggregatefields Set [name]=@SQLname, [formula]=@formula, [measurementunit]=@measurementunit, [measurementmultiplier]=@measurementmultiplier, [measurementoffset]=@measurementoffset, [category]=@category, [digits]=@digits, [moreisbetter]=@moreisbetter, [usedinconfig]=@usedinconfig, [note]=@note where id = @id");
 
                 command.CommandText = sqlCommand.ToString();
 
                 command.Parameters.AddWithValue("@id", this.id);
-                command.Parameters.AddWithValue("@name", this.name);
+                command.Parameters.AddWithValue("@SQLname", this.name);
                 command.Parameters.AddWithValue("@formula", this.formula);
                 command.Parameters.AddWithValue("@measurementunit", this.measurementunit);
                 command.Parameters.AddWithValue("@measurementmultiplier", this.measurementmultiplier);
@@ -365,7 +400,15 @@ namespace Perptool.db
                 command.Parameters.AddWithValue("@digits", this.digits);
                 command.Parameters.AddWithValue("@moreisbetter", this.moreisbetter);
                 command.Parameters.AddWithValue("@usedinconfig", this.usedinconfig);
-                command.Parameters.AddWithValue("@note", this.note);
+                if (this.note == null)
+                {
+                    command.Parameters.AddWithValue("@note", string.Empty);
+                }
+                else
+                {
+                    command.Parameters.AddWithValue("@note", this.note);
+                }
+                
 
                 SqlConnection conn = new SqlConnection(this.ConnString);
                 conn.Open();
@@ -373,7 +416,7 @@ namespace Perptool.db
                 command.ExecuteNonQuery();
                 conn.Close();
             }
-        }        
+        }
 
         /// <summary>
         /// fires when properties are set.

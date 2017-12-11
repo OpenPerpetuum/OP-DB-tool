@@ -7,16 +7,19 @@
         mc:Ignorable="d"
         Title="The Perpetuum DB Editing Tool - Hacky Edition" Height="350" Width="525">
     <Grid>
+        
+        <Button Content="Save Stuff" Margin="216,0,0,9.667" Click="Button_Click" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="75"/>
         <TabControl Margin="10,0,9.667,9.667">
             <TabItem Header="Edit Item Properties">
                 <Grid Background="#FFE5E5E5">
-                    <ComboBox Name="combo" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="473" ItemsSource="{Binding EntityItems}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="ComboBox_DropDownClosed"/>
-                    <DataGrid Margin="10,37,9.333,35.667" ItemsSource="{Binding FieldValuesList}" AutoGenerateColumns="False" CanUserAddRows="False">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Field" Width="300" Binding="{Binding FieldName}" IsReadOnly="True"/>
-                            <DataGridTextColumn Header="Value" Width="*" Binding="{Binding FieldValue}"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
+                    <ComboBox Name="combo" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="499" ItemsSource="{Binding EntityItems}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="ComboBox_DropDownClosed"/>
+        <DataGrid Margin="10,61,9.667,35.667" ItemsSource="{Binding JoinedDataList}" AutoGenerateColumns="False" CanUserAddRows="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Field" Width="300" Binding="{Binding name}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Value" Width="*" Binding="{Binding value}"/>
+                <DataGridTextColumn Header="Formula" Width="*" Binding="{Binding formula}"/>
+            </DataGrid.Columns>
+        </DataGrid>
                     <Button Content="Save Stuff" Margin="216,0,0,9.667" Click="Button_Click" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="75"/>
                 </Grid>
             </TabItem>
