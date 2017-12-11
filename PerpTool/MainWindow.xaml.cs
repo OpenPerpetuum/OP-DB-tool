@@ -46,6 +46,7 @@ namespace PerpTool
             AgFields = new AggregateFields(Connstr);
             Entities = new EntityDefaults(Connstr);
             AgValues = new AggregateValues(Connstr);
+            PerpAccounts = new Accounts(Connstr);
 
             EntityItems = Entities.GetEntitiesWithFields();
 
@@ -56,6 +57,7 @@ namespace PerpTool
         private AggregateFields AgFields { get; set; }
         private EntityDefaults Entities { get; set; }
         private AggregateValues AgValues { get; set; }
+        private Accounts PerpAccounts { get; set; }
 
         public List<EntityItems> EntityItems { get; set; }
 
@@ -100,5 +102,25 @@ namespace PerpTool
             if (item == null) { return; }
             FieldValuesList = AgValues.GetValuesForEntity(item.Definition);
         }
+
+        List<Accounts> _accts;
+        public List<Accounts> AccountsList
+        {
+            get
+            {
+                return _accts;
+            }
+            set
+            {
+                _accts = value;
+                OnPropertyChanged("AccountsList");
+            }
+        }
+
+        private void GetAccounts_Click(object sender, RoutedEventArgs e)
+        {
+            AccountsList = PerpAccounts.GetAllAccounts();
+        }
+
     }
 }
