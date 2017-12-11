@@ -46,11 +46,13 @@ namespace PerpTool
             AgFields = new AggregateFields(Connstr);
             Entities = new EntityDefaults(Connstr);
             AgValues = new AggregateValues(Connstr);
+            combined = new CombinedQuery(AgValues, AgFields, Connstr);
 
             EntityItems = Entities.GetEntitiesWithFields();
 
             this.DataContext = this;
         }
+        private CombinedQuery combined { get; set; }
 
         private AggregateModifiers AgModifiers { get; set; }
         private AggregateFields AgFields { get; set; }
@@ -58,6 +60,8 @@ namespace PerpTool
         private AggregateValues AgValues { get; set; }
 
         public List<EntityItems> EntityItems { get; set; }
+
+        public List<AgFieldsValues> agfieldsList = new List<AgFieldsValues>();
 
         private List<FieldValuesStuff> _valstuffs;
         public List<FieldValuesStuff> FieldValuesList
@@ -73,17 +77,40 @@ namespace PerpTool
             }
         }
 
+
+        private List<JoinedData> _joinDataStuffs;
+        public List<JoinedData> JoinedDataList
+        {
+            get
+            {
+                return _joinDataStuffs;
+            }
+            set
+            {
+                _joinDataStuffs = value;
+                OnPropertyChanged("JoinedDataList");
+            }
+        }
+
+
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                foreach (FieldValuesStuff item in FieldValuesList)
+                foreach (JoinedData item in JoinedDataList)
                 {
-                    AgValues.GetById(item.FieldId);
-                    if (AgValues.value != item.FieldValue)
+                    Console.WriteLine(item);
+                    AgValues.GetById(item.id);
+                    if (AgValues.value != item.value)
                     {
-                        AgValues.value = item.FieldValue;
+                        AgValues.value = item.value;
                         AgValues.Save();
+                    }
+                    if(AgFields.formula!= item.formula)
+                    {
+                        AgFields.formula = item.formula;
+                        AgFields.Save();
+
                     }
                 }
             }
@@ -98,7 +125,13 @@ namespace PerpTool
         {
             EntityItems item = (EntityItems)combo.SelectedItem;
             if (item == null) { return; }
-            FieldValuesList = AgValues.GetValuesForEntity(item.Definition);
+
+
+            AgValues.GetById(item.Definition);
+            AgFields.GetById(AgValues.field);
+
+            JoinedDataList = this.combined.getDataFor(item.Definition);
+
         }
     }
 }
