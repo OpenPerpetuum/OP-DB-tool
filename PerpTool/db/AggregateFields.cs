@@ -375,15 +375,14 @@ namespace Perptool.db
         /// <summary>
         /// saves existing record
         /// </summary>
-        public void Save()
+        public string Save()
         {
+            string query = "";
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE aggregatefields Set [name]=@SQLname, [formula]=@formula, [measurementunit]=@measurementunit, [measurementmultiplier]=@measurementmultiplier, [measurementoffset]=@measurementoffset, [category]=@category, [digits]=@digits, [moreisbetter]=@moreisbetter, [usedinconfig]=@usedinconfig, [note]=@note where id = @id");
-
+                sqlCommand.Append("UPDATE aggregatefields SET [name]=@SQLname, [formula]=@formula, [measurementunit]=@measurementunit, [measurementmultiplier]=@measurementmultiplier, [measurementoffset]=@measurementoffset, [category]=@category, [digits]=@digits, [moreisbetter]=@moreisbetter, [usedinconfig]=@usedinconfig, [note]=@note WHERE id = @id");
                 command.CommandText = sqlCommand.ToString();
-
                 command.Parameters.AddWithValue("@id", this.id);
                 command.Parameters.AddWithValue("@SQLname", this.name);
                 command.Parameters.AddWithValue("@formula", this.formula);
@@ -402,31 +401,31 @@ namespace Perptool.db
                 {
                     command.Parameters.AddWithValue("@note", this.note);
                 }
-                
-
                 SqlConnection conn = new SqlConnection(this.ConnString);
                 conn.Open();
                 command.Connection = conn;
                 command.ExecuteNonQuery();
                 conn.Close();
-
-                string query = command.CommandText;
+                query = command.CommandText;
                 foreach (SqlParameter p in command.Parameters)
                 {
-                    query = query.Replace(p.ParameterName, p.Value.ToString());
+                    Console.WriteLine(p.SqlDbType.ToString());
+                    Console.WriteLine(p.SqlValue.ToString());
+                    Console.WriteLine(p.Value.ToString());
+                    if(SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    {
+                        query = query.Replace( p.ParameterName, "'" + p.Value.ToString() + "'");
+                        //query = query.Replace(p.Value.ToString(), "'" + p.Value.ToString() + "'");
+                    }
+                    else
+                    {
+                        query = query.Replace(p.ParameterName, p.Value.ToString());
+                    } 
                 }
-                Console.Write(query);
-
-                IEnumerator iter = command.Parameters.GetEnumerator();
-                while (iter.MoveNext())
-                {
-                    Console.WriteLine(iter.Current.ToString());
-                }
-
-                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + this.GetType().Name + ".sql",
-                  command.CommandText.ToString());
             }
+            return query; 
         }
+
 
         /// <summary>
         /// fires when properties are set.

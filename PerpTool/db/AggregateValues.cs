@@ -177,16 +177,16 @@ namespace Perptool.db
 
         /// <summary>
         /// saves existing record
+        /// And returns query as string for recording SQL updates to file
         /// </summary>
-        public void Save()
+        public string Save()
         {
+            string query = "";
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE aggregatevalues Set definition=@definition, field=@field, value=@value where id = @id");
-
+                sqlCommand.Append("UPDATE aggregatevalues SET definition=@definition, field=@field, value=@value WHERE id = @id");
                 command.CommandText = sqlCommand.ToString();
-
                 command.Parameters.AddWithValue("@id", this.id);
                 command.Parameters.AddWithValue("@definition", this.definition);
                 command.Parameters.AddWithValue("@field", this.field);
@@ -197,17 +197,13 @@ namespace Perptool.db
                 command.Connection = conn;
                 command.ExecuteNonQuery();
                 conn.Close();
-
-                string query = command.CommandText;
+                query = command.CommandText;
                 foreach (SqlParameter p in command.Parameters)
                 {
                     query = query.Replace(p.ParameterName, p.Value.ToString());
                 }
-                Console.Write(query);
-
-                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + this.GetType().Name + ".sql",
-                  command.ToString());
             }
+            return query;
         }
 
 
@@ -219,7 +215,7 @@ namespace Perptool.db
                 using (SqlCommand command = new SqlCommand())
                 {
                     StringBuilder sqlCommand = new StringBuilder();
-                    sqlCommand.Append(@"SELECT aggregatefields.id as fieldid, aggregatevalues.id as valueid, aggregatefields.name, aggregatevalues.value, 
+                    sqlCommand.Append(@"SELECT aggregatefields.id as fieldid, aggregatevalues.id as valueid, aggregatefields.name as fieldname, aggregatevalues.value, 
                     aggregatefields.formula, aggregatefields.measurementunit, aggregatefields.measurementoffset, aggregatefields.measurementmultiplier
                     from aggregatevalues join aggregatefields on (aggregatevalues.field = aggregatefields.id) Where definition=@id");
                     command.CommandText = sqlCommand.ToString();
@@ -233,18 +229,13 @@ namespace Perptool.db
                             FieldValuesStuff tmp = new FieldValuesStuff();
                             tmp.FieldId = Convert.ToInt32(reader["fieldid"]);
                             tmp.ValueId = Convert.ToInt32(reader["valueid"]);
-                            tmp.FieldName = Convert.ToString(reader["name"]);
+                            tmp.FieldName = Convert.ToString(reader["fieldname"]);
                             tmp.FieldValue = Convert.ToDecimal(reader["value"]);
                             tmp.FieldFormula = Convert.ToInt32(reader["formula"]);
                             tmp.FieldUnits = Convert.ToString(reader["measurementunit"]);
                             tmp.FieldOffset = Convert.ToDecimal(reader["measurementoffset"]);
                             tmp.FieldMultiplier = Convert.ToDecimal(reader["measurementmultiplier"]);
                             list.Add(tmp);
-
-                            //this.id = Convert.ToInt32(reader["id"]);
-                            //this.definition = Convert.ToInt32(reader["definition"]);
-                            //this.field = Convert.ToInt32(reader["field"]);
-                            //this.value = Convert.ToDecimal(reader["value"]);
                         }
                     }
                 }

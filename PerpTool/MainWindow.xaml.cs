@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using Perptool.db;
 using System.Collections;
 using System.ComponentModel;
+using System.IO;
 
 namespace PerpTool
 {
@@ -52,6 +53,7 @@ namespace PerpTool
             this.DataContext = this;
         }
 
+        private EntityItems currentSelection { get; set; }
         private AggregateModifiers AgModifiers { get; set; }
         private AggregateFields AgFields { get; set; }
         private EntityDefaults Entities { get; set; }
@@ -78,22 +80,24 @@ namespace PerpTool
         {
             try
             {
+                StringBuilder sb = new StringBuilder();
                 foreach (FieldValuesStuff item in FieldValuesList)
                 {
-                    AgValues.GetById(item.FieldId);
+                    AgValues.GetById(item.ValueId);
                     if (AgValues.value != item.FieldValue)
                     {
                         AgValues.value = item.FieldValue;
-                        AgValues.Save();
+                        sb.AppendLine(AgValues.Save());
                     }
 
-                    AgFields.GetById(item.ValueId);
+                    AgFields.GetById(item.FieldId);
                     if (AgFields.formula!= item.FieldFormula)
                     {
                         AgFields.formula = item.FieldFormula;
-                        AgFields.Save();
-
+                        sb.AppendLine(AgFields.Save());
                     }
+                    Console.WriteLine(sb.ToString());
+                    File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + currentSelection.Name + ".sql", sb.ToString());
                 }
             }
             catch (Exception ex)
@@ -106,6 +110,7 @@ namespace PerpTool
         private void ComboBox_DropDownClosed(object sender, EventArgs e)
         {
             EntityItems item = (EntityItems)combo.SelectedItem;
+            this.currentSelection = item;
             if (item == null) { return; }
             FieldValuesList = AgValues.GetValuesForEntity(item.Definition);
         }
