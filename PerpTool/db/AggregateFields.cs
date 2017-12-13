@@ -14,14 +14,6 @@ namespace Perptool.db
 
     // don't hate!
 
-    public class AgFieldsValues
-    {
-        public int id { get; set; }
-        public string name { get; set; }
-        public decimal value { get; set; }
-        public int formula { get; set; }
-    }
-
     /// <summary>
     /// Table Class
     /// </summary>

@@ -59,8 +59,6 @@ namespace PerpTool
 
         public List<EntityItems> EntityItems { get; set; }
 
-        public List<AgFieldsValues> agfieldsList = new List<AgFieldsValues>();
-
         private List<FieldValuesStuff> _valstuffs;
         public List<FieldValuesStuff> FieldValuesList
         {
@@ -110,6 +108,11 @@ namespace PerpTool
             EntityItems item = (EntityItems)combo.SelectedItem;
             if (item == null) { return; }
             FieldValuesList = AgValues.GetValuesForEntity(item.Definition);
+        }
+
+        private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
         }
     }
 }

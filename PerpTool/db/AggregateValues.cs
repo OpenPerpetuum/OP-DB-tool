@@ -14,6 +14,9 @@ namespace Perptool.db
         public int ValueId { get; set; }
         public string  FieldName { get; set; }
         public decimal FieldValue { get; set; }
+        public string FieldUnits { get; set; }
+        public decimal FieldOffset { get; set; }
+        public decimal FieldMultiplier { get; set; }
         public int FieldFormula { get; set; }
     }
 
@@ -216,7 +219,9 @@ namespace Perptool.db
                 using (SqlCommand command = new SqlCommand())
                 {
                     StringBuilder sqlCommand = new StringBuilder();
-                    sqlCommand.Append("SELECT aggregatefields.id as fieldid, aggregatevalues.id as valueid, aggregatefields.name, aggregatevalues.value, aggregatefields.formula from aggregatevalues join aggregatefields on (aggregatevalues.field = aggregatefields.id) Where definition=@id");
+                    sqlCommand.Append(@"SELECT aggregatefields.id as fieldid, aggregatevalues.id as valueid, aggregatefields.name, aggregatevalues.value, 
+                    aggregatefields.formula, aggregatefields.measurementunit, aggregatefields.measurementoffset, aggregatefields.measurementmultiplier
+                    from aggregatevalues join aggregatefields on (aggregatevalues.field = aggregatefields.id) Where definition=@id");
                     command.CommandText = sqlCommand.ToString();
                     command.Parameters.AddWithValue("@id", EntityId);
                     command.Connection = conn;
@@ -231,6 +236,9 @@ namespace Perptool.db
                             tmp.FieldName = Convert.ToString(reader["name"]);
                             tmp.FieldValue = Convert.ToDecimal(reader["value"]);
                             tmp.FieldFormula = Convert.ToInt32(reader["formula"]);
+                            tmp.FieldUnits = Convert.ToString(reader["measurementunit"]);
+                            tmp.FieldOffset = Convert.ToDecimal(reader["measurementoffset"]);
+                            tmp.FieldMultiplier = Convert.ToDecimal(reader["measurementmultiplier"]);
                             list.Add(tmp);
 
                             //this.id = Convert.ToInt32(reader["id"]);
