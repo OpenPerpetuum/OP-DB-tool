@@ -250,7 +250,7 @@ namespace Perptool.db
                 using (SqlCommand command = new SqlCommand())
                 {
                     StringBuilder sqlCommand = new StringBuilder();
-                    sqlCommand.Append("SELECT * from aggregatevalues Where definition=@id");
+                    sqlCommand.Append("SELECT * from aggregatevalues Where id=@id");
                     command.CommandText = sqlCommand.ToString();
                     command.Parameters.AddWithValue("@id", agValId);
                     command.Connection = conn;

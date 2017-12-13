@@ -412,18 +412,17 @@ namespace Perptool.db
                     Console.WriteLine(p.SqlDbType.ToString());
                     Console.WriteLine(p.SqlValue.ToString());
                     Console.WriteLine(p.Value.ToString());
-                    if(SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
                     {
-                        query = query.Replace( p.ParameterName, "'" + p.Value.ToString() + "'");
-                        //query = query.Replace(p.Value.ToString(), "'" + p.Value.ToString() + "'");
+                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
                     }
                     else
                     {
                         query = query.Replace(p.ParameterName, p.Value.ToString());
-                    } 
+                    }
                 }
             }
-            return query; 
+            return query;
         }
 
 

@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:PerpTool"
         xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2" x:Class="PerpTool.MainWindow"
         mc:Ignorable="d"
-        Title="MainWindow" Height="500" Width="600">
+        Title="OP-DB Editor" Height="500" Width="600">
     <Window.Resources>
         <Style x:Key="ColumnHeaderGripperStyle" TargetType="{x:Type Thumb}">
             <Setter Property="Width" Value="8"/>
@@ -36,7 +36,7 @@
                 <DataGridTextColumn Header="Formula" Width="55" Binding="{Binding FieldFormula}"/>
             </DataGrid.Columns>
         </DataGrid>
-        <Button Content="Save Stuff" Margin="216,0,0,9.667" Click="Button_Click" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="75"/>
+        <Button Content="Save Changes" Margin="216,0,0,9.667" Click="Button_Click" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="75"/>
 
     </Grid>
 </Window>
