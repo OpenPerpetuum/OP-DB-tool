@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.SqlClient;
+using System.IO;
 using System.Text;
 
 namespace Perptool.db
@@ -10,8 +11,10 @@ namespace Perptool.db
     public class FieldValuesStuff
     {
         public int FieldId { get; set; }
+        public int ValueId { get; set; }
         public string  FieldName { get; set; }
         public decimal FieldValue { get; set; }
+        public int FieldFormula { get; set; }
     }
 
 
@@ -191,6 +194,16 @@ namespace Perptool.db
                 command.Connection = conn;
                 command.ExecuteNonQuery();
                 conn.Close();
+
+                string query = command.CommandText;
+                foreach (SqlParameter p in command.Parameters)
+                {
+                    query = query.Replace(p.ParameterName, p.Value.ToString());
+                }
+                Console.Write(query);
+
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + this.GetType().Name + ".sql",
+                  command.ToString());
             }
         }
 
@@ -203,7 +216,7 @@ namespace Perptool.db
                 using (SqlCommand command = new SqlCommand())
                 {
                     StringBuilder sqlCommand = new StringBuilder();
-                    sqlCommand.Append("SELECT aggregatevalues.id, aggregatefields.name, aggregatevalues.value from aggregatevalues join aggregatefields on (aggregatevalues.field = aggregatefields.id) Where definition=@id");
+                    sqlCommand.Append("SELECT aggregatefields.id as fieldid, aggregatevalues.id as valueid, aggregatefields.name, aggregatevalues.value, aggregatefields.formula from aggregatevalues join aggregatefields on (aggregatevalues.field = aggregatefields.id) Where definition=@id");
                     command.CommandText = sqlCommand.ToString();
                     command.Parameters.AddWithValue("@id", EntityId);
                     command.Connection = conn;
@@ -213,9 +226,11 @@ namespace Perptool.db
                         while (reader.Read())
                         {
                             FieldValuesStuff tmp = new FieldValuesStuff();
-                            tmp.FieldId = Convert.ToInt32(reader["id"]);
+                            tmp.FieldId = Convert.ToInt32(reader["fieldid"]);
+                            tmp.ValueId = Convert.ToInt32(reader["valueid"]);
                             tmp.FieldName = Convert.ToString(reader["name"]);
                             tmp.FieldValue = Convert.ToDecimal(reader["value"]);
+                            tmp.FieldFormula = Convert.ToInt32(reader["formula"]);
                             list.Add(tmp);
 
                             //this.id = Convert.ToInt32(reader["id"]);
@@ -236,7 +251,7 @@ namespace Perptool.db
                 using (SqlCommand command = new SqlCommand())
                 {
                     StringBuilder sqlCommand = new StringBuilder();
-                    sqlCommand.Append("SELECT * from aggregatevalues Where id=@id");
+                    sqlCommand.Append("SELECT * from aggregatevalues Where definition=@id");
                     command.CommandText = sqlCommand.ToString();
                     command.Parameters.AddWithValue("@id", agValId);
                     command.Connection = conn;

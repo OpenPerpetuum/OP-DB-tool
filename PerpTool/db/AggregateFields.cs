@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -415,6 +417,22 @@ namespace Perptool.db
                 command.Connection = conn;
                 command.ExecuteNonQuery();
                 conn.Close();
+
+                string query = command.CommandText;
+                foreach (SqlParameter p in command.Parameters)
+                {
+                    query = query.Replace(p.ParameterName, p.Value.ToString());
+                }
+                Console.Write(query);
+
+                IEnumerator iter = command.Parameters.GetEnumerator();
+                while (iter.MoveNext())
+                {
+                    Console.WriteLine(iter.Current.ToString());
+                }
+
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + this.GetType().Name + ".sql",
+                  command.CommandText.ToString());
             }
         }
 
