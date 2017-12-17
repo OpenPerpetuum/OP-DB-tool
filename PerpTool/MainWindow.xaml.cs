@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using Perptool.db;
 using System.Collections;
 using System.ComponentModel;
+using System.IO;
 
 namespace PerpTool
 {
@@ -46,22 +47,23 @@ namespace PerpTool
             AgFields = new AggregateFields(Connstr);
             Entities = new EntityDefaults(Connstr);
             AgValues = new AggregateValues(Connstr);
-            combined = new CombinedQuery(AgValues, AgFields, Connstr);
+            PerpAccounts = new Accounts(Connstr);
+            PerpChars = new Characters(Connstr);
 
             EntityItems = Entities.GetEntitiesWithFields();
 
             this.DataContext = this;
         }
-        private CombinedQuery combined { get; set; }
 
+        private EntityItems currentSelection { get; set; }
         private AggregateModifiers AgModifiers { get; set; }
         private AggregateFields AgFields { get; set; }
         private EntityDefaults Entities { get; set; }
         private AggregateValues AgValues { get; set; }
+        private Accounts PerpAccounts { get; set; }
+        private Characters PerpChars { get; set; }
 
         public List<EntityItems> EntityItems { get; set; }
-
-        public List<AgFieldsValues> agfieldsList = new List<AgFieldsValues>();
 
         private List<FieldValuesStuff> _valstuffs;
         public List<FieldValuesStuff> FieldValuesList
@@ -78,40 +80,28 @@ namespace PerpTool
         }
 
 
-        private List<JoinedData> _joinDataStuffs;
-        public List<JoinedData> JoinedDataList
-        {
-            get
-            {
-                return _joinDataStuffs;
-            }
-            set
-            {
-                _joinDataStuffs = value;
-                OnPropertyChanged("JoinedDataList");
-            }
-        }
-
-
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                foreach (JoinedData item in JoinedDataList)
+                StringBuilder sb = new StringBuilder();
+                foreach (FieldValuesStuff item in FieldValuesList)
                 {
-                    Console.WriteLine(item);
-                    AgValues.GetById(item.id);
-                    if (AgValues.value != item.value)
+                    AgValues.GetById(item.ValueId);
+                    if (AgValues.value != item.FieldValue)
                     {
-                        AgValues.value = item.value;
-                        AgValues.Save();
+                        AgValues.value = item.FieldValue;
+                        sb.AppendLine(AgValues.Save());
                     }
-                    if(AgFields.formula!= item.formula)
-                    {
-                        AgFields.formula = item.formula;
-                        AgFields.Save();
 
+                    AgFields.GetById(item.FieldId);
+                    if (AgFields.formula!= item.FieldFormula)
+                    {
+                        AgFields.formula = item.FieldFormula;
+                        sb.AppendLine(AgFields.Save());
                     }
+                    Console.WriteLine(sb.ToString());
+                    File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + currentSelection.Name + ".sql", sb.ToString());
                 }
             }
             catch (Exception ex)
@@ -124,14 +114,114 @@ namespace PerpTool
         private void ComboBox_DropDownClosed(object sender, EventArgs e)
         {
             EntityItems item = (EntityItems)combo.SelectedItem;
+            this.currentSelection = item;
             if (item == null) { return; }
+            FieldValuesList = AgValues.GetValuesForEntity(item.Definition);
+        }
 
+        private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
 
-            AgValues.GetById(item.Definition);
-            AgFields.GetById(AgValues.field);
+        }
 
-            JoinedDataList = this.combined.getDataFor(item.Definition);
+        List<Accounts> _accts;
+        public List<Accounts> AccountsList
+        {
+            get
+            {
+                return _accts;
+            }
+            set
+            {
+                _accts = value;
+                OnPropertyChanged("AccountsList");
+            }
+        }
+        private Accounts _selacct;
+        public Accounts SelectedAcct
+        {
+            get
+            {
+                return _selacct;
+            }
+            set
+            {
+                _selacct = value;
+                CharactersList = PerpChars.GetCharactersOnAccount(value.accountID);
+            }
+        }
 
+        List<Characters> _chars;
+        public List<Characters> CharactersList
+        {
+            get
+            {
+                return _chars;
+            }
+            set
+            {
+                _chars = value;
+                OnPropertyChanged("CharactersList");
+            }
+        }
+
+        private Characters _selchar;
+        public Characters SelectedChar
+        {
+            get
+            {
+                return _selchar;
+            }
+            set
+            {
+                _selchar = value;
+                OnPropertyChanged("SelectedChar");
+            }
+        }
+
+        private int _eptoinject;
+        public int EPToInject
+        {
+            get
+            {
+                return _eptoinject;
+            }
+            set
+            {
+                _eptoinject = value;
+                OnPropertyChanged("EPToInject");
+            }
+        }
+
+        private void GetAccounts_Click(object sender, RoutedEventArgs e)
+        {
+            AccountsList = PerpAccounts.GetAllAccounts();
+        }
+
+        private void SaveCharBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.SelectedChar != null)
+            {
+                try
+                {
+                    this.SelectedChar.Save();
+                }
+                catch(Exception ex)
+                {
+                    MessageBox.Show("Failed to save character!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            if (SelectedAcct == null || SelectedAcct.accountID == 0) { return; }
+            if (EPToInject <= 0)
+            {
+                MessageBox.Show("Really? No EP? Enter EP to inject!", "How much??", 0, MessageBoxImage.Error);
+                return;
+            }
+            this.SelectedAcct.InsertEP(SelectedAcct.accountID, EPToInject);
         }
     }
 }

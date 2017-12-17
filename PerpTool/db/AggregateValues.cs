@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.SqlClient;
+using System.IO;
 using System.Text;
 
 namespace Perptool.db
@@ -10,8 +11,13 @@ namespace Perptool.db
     public class FieldValuesStuff
     {
         public int FieldId { get; set; }
+        public int ValueId { get; set; }
         public string  FieldName { get; set; }
         public decimal FieldValue { get; set; }
+        public string FieldUnits { get; set; }
+        public decimal FieldOffset { get; set; }
+        public decimal FieldMultiplier { get; set; }
+        public int FieldFormula { get; set; }
     }
 
 
@@ -171,16 +177,16 @@ namespace Perptool.db
 
         /// <summary>
         /// saves existing record
+        /// And returns query as string for recording SQL updates to file
         /// </summary>
-        public void Save()
+        public string Save()
         {
+            string query = "";
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE aggregatevalues Set definition=@definition, field=@field, value=@value where id = @id");
-
+                sqlCommand.Append("UPDATE aggregatevalues SET definition=@definition, field=@field, value=@value WHERE id = @id");
                 command.CommandText = sqlCommand.ToString();
-
                 command.Parameters.AddWithValue("@id", this.id);
                 command.Parameters.AddWithValue("@definition", this.definition);
                 command.Parameters.AddWithValue("@field", this.field);
@@ -191,7 +197,13 @@ namespace Perptool.db
                 command.Connection = conn;
                 command.ExecuteNonQuery();
                 conn.Close();
+                query = command.CommandText;
+                foreach (SqlParameter p in command.Parameters)
+                {
+                    query = query.Replace(p.ParameterName, p.Value.ToString());
+                }
             }
+            return query;
         }
 
 
@@ -203,7 +215,9 @@ namespace Perptool.db
                 using (SqlCommand command = new SqlCommand())
                 {
                     StringBuilder sqlCommand = new StringBuilder();
-                    sqlCommand.Append("SELECT aggregatevalues.id, aggregatefields.name, aggregatevalues.value from aggregatevalues join aggregatefields on (aggregatevalues.field = aggregatefields.id) Where definition=@id");
+                    sqlCommand.Append(@"SELECT aggregatefields.id as fieldid, aggregatevalues.id as valueid, aggregatefields.name as fieldname, aggregatevalues.value, 
+                    aggregatefields.formula, aggregatefields.measurementunit, aggregatefields.measurementoffset, aggregatefields.measurementmultiplier
+                    from aggregatevalues join aggregatefields on (aggregatevalues.field = aggregatefields.id) Where definition=@id");
                     command.CommandText = sqlCommand.ToString();
                     command.Parameters.AddWithValue("@id", EntityId);
                     command.Connection = conn;
@@ -213,15 +227,15 @@ namespace Perptool.db
                         while (reader.Read())
                         {
                             FieldValuesStuff tmp = new FieldValuesStuff();
-                            tmp.FieldId = Convert.ToInt32(reader["id"]);
-                            tmp.FieldName = Convert.ToString(reader["name"]);
+                            tmp.FieldId = Convert.ToInt32(reader["fieldid"]);
+                            tmp.ValueId = Convert.ToInt32(reader["valueid"]);
+                            tmp.FieldName = Convert.ToString(reader["fieldname"]);
                             tmp.FieldValue = Convert.ToDecimal(reader["value"]);
+                            tmp.FieldFormula = Convert.ToInt32(reader["formula"]);
+                            tmp.FieldUnits = Convert.ToString(reader["measurementunit"]);
+                            tmp.FieldOffset = Convert.ToDecimal(reader["measurementoffset"]);
+                            tmp.FieldMultiplier = Convert.ToDecimal(reader["measurementmultiplier"]);
                             list.Add(tmp);
-
-                            //this.id = Convert.ToInt32(reader["id"]);
-                            //this.definition = Convert.ToInt32(reader["definition"]);
-                            //this.field = Convert.ToInt32(reader["field"]);
-                            //this.value = Convert.ToDecimal(reader["value"]);
                         }
                     }
                 }

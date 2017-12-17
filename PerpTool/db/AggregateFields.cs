@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,14 +13,6 @@ namespace Perptool.db
 {
 
     // don't hate!
-
-    public class AgFieldsValues
-    {
-        public int id { get; set; }
-        public string name { get; set; }
-        public decimal value { get; set; }
-        public int formula { get; set; }
-    }
 
     /// <summary>
     /// Table Class
@@ -381,15 +375,14 @@ namespace Perptool.db
         /// <summary>
         /// saves existing record
         /// </summary>
-        public void Save()
+        public string Save()
         {
+            string query = "";
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE aggregatefields Set [name]=@SQLname, [formula]=@formula, [measurementunit]=@measurementunit, [measurementmultiplier]=@measurementmultiplier, [measurementoffset]=@measurementoffset, [category]=@category, [digits]=@digits, [moreisbetter]=@moreisbetter, [usedinconfig]=@usedinconfig, [note]=@note where id = @id");
-
+                sqlCommand.Append("UPDATE aggregatefields SET [name]=@SQLname, [formula]=@formula, [measurementunit]=@measurementunit, [measurementmultiplier]=@measurementmultiplier, [measurementoffset]=@measurementoffset, [category]=@category, [digits]=@digits, [moreisbetter]=@moreisbetter, [usedinconfig]=@usedinconfig, [note]=@note WHERE id = @id");
                 command.CommandText = sqlCommand.ToString();
-
                 command.Parameters.AddWithValue("@id", this.id);
                 command.Parameters.AddWithValue("@SQLname", this.name);
                 command.Parameters.AddWithValue("@formula", this.formula);
@@ -408,15 +401,30 @@ namespace Perptool.db
                 {
                     command.Parameters.AddWithValue("@note", this.note);
                 }
-                
-
                 SqlConnection conn = new SqlConnection(this.ConnString);
                 conn.Open();
                 command.Connection = conn;
                 command.ExecuteNonQuery();
                 conn.Close();
+                query = command.CommandText;
+                foreach (SqlParameter p in command.Parameters)
+                {
+                    Console.WriteLine(p.SqlDbType.ToString());
+                    Console.WriteLine(p.SqlValue.ToString());
+                    Console.WriteLine(p.Value.ToString());
+                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    {
+                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
+                    }
+                    else
+                    {
+                        query = query.Replace(p.ParameterName, p.Value.ToString());
+                    }
+                }
             }
+            return query;
         }
+
 
         /// <summary>
         /// fires when properties are set.

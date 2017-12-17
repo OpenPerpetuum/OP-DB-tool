@@ -34,6 +34,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="PresentationFramework.Aero2" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -62,10 +63,11 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="JoinedData.cs" />
+    <Compile Include="db\Accounts.cs" />
     <Compile Include="db\AggregateFields.cs" />
     <Compile Include="db\AggregateModifiers.cs" />
     <Compile Include="db\AggregateValues.cs" />
+    <Compile Include="db\Characters.cs" />
     <Compile Include="db\EntityDefaults.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
