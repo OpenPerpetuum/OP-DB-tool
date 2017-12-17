@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:PerpTool"
         xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2" x:Class="PerpTool.MainWindow"
         mc:Ignorable="d"
-        Title="OP-DB Editor" Height="500" Width="600">
+        Title="The Perpetuum DB Editing Tool - Hacky Edition" Height="400" Width="655.5">
+
     <Window.Resources>
         <Style x:Key="ColumnHeaderGripperStyle" TargetType="{x:Type Thumb}">
             <Setter Property="Width" Value="8"/>
@@ -24,19 +25,50 @@
             <Setter Property="Background" Value="LightGray"/>
         </Style>
     </Window.Resources>
-    <Grid>
-        <ComboBox x:Name="combo" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="499" ItemsSource="{Binding EntityItems}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="ComboBox_DropDownClosed"/>
-        <DataGrid Margin="10,61,10,36" ItemsSource="{Binding FieldValuesList}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" >
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Field" Width="250" Binding="{Binding FieldName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                <DataGridTextColumn Header="Value" Width="*" Binding="{Binding FieldValue}"/>
-                <DataGridTextColumn Header="Units" Width="*" Binding="{Binding FieldUnits}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                <DataGridTextColumn Header="Offset" Width="60" Binding="{Binding FieldOffset}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                <DataGridTextColumn Header="Multipler" Width="60" Binding="{Binding FieldMultiplier}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                <DataGridTextColumn Header="Formula" Width="55" Binding="{Binding FieldFormula}"/>
-            </DataGrid.Columns>
-        </DataGrid>
-        <Button Content="Save Changes" Margin="216,0,0,9.667" Click="Button_Click" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="75"/>
 
+    <Grid>
+        <TabControl Margin="10,0,9.667,9.667">
+            <TabItem Header="Edit Item Properties">
+                <Grid Background="#FFE5E5E5">
+                    <ComboBox x:Name="combo" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="600" ItemsSource="{Binding EntityItems}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="ComboBox_DropDownClosed"/>
+                    <DataGrid Margin="10,61,10,36" ItemsSource="{Binding FieldValuesList}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" >
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Field" Width="250" Binding="{Binding FieldName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="Value" Width="55" Binding="{Binding FieldValue}"/>
+                            <DataGridTextColumn Header="Units" Width="55" Binding="{Binding FieldUnits}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="Offset" Width="60" Binding="{Binding FieldOffset}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="Multipler" Width="60" Binding="{Binding FieldMultiplier}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="Formula" Width="55" Binding="{Binding FieldFormula}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Button Content="Save Changes" Margin="274,0,0,0" Click="Button_Click" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="75"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Character / Account Stuff">
+                <Grid Background="#FFE5E5E5">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="202*"/>
+                        <RowDefinition Height="81*"/>
+                    </Grid.RowDefinitions>
+                    <ComboBox HorizontalAlignment="Left" Margin="112,21,0,0" VerticalAlignment="Top" Width="264" ItemsSource="{Binding AccountsList}" DisplayMemberPath="email" SelectedValuePath="accountID" SelectedItem="{Binding SelectedAcct}"/>
+                    <Label Content="Account" HorizontalAlignment="Left" Margin="54,20,0,0" VerticalAlignment="Top"/>
+                    <ComboBox HorizontalAlignment="Left" Margin="112,47,0,0" VerticalAlignment="Top" Width="264" ItemsSource="{Binding CharactersList}" DisplayMemberPath="nick" SelectedValuePath="characterID" SelectedItem="{Binding SelectedChar}"/>
+                    <Label Content="Character" HorizontalAlignment="Left" Margin="46,43,0,0" VerticalAlignment="Top"/>
+                    <Button Name="GetAccounts" Content="Get Accts" HorizontalAlignment="Left" Margin="381,22,0,0" VerticalAlignment="Top" Width="75" Click="GetAccounts_Click"/>
+                    <TextBox HorizontalAlignment="Left" Height="23" Margin="112,83,0,0" TextWrapping="Wrap" Text="{Binding SelectedChar.credit, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="120"/>
+                    <Label Content="NIC" HorizontalAlignment="Left" Margin="77,80,0,0" VerticalAlignment="Top"/>
+                    <Button Name="SaveCharBtn" Content="Save NIC" HorizontalAlignment="Left" Margin="237,83,0,0" VerticalAlignment="Top" Width="75" Click="SaveCharBtn_Click"/>
+                    <GroupBox Header="EP Insert" HorizontalAlignment="Left" Height="100" Margin="54,111,0,0" VerticalAlignment="Top" Width="402" Grid.RowSpan="2">
+                        <Grid>
+                            <TextBox HorizontalAlignment="Left" Height="23" Margin="75,35,0,0" TextWrapping="Wrap" Text="{Binding EPToInject}" VerticalAlignment="Top" Width="100"/>
+                            <Label Content="Insert" HorizontalAlignment="Left" Margin="30,34,0,0" VerticalAlignment="Top"/>
+                            <Button Content="Go" HorizontalAlignment="Left" Margin="330,37,0,0" VerticalAlignment="Top" Width="40" Click="Button_Click_1"/>
+                            <Label Content="EP Into Account Selected" HorizontalAlignment="Left" Margin="180,34,0,0" VerticalAlignment="Top"/>
+                            <Label Content="Must log out and back into the game to see updated EP balance!" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" FontWeight="Bold" Foreground="Red" />
+                        </Grid>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>

@@ -47,6 +47,8 @@ namespace PerpTool
             AgFields = new AggregateFields(Connstr);
             Entities = new EntityDefaults(Connstr);
             AgValues = new AggregateValues(Connstr);
+            PerpAccounts = new Accounts(Connstr);
+            PerpChars = new Characters(Connstr);
 
             EntityItems = Entities.GetEntitiesWithFields();
 
@@ -58,6 +60,8 @@ namespace PerpTool
         private AggregateFields AgFields { get; set; }
         private EntityDefaults Entities { get; set; }
         private AggregateValues AgValues { get; set; }
+        private Accounts PerpAccounts { get; set; }
+        private Characters PerpChars { get; set; }
 
         public List<EntityItems> EntityItems { get; set; }
 
@@ -118,6 +122,106 @@ namespace PerpTool
         private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
+        }
+
+        List<Accounts> _accts;
+        public List<Accounts> AccountsList
+        {
+            get
+            {
+                return _accts;
+            }
+            set
+            {
+                _accts = value;
+                OnPropertyChanged("AccountsList");
+            }
+        }
+        private Accounts _selacct;
+        public Accounts SelectedAcct
+        {
+            get
+            {
+                return _selacct;
+            }
+            set
+            {
+                _selacct = value;
+                CharactersList = PerpChars.GetCharactersOnAccount(value.accountID);
+            }
+        }
+
+        List<Characters> _chars;
+        public List<Characters> CharactersList
+        {
+            get
+            {
+                return _chars;
+            }
+            set
+            {
+                _chars = value;
+                OnPropertyChanged("CharactersList");
+            }
+        }
+
+        private Characters _selchar;
+        public Characters SelectedChar
+        {
+            get
+            {
+                return _selchar;
+            }
+            set
+            {
+                _selchar = value;
+                OnPropertyChanged("SelectedChar");
+            }
+        }
+
+        private int _eptoinject;
+        public int EPToInject
+        {
+            get
+            {
+                return _eptoinject;
+            }
+            set
+            {
+                _eptoinject = value;
+                OnPropertyChanged("EPToInject");
+            }
+        }
+
+        private void GetAccounts_Click(object sender, RoutedEventArgs e)
+        {
+            AccountsList = PerpAccounts.GetAllAccounts();
+        }
+
+        private void SaveCharBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.SelectedChar != null)
+            {
+                try
+                {
+                    this.SelectedChar.Save();
+                }
+                catch(Exception ex)
+                {
+                    MessageBox.Show("Failed to save character!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            if (SelectedAcct == null || SelectedAcct.accountID == 0) { return; }
+            if (EPToInject <= 0)
+            {
+                MessageBox.Show("Really? No EP? Enter EP to inject!", "How much??", 0, MessageBoxImage.Error);
+                return;
+            }
+            this.SelectedAcct.InsertEP(SelectedAcct.accountID, EPToInject);
         }
     }
 }
