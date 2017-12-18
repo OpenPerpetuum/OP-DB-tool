@@ -69,6 +69,8 @@
     <Compile Include="db\AggregateValues.cs" />
     <Compile Include="db\Characters.cs" />
     <Compile Include="db\EntityDefaults.cs" />
+    <Compile Include="db\NPCSpawn.cs" />
+    <Compile Include="db\Zones.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
