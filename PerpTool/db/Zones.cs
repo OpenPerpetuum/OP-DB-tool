@@ -668,7 +668,7 @@ namespace Perptool.db
             {
                 StringBuilder sqlCommand = new StringBuilder();
                 sqlCommand.Append("Insert into zones ");
-                sqlCommand.Append("(`id`, `x`, `y`, `name`, `description`, `note`, `fertility`, `zoneplugin`, `zoneip`, `zoneport`, `isinstance`, `enabled`, `spawnid`, `plantruleset`, `protected`, `raceid`, `width`, `height`, `terraformable`, `zonetype`, `sparkcost`, `maxdockingbase`, `sleeping`, `plantaltitudescale`, `host`, `active`) ");
+                sqlCommand.Append("(id, x, y, name, description, note, fertility,  zoneplugin ,  zoneip ,  zoneport ,  isinstance ,  enabled ,  spawnid ,  plantruleset ,  protected ,  raceid ,  width ,  height ,  terraformable ,  zonetype ,  sparkcost ,  maxdockingbase ,  sleeping ,  plantaltitudescale ,  host ,  active ) ");
                 sqlCommand.Append(" Values ");
                 sqlCommand.Append("(@id, @x, @y, @name, @description, @note, @fertility, @zoneplugin, @zoneip, @zoneport, @isinstance, @enabled, @spawnid, @plantruleset, @protected, @raceid, @width, @height, @terraformable, @zonetype, @sparkcost, @maxdockingbase, @sleeping, @plantaltitudescale, @host, @active) ");
 
@@ -717,7 +717,7 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE zones Set `x`= @x, `y`= @y, `name`= @name, `description`= @description, `note`= @note, `fertility`= @fertility, `zoneplugin`= @zoneplugin, `zoneip`= @zoneip, `zoneport`= @zoneport, `isinstance`= @isinstance, `enabled`= @enabled, `spawnid`= @spawnid, `plantruleset`= @plantruleset, `protected`=@protected, `raceid`=@raceid, `width`=@width, `height`=@height, `terraformable`=@terraformable, `zonetype`=@zonetype, `sparkcost`=@sparkcost, `maxdockingbase`=@maxdockingbase, `sleeping`=@sleeping, `plantaltitudescale`=@plantaltitudescale, `host`=@host, `active`=@active where id=@id");
+                sqlCommand.Append("UPDATE zones Set  x = @x,  y = @y,  name = @name,  description = @description,  note = @note,  fertility = @fertility,  zoneplugin = @zoneplugin,  zoneip = @zoneip,  zoneport = @zoneport,  isinstance = @isinstance,  enabled = @enabled,  spawnid = @spawnid,  plantruleset = @plantruleset,  protected =@protected,  raceid =@raceid,  width =@width,  height =@height,  terraformable =@terraformable,  zonetype =@zonetype,  sparkcost =@sparkcost,  maxdockingbase =@maxdockingbase,  sleeping =@sleeping,  plantaltitudescale =@plantaltitudescale,  host =@host,  active =@active where id=@id");
 
                 command.CommandText = sqlCommand.ToString();
 

@@ -116,7 +116,7 @@ namespace PerpTool
             {
                 MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
             }
-            MessageBox.Show("Saved.", "Info", 0, MessageBoxImage.Information);
+            MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
         }
 
         private void ComboBox_DropDownClosed(object sender, EventArgs e)
@@ -255,6 +255,7 @@ namespace PerpTool
                 try
                 {
                     this.SelectedChar.Save();
+                    MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
                 }
                 catch(Exception ex)
                 {
@@ -272,6 +273,7 @@ namespace PerpTool
                 return;
             }
             this.SelectedAcct.InsertEP(SelectedAcct.accountID, EPToInject);
+            MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
         }
 
         private void ZoneSaveBtn_Click(object sender, RoutedEventArgs e)
@@ -281,6 +283,7 @@ namespace PerpTool
                 try
                 {
                     SelectedZone.Save();
+                    MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
                 }
                 catch(Exception ex)
                 {
