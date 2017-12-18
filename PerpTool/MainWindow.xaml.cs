@@ -49,8 +49,14 @@ namespace PerpTool
             AgValues = new AggregateValues(Connstr);
             PerpAccounts = new Accounts(Connstr);
             PerpChars = new Characters(Connstr);
+            ZoneTbl = new Zones(Connstr);
+            Spawn = new NPCSpawn(Connstr);
+
 
             EntityItems = Entities.GetEntitiesWithFields();
+            ZoneList = ZoneTbl.GetAllZones();
+            SpawnList = Spawn.GetAllSpawns();
+
 
             this.DataContext = this;
         }
@@ -62,6 +68,8 @@ namespace PerpTool
         private AggregateValues AgValues { get; set; }
         private Accounts PerpAccounts { get; set; }
         private Characters PerpChars { get; set; }
+        public Zones ZoneTbl { get; set; }
+        public NPCSpawn Spawn { get; set; }
 
         public List<EntityItems> EntityItems { get; set; }
 
@@ -122,6 +130,48 @@ namespace PerpTool
         private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
+        }
+
+        private List<NPCSpawn> _spawns;
+        public List<NPCSpawn> SpawnList
+        {
+            get
+            {
+                return _spawns;
+            }
+            set
+            {
+                _spawns = value;
+                OnPropertyChanged("SpawnList");
+            }
+        }
+
+        private List<Zones> _zones;
+        public List<Zones> ZoneList
+        {
+            get
+            {
+                return _zones;
+            }
+            set
+            {
+                _zones = value;
+                OnPropertyChanged("ZoneList");
+            }
+        }
+
+        private Zones _selzone;
+        public Zones SelectedZone
+        {
+            get
+            {
+                return _selzone;
+            }
+            set
+            {
+                _selzone = value;
+                OnPropertyChanged("SelectedZone");
+            }
         }
 
         List<Accounts> _accts;
@@ -222,6 +272,25 @@ namespace PerpTool
                 return;
             }
             this.SelectedAcct.InsertEP(SelectedAcct.accountID, EPToInject);
+        }
+
+        private void ZoneSaveBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.SelectedZone != null )
+            {                
+                try
+                {
+                    SelectedZone.Save();
+                }
+                catch(Exception ex)
+                {
+                    MessageBox.Show("Failed to Save!\n" + ex.Message, "Error!", 0, MessageBoxImage.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("No zone selected", "Error!", 0, MessageBoxImage.Warning);
+            }
         }
     }
 }
