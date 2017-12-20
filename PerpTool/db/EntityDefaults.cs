@@ -22,7 +22,7 @@ namespace Perptool.db
     /// Table Class
     /// </summary>
     class EntityDefaults : INotifyPropertyChanged
-    {        
+    {
 
         /// <summary>
         /// private field
@@ -548,7 +548,7 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("SELECT entitydefaults.[definition], entitydefaults.[definitionname] FROM entitydefaults JOIN aggregatevalues ON (aggregatevalues.definition = entitydefaults.definition) GROUP BY entitydefaults.definition,  entitydefaults.definitionname");
+                sqlCommand.Append("SELECT entitydefaults.definition, entitydefaults.definitionname FROM entitydefaults JOIN aggregatevalues ON (aggregatevalues.definition = entitydefaults.definition) GROUP BY entitydefaults.definition,  entitydefaults.definitionname");
                 command.CommandText = sqlCommand.ToString();
                 command.Connection = conn;
                 conn.Open();
@@ -560,23 +560,34 @@ namespace Perptool.db
                         item.Name = Convert.ToString(reader["definitionname"]);
                         item.Definition = Convert.ToInt32(reader["definition"]);
                         list.Add(item);
+                    }
+                }
+            }
+            return list;
+        }
 
-                        //this.definition = Convert.ToInt32(reader["definition"]);
-                        //this.definitionname = Convert.ToString(reader["definitionname"]);
-                        //this.quantity = Convert.ToInt32(reader["quantity"]);
-                        //this.attributeflags = Convert.ToInt32(reader["attributeflags"]);
-                        //this.categoryflags = Convert.ToInt32(reader["categoryflags"]);
-                        //this.options = Convert.ToString(reader["options"]);
-                        //this.note = Convert.ToString(reader["note"]);
-                        //this.enabled = Convert.ToInt32(reader["enabled"]);
-                        //this.volume = Convert.ToDecimal(reader["volume"]);
-                        //this.mass = Convert.ToDecimal(reader["mass"]);
-                        //this.hidden = Convert.ToString(reader["hidden"]);
-                        //this.health = Convert.ToDecimal(reader["health"]);
-                        //this.descriptiontoken = Convert.ToString(reader["descriptiontoken"]);
-                        //this.purchasable = Convert.ToInt32(reader["purchasable"]);
-                        //this.tiertype = Convert.ToInt32(reader["tiertype"]);
-                        //this.tierlevel = Convert.ToInt32(reader["tierlevel"]);
+
+        public List<EntityItems> GetAllNPCLootableBots()
+        {
+            List<EntityItems> list = new List<EntityItems>();
+
+            SqlConnection conn = new SqlConnection(this.ConnString);
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append("SELECT DISTINCT dbo.entitydefaults.definitionname, dbo.entitydefaults.definition FROM dbo.entitydefaults JOIN dbo.npcloot on dbo.npcloot.definition = dbo.entitydefaults.definition GROUP BY entitydefaults.definition,  entitydefaults.definitionname");
+                //sqlCommand.Append("");
+                command.CommandText = sqlCommand.ToString();
+                command.Connection = conn;
+                conn.Open();
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        EntityItems item = new EntityItems();
+                        item.Name = Convert.ToString(reader["definitionname"]);
+                        item.Definition = Convert.ToInt32(reader["definition"]);
+                        list.Add(item);
                     }
                 }
             }

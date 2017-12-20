@@ -68,6 +68,7 @@
     <Compile Include="db\AggregateModifiers.cs" />
     <Compile Include="db\AggregateValues.cs" />
     <Compile Include="db\Characters.cs" />
+    <Compile Include="db\NPCLoot.cs" />
     <Compile Include="db\EntityDefaults.cs" />
     <Compile Include="db\NPCSpawn.cs" />
     <Compile Include="db\Zones.cs" />

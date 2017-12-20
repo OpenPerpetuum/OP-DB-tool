@@ -51,11 +51,13 @@ namespace PerpTool
             PerpChars = new Characters(Connstr);
             ZoneTbl = new Zones(Connstr);
             Spawn = new NPCSpawn(Connstr);
+            Loot = new NPCLoot(Connstr);
 
 
             EntityItems = Entities.GetEntitiesWithFields();
             ZoneList = ZoneTbl.GetAllZones();
             SpawnList = Spawn.GetAllSpawns();
+            LootableBots = Entities.GetAllNPCLootableBots();
 
 
             this.DataContext = this;
@@ -70,6 +72,7 @@ namespace PerpTool
         private Characters PerpChars { get; set; }
         public Zones ZoneTbl { get; set; }
         public NPCSpawn Spawn { get; set; }
+        public NPCLoot Loot { get; set; }
 
         public List<EntityItems> EntityItems { get; set; }
 
@@ -84,6 +87,34 @@ namespace PerpTool
             {
                 _valstuffs = value;
                 OnPropertyChanged("FieldValuesList");
+            }
+        }
+
+        private List<LootItem> _lootdata;
+        public List<LootItem> loots
+        {
+            get
+            {
+                return _lootdata;
+            }
+            set
+            {
+                _lootdata = value;
+                OnPropertyChanged("loots");
+            }
+        }
+
+        private List<EntityItems> _itemdata;
+        public List<EntityItems> LootableBots
+        {
+            get
+            {
+                return _itemdata;
+            }
+            set
+            {
+                _itemdata = value;
+                OnPropertyChanged("LootableBots");
             }
         }
 
@@ -125,6 +156,14 @@ namespace PerpTool
             this.currentSelection = item;
             if (item == null) { return; }
             FieldValuesList = AgValues.GetValuesForEntity(item.Definition);
+        }
+
+        private void ComboBox_DropDownClosed_NPCLootableDefs(object sender, EventArgs e)
+        {
+            EntityItems item = (EntityItems)npclootcombo.SelectedItem;
+            this.currentSelection = item;
+            if (item == null) { return; }
+            loots = Loot.GetLootByDefinition(item.Definition);
         }
 
         private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -294,6 +333,27 @@ namespace PerpTool
             {
                 MessageBox.Show("No zone selected", "Error!", 0, MessageBoxImage.Warning);
             }
+        }
+
+        private void NPC_Loot_Save_Button_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach (LootItem item in loots)
+                {
+                    Loot.GetById(item.LootDefinition);
+                    Loot.Save();
+                    //Console.WriteLine(sb.ToString());
+                    //File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + currentSelection.Name + ".sql", sb.ToString());
+                }
+                MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
+            }
+            
         }
     }
 }
