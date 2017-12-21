@@ -13,6 +13,7 @@ namespace Perptool.db
     public class LootItem
     {
         public int NPCDefinition { get; set; }
+        public int NPCLootID { get; set; }
         public int LootDefinition { get; set; }
         public string LootDefinitionName { get; set; }
         public decimal LootProbability { get; set; }
@@ -33,7 +34,7 @@ namespace Perptool.db
         private int privaterepackaged;
         private int privatedontdamage;
         private int privateminquantity;
-       
+
         public NPCLoot(string connectionString)
         {
             this.ConnString = connectionString;
@@ -176,22 +177,68 @@ namespace Perptool.db
 
 
 
-        public void GetById(int definition)
+        public List<NPCLoot> GetLootsById(int id)
         {
+            List<NPCLoot> looties = new List<NPCLoot>();
             SqlConnection conn = new SqlConnection(this.ConnString);
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("SELECT * FROM npcloot WHERE lootdefinition=@definition");
+                sqlCommand.Append("SELECT * FROM npcloot WHERE id=@id");
                 command.CommandText = sqlCommand.ToString();
-                command.Parameters.AddWithValue("@definition", definition);
+                command.Parameters.AddWithValue("@id", id);
                 command.Connection = conn;
                 conn.Open();
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        System.Console.WriteLine(reader.ToString());
+                        NPCLoot temp = new NPCLoot(this.ConnString);
+                        temp.id = Convert.ToInt32(reader["id"]);
+                        temp.definition = Convert.ToInt32(reader["definition"]);
+                        temp.lootdefinition = Convert.ToInt32(reader["lootdefinition"]);
+                        temp.quantity = Convert.ToInt32(reader["quantity"]);
+                        temp.probability = Convert.ToDecimal(reader["probability"]);
+                        temp.repackaged = Convert.ToInt32(reader["repackaged"]);
+                        temp.dontdamage = Convert.ToInt32(reader["dontdamage"]);
+                        temp.minquantity = Convert.ToInt32(reader["minquantity"]);
+                        looties.Add(temp);
+                    }
+                }
+
+                conn.Dispose();
+            }
+            return looties;
+        }
+
+        public void updateSelf(LootItem loot)
+        {
+            this.id = loot.NPCLootID;
+            this.definition = loot.NPCDefinition;
+            this.lootdefinition = loot.LootDefinition;
+            this.quantity = loot.LootQuantity;
+            this.probability = loot.LootProbability;
+            this.repackaged = loot.LootRepackaged;
+            this.dontdamage = loot.LootDontDamage;
+            this.minquantity = loot.LootMinQuantity;
+        }
+
+        public void GetbyID(int id)
+        {
+            SqlConnection conn = new SqlConnection(this.ConnString);
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append("SELECT * FROM npcloot WHERE id=@id");
+                command.CommandText = sqlCommand.ToString();
+                command.Parameters.AddWithValue("@id", id);
+                command.Connection = conn;
+                conn.Open();
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        NPCLoot temp = new NPCLoot(this.ConnString);
                         this.id = Convert.ToInt32(reader["id"]);
                         this.definition = Convert.ToInt32(reader["definition"]);
                         this.lootdefinition = Convert.ToInt32(reader["lootdefinition"]);
@@ -202,7 +249,6 @@ namespace Perptool.db
                         this.minquantity = Convert.ToInt32(reader["minquantity"]);
                     }
                 }
-
                 conn.Dispose();
             }
         }
@@ -247,13 +293,13 @@ namespace Perptool.db
         /// <summary>
         /// saves existing record
         /// </summary>
-        public void Save()
+        public string Save()
         {
+            string query = "";
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE npcloot SET definition=@definition, lootdefinition=@lootdefinition, quantity=@quantity, ");
-                sqlCommand.Append("probability=@probability, repackaged=@repackaged, dontdamage=@dontdamage, minquantity=@minquantity WHERE id = @id");
+                sqlCommand.Append("UPDATE npcloot SET [definition]=@definition, [lootdefinition]=@lootdefinition, [quantity]=@quantity, [probability]=@probability, [repackaged]=@repackaged, [dontdamage]=@dontdamage, [minquantity]=@minquantity WHERE [id]=@id");
                 command.CommandText = sqlCommand.ToString();
 
                 command.Parameters.AddWithValue("@id", this.id);
@@ -270,7 +316,21 @@ namespace Perptool.db
                 command.Connection = conn;
                 command.ExecuteNonQuery();
                 conn.Close();
+
+                query = command.CommandText;
+                foreach (SqlParameter p in command.Parameters)
+                {
+                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    {
+                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
+                    }
+                    else
+                    {
+                        query = query.Replace(p.ParameterName, p.Value.ToString());
+                    }
+                }
             }
+            return query;
         }
 
         public List<LootItem> GetLootByDefinition(int npcBotDef)
@@ -282,18 +342,19 @@ namespace Perptool.db
                 using (SqlCommand command = new SqlCommand())
                 {
                     StringBuilder sqlCommand = new StringBuilder();
-                    sqlCommand.Append("SELECT dbo.entitydefaults.definitionname, npcloot.* FROM dbo.npcloot JOIN dbo.entitydefaults on npcloot.lootdefinition = entitydefaults.definition WHERE npcloot.definition=@definition ");
+                    sqlCommand.Append("SELECT dbo.entitydefaults.definitionname, npcloot.id as npclootID, npcloot.* FROM dbo.npcloot JOIN dbo.entitydefaults on npcloot.lootdefinition = entitydefaults.definition WHERE npcloot.definition=@definition ");
                     command.Parameters.AddWithValue("@definition", npcBotDef);
                     command.CommandText = sqlCommand.ToString();
                     command.Connection = conn;
                     conn.Open();
-                    
+
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
                             LootItem tmp = new LootItem();
                             tmp.NPCDefinition = npcBotDef;
+                            tmp.NPCLootID = Convert.ToInt32(reader["npclootID"]);
                             tmp.LootDefinitionName = Convert.ToString(reader["definitionname"]);
                             tmp.LootDefinition = Convert.ToInt32(reader["lootdefinition"]);
                             tmp.LootQuantity = Convert.ToInt32(reader["quantity"]);
@@ -309,6 +370,7 @@ namespace Perptool.db
             }
             return list;
         }
+
 
         /// <summary>
         /// fires when properties are set.

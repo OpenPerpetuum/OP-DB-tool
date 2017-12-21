@@ -134,7 +134,7 @@ namespace PerpTool
                     }
 
                     AgFields.GetById(item.FieldId);
-                    if (AgFields.formula!= item.FieldFormula)
+                    if (AgFields.formula != item.FieldFormula)
                     {
                         AgFields.formula = item.FieldFormula;
                         sb.AppendLine(AgFields.Save());
@@ -142,12 +142,12 @@ namespace PerpTool
                     Console.WriteLine(sb.ToString());
                     File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + currentSelection.Name + ".sql", sb.ToString());
                 }
+                MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
             }
-            MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
         }
 
         private void ComboBox_DropDownClosed(object sender, EventArgs e)
@@ -163,7 +163,7 @@ namespace PerpTool
             EntityItems item = (EntityItems)npclootcombo.SelectedItem;
             this.currentSelection = item;
             if (item == null) { return; }
-            loots = Loot.GetLootByDefinition(item.Definition);
+            this.loots = Loot.GetLootByDefinition(item.Definition);
         }
 
         private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -296,7 +296,7 @@ namespace PerpTool
                     this.SelectedChar.Save();
                     MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     MessageBox.Show("Failed to save character!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
                 }
@@ -317,14 +317,14 @@ namespace PerpTool
 
         private void ZoneSaveBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (this.SelectedZone != null )
-            {                
+            if (this.SelectedZone != null)
+            {
                 try
                 {
                     SelectedZone.Save();
                     MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     MessageBox.Show("Failed to Save!\n" + ex.Message, "Error!", 0, MessageBoxImage.Error);
                 }
@@ -340,20 +340,20 @@ namespace PerpTool
             try
             {
                 StringBuilder sb = new StringBuilder();
-                foreach (LootItem item in loots)
+                foreach (LootItem item in this.loots)
                 {
-                    Loot.GetById(item.LootDefinition);
-                    Loot.Save();
-                    //Console.WriteLine(sb.ToString());
-                    //File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + currentSelection.Name + ".sql", sb.ToString());
+                    Loot.updateSelf(item);
+                    sb.Append(Loot.Save());
+                    sb.AppendLine();
                 }
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + currentSelection.Name + ".sql", sb.ToString());
                 MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
             }
-            
+
         }
     }
 }
