@@ -7,9 +7,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data.SqlClient;
+using System.Collections.ObjectModel;
 
 namespace Perptool.db
 {
+    public enum DBAction
+    {
+        UPDATE,
+        INSERT,
+        DELETE
+    }
+
+
     public class LootItem
     {
         public int NPCDefinition { get; set; }
@@ -21,6 +30,7 @@ namespace Perptool.db
         public int LootMinQuantity { get; set; }
         public int LootRepackaged { get; set; }
         public int LootDontDamage { get; set; }
+        public DBAction recordAction { get; set; }
     }
 
     public class NPCLoot : INotifyPropertyChanged
@@ -333,9 +343,48 @@ namespace Perptool.db
             return query;
         }
 
-        public List<LootItem> GetLootByDefinition(int npcBotDef)
+        public string Insert()
         {
-            List<LootItem> list = new List<LootItem>();
+            string query = "";
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append("INSERT INTO [dbo].[npcloot] ([definition],[lootdefinition],[quantity],[probability],[repackaged],[dontdamage],[minquantity]) VALUES(@definition, @lootdefinition, @quantity, @probability, @repackaged,@dontdamage, @minquantity)");
+                command.CommandText = sqlCommand.ToString();
+
+                command.Parameters.AddWithValue("@definition", this.definition);
+                command.Parameters.AddWithValue("@lootdefinition", this.lootdefinition);
+                command.Parameters.AddWithValue("@quantity", this.quantity);
+                command.Parameters.AddWithValue("@probability", this.probability);
+                command.Parameters.AddWithValue("@repackaged", this.repackaged);
+                command.Parameters.AddWithValue("@dontdamage", this.dontdamage);
+                command.Parameters.AddWithValue("@minquantity", this.minquantity);
+
+                SqlConnection conn = new SqlConnection(this.ConnString);
+                conn.Open();
+                command.Connection = conn;
+                command.ExecuteNonQuery();
+                conn.Close();
+
+                query = command.CommandText;
+                foreach (SqlParameter p in command.Parameters)
+                {
+                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    {
+                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
+                    }
+                    else
+                    {
+                        query = query.Replace(p.ParameterName, p.Value.ToString());
+                    }
+                }
+            }
+            return query;
+        }
+
+        public ObservableCollection<LootItem> GetLootByDefinition(int npcBotDef)
+        {
+            ObservableCollection<LootItem> list = new ObservableCollection<LootItem>();
 
             using (SqlConnection conn = new SqlConnection(this.ConnString))
             {
@@ -369,6 +418,22 @@ namespace Perptool.db
                 }
             }
             return list;
+        }
+
+
+        public LootItem CreateNewLootForBot(EntityItems npcBotDef, EntityItems item)
+        {
+            LootItem tmp = new LootItem();
+            tmp.NPCDefinition = npcBotDef.Definition;
+            tmp.NPCLootID = -1;
+            tmp.LootDefinitionName = item.Name;
+            tmp.LootDefinition = item.Definition;
+            tmp.LootQuantity = 1;
+            tmp.LootProbability = 0.5M;
+            tmp.LootRepackaged = 1;
+            tmp.LootDontDamage = 1;
+            tmp.LootMinQuantity = 0;
+            return tmp;
         }
 
 

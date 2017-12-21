@@ -594,6 +594,32 @@ namespace Perptool.db
             return list;
         }
 
+        public List<EntityItems> GetLootableEntities()
+        {
+            List<EntityItems> list = new List<EntityItems>();
+
+            SqlConnection conn = new SqlConnection(this.ConnString);
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append("SELECT DISTINCT entitydefaults.definition, definitionname FROM dbo.entitydefaults JOIN npcloot ON npcloot.lootdefinition = entitydefaults.definition GROUP BY entitydefaults.definition, entitydefaults.definitionname");
+                command.CommandText = sqlCommand.ToString();
+                command.Connection = conn;
+                conn.Open();
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        EntityItems item = new EntityItems();
+                        item.Name = Convert.ToString(reader["definitionname"]);
+                        item.Definition = Convert.ToInt32(reader["definition"]);
+                        list.Add(item);
+                    }
+                }
+            }
+            return list;
+        }
+
         /// <summary>
         /// fires when properties are set.
         /// </summary>

@@ -16,6 +16,7 @@ using Perptool.db;
 using System.Collections;
 using System.ComponentModel;
 using System.IO;
+using System.Collections.ObjectModel;
 
 namespace PerpTool
 {
@@ -58,6 +59,7 @@ namespace PerpTool
             ZoneList = ZoneTbl.GetAllZones();
             SpawnList = Spawn.GetAllSpawns();
             LootableBots = Entities.GetAllNPCLootableBots();
+            LootableEntityDefaults = Entities.GetLootableEntities();
 
 
             this.DataContext = this;
@@ -90,8 +92,8 @@ namespace PerpTool
             }
         }
 
-        private List<LootItem> _lootdata;
-        public List<LootItem> loots
+        private ObservableCollection<LootItem> _lootdata;
+        public ObservableCollection<LootItem> loots
         {
             get
             {
@@ -115,6 +117,20 @@ namespace PerpTool
             {
                 _itemdata = value;
                 OnPropertyChanged("LootableBots");
+            }
+        }
+
+        private List<EntityItems> _lootables;
+        public List<EntityItems> LootableEntityDefaults
+        {
+            get
+            {
+                return _lootables;
+            }
+            set
+            {
+                _lootables = value;
+                OnPropertyChanged("LootableEntityDefaults");
             }
         }
 
@@ -158,12 +174,20 @@ namespace PerpTool
             FieldValuesList = AgValues.GetValuesForEntity(item.Definition);
         }
 
-        private void ComboBox_DropDownClosed_NPCLootableDefs(object sender, EventArgs e)
+        public EntityItems currentNPCLootableBot;
+        private void ComboBox_DropDownClosed_LootableNPCs(object sender, EventArgs e)
         {
             EntityItems item = (EntityItems)npclootcombo.SelectedItem;
-            this.currentSelection = item;
+            this.currentNPCLootableBot = item;
             if (item == null) { return; }
             this.loots = Loot.GetLootByDefinition(item.Definition);
+        }
+
+        public EntityItems currentRowAddItem;
+        private void ComboBox_DropDownClosed_NPCLootableDefs(object sender, EventArgs e)
+        {
+            EntityItems item = (EntityItems)npcloot.SelectedItem;
+            this.currentRowAddItem = item;
         }
 
         private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -342,12 +366,39 @@ namespace PerpTool
                 StringBuilder sb = new StringBuilder();
                 foreach (LootItem item in this.loots)
                 {
-                    Loot.updateSelf(item);
-                    sb.Append(Loot.Save());
-                    sb.AppendLine();
+                    if (item.recordAction == DBAction.UPDATE)
+                    {
+                        Loot.updateSelf(item);
+                        sb.Append(Loot.Save());
+                        sb.AppendLine();
+                    }else if(item.recordAction == DBAction.INSERT)
+                    {
+                        Loot.updateSelf(item);
+                        sb.Append(Loot.Insert());
+                        sb.AppendLine();
+                    }
+                    else if(item.recordAction == DBAction.DELETE)
+                    {
+
+                    }
                 }
-                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + currentSelection.Name + ".sql", sb.ToString());
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + currentNPCLootableBot.Name + ".sql", sb.ToString());
                 MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
+            }
+
+        }
+
+        private void NPC_Loot_Add_Row_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                LootItem loot = Loot.CreateNewLootForBot(this.currentNPCLootableBot, this.currentRowAddItem);
+                loot.recordAction = DBAction.INSERT;
+                this.loots.Add(loot);
             }
             catch (Exception ex)
             {
