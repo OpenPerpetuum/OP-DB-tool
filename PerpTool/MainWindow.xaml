@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:PerpTool"
         xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2" x:Class="PerpTool.MainWindow"
         mc:Ignorable="d"
-        Title="The Perpetuum DB Editing Tool - Hacky Edition" Height="400" Width="655.5" ResizeMode="NoResize">
+        Title="The Perpetuum DB Editing Tool - AWESOME Edition" Height="454" Width="655.5" ResizeMode="CanResize">
 
     <Window.Resources>
         <Style x:Key="ColumnHeaderGripperStyle" TargetType="{x:Type Thumb}">
@@ -100,6 +100,27 @@
                     <Button Name="ZoneSaveBtn" Content="Save" HorizontalAlignment="Left" Margin="270,301,0,0" VerticalAlignment="Top" Width="75" Click="ZoneSaveBtn_Click"/>
                 </Grid>
             </TabItem>
+
+            <TabItem Header="Edit Loot Tables">
+                <Grid Background="#FFE5E5E5">
+                    <ComboBox x:Name="npclootcombo" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="600" ItemsSource="{Binding LootableBots}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="ComboBox_DropDownClosed_LootableNPCs"/>
+                    <DataGrid Margin="10,61,10,31" ItemsSource="{Binding loots}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" >
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="LootDefinitionName" Width="*" Binding="{Binding LootDefinitionName}"/>
+                            <DataGridTextColumn Header="Probability" Width="70" Binding="{Binding LootProbability}"/>
+                            <DataGridTextColumn Header="Quantity" Width="70" Binding="{Binding LootQuantity}"/>
+                            <DataGridTextColumn Header="Repackaged" Width="85" Binding="{Binding LootRepackaged}"/>
+                            <DataGridTextColumn Header="DontDamage" Width="85" Binding="{Binding LootDontDamage}"/>
+                            <DataGridTextColumn Header="MinQuantity" Width="85" Binding="{Binding LootMinQuantity}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Button Content="Save Changes" Margin="522,0,0,0" Click="NPC_Loot_Save_Button_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100"/>
+                    <ComboBox x:Name="npcloot" HorizontalAlignment="Left" VerticalAlignment="Bottom"  Margin="138,0,0,0"  Width="350" Height="26" ItemsSource="{Binding LootableEntityDefaults}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="ComboBox_DropDownClosed_NPCLootableDefs"/>
+                    <Button Content="Add new row" Margin="10,359,0,0" Click="NPC_Loot_Add_Row_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100"/>
+                </Grid>
+            </TabItem>
+
+
         </TabControl>
     </Grid>
 </Window>

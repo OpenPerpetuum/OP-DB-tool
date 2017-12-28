@@ -16,6 +16,7 @@ using Perptool.db;
 using System.Collections;
 using System.ComponentModel;
 using System.IO;
+using System.Collections.ObjectModel;
 
 namespace PerpTool
 {
@@ -51,11 +52,14 @@ namespace PerpTool
             PerpChars = new Characters(Connstr);
             ZoneTbl = new Zones(Connstr);
             Spawn = new NPCSpawn(Connstr);
+            Loot = new NPCLoot(Connstr);
 
 
             EntityItems = Entities.GetEntitiesWithFields();
             ZoneList = ZoneTbl.GetAllZones();
             SpawnList = Spawn.GetAllSpawns();
+            LootableBots = Entities.GetAllNPCLootableBots();
+            LootableEntityDefaults = Entities.GetLootableEntities();
 
 
             this.DataContext = this;
@@ -70,6 +74,7 @@ namespace PerpTool
         private Characters PerpChars { get; set; }
         public Zones ZoneTbl { get; set; }
         public NPCSpawn Spawn { get; set; }
+        public NPCLoot Loot { get; set; }
 
         public List<EntityItems> EntityItems { get; set; }
 
@@ -84,6 +89,48 @@ namespace PerpTool
             {
                 _valstuffs = value;
                 OnPropertyChanged("FieldValuesList");
+            }
+        }
+
+        private ObservableCollection<LootItem> _lootdata;
+        public ObservableCollection<LootItem> loots
+        {
+            get
+            {
+                return _lootdata;
+            }
+            set
+            {
+                _lootdata = value;
+                OnPropertyChanged("loots");
+            }
+        }
+
+        private List<EntityItems> _itemdata;
+        public List<EntityItems> LootableBots
+        {
+            get
+            {
+                return _itemdata;
+            }
+            set
+            {
+                _itemdata = value;
+                OnPropertyChanged("LootableBots");
+            }
+        }
+
+        private List<EntityItems> _lootables;
+        public List<EntityItems> LootableEntityDefaults
+        {
+            get
+            {
+                return _lootables;
+            }
+            set
+            {
+                _lootables = value;
+                OnPropertyChanged("LootableEntityDefaults");
             }
         }
 
@@ -103,7 +150,7 @@ namespace PerpTool
                     }
 
                     AgFields.GetById(item.FieldId);
-                    if (AgFields.formula!= item.FieldFormula)
+                    if (AgFields.formula != item.FieldFormula)
                     {
                         AgFields.formula = item.FieldFormula;
                         sb.AppendLine(AgFields.Save());
@@ -111,12 +158,12 @@ namespace PerpTool
                     Console.WriteLine(sb.ToString());
                     File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + currentSelection.Name + ".sql", sb.ToString());
                 }
+                MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
             }
-            MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
         }
 
         private void ComboBox_DropDownClosed(object sender, EventArgs e)
@@ -125,6 +172,22 @@ namespace PerpTool
             this.currentSelection = item;
             if (item == null) { return; }
             FieldValuesList = AgValues.GetValuesForEntity(item.Definition);
+        }
+
+        public EntityItems currentNPCLootableBot;
+        private void ComboBox_DropDownClosed_LootableNPCs(object sender, EventArgs e)
+        {
+            EntityItems item = (EntityItems)npclootcombo.SelectedItem;
+            this.currentNPCLootableBot = item;
+            if (item == null) { return; }
+            this.loots = Loot.GetLootByDefinition(item.Definition);
+        }
+
+        public EntityItems currentRowAddItem;
+        private void ComboBox_DropDownClosed_NPCLootableDefs(object sender, EventArgs e)
+        {
+            EntityItems item = (EntityItems)npcloot.SelectedItem;
+            this.currentRowAddItem = item;
         }
 
         private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -257,7 +320,7 @@ namespace PerpTool
                     this.SelectedChar.Save();
                     MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     MessageBox.Show("Failed to save character!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
                 }
@@ -278,14 +341,14 @@ namespace PerpTool
 
         private void ZoneSaveBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (this.SelectedZone != null )
-            {                
+            if (this.SelectedZone != null)
+            {
                 try
                 {
                     SelectedZone.Save();
                     MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     MessageBox.Show("Failed to Save!\n" + ex.Message, "Error!", 0, MessageBoxImage.Error);
                 }
@@ -294,6 +357,54 @@ namespace PerpTool
             {
                 MessageBox.Show("No zone selected", "Error!", 0, MessageBoxImage.Warning);
             }
+        }
+
+        private void NPC_Loot_Save_Button_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach (LootItem item in this.loots)
+                {
+                    if (item.recordAction == DBAction.UPDATE)
+                    {
+                        Loot.updateSelf(item);
+                        sb.Append(Loot.Save());
+                        sb.AppendLine();
+                    }else if(item.recordAction == DBAction.INSERT)
+                    {
+                        Loot.updateSelf(item);
+                        sb.Append(Loot.Insert());
+                        sb.AppendLine();
+                    }
+                    else if(item.recordAction == DBAction.DELETE)
+                    {
+
+                    }
+                }
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + currentNPCLootableBot.Name + ".sql", sb.ToString());
+                MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
+            }
+
+        }
+
+        private void NPC_Loot_Add_Row_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                LootItem loot = Loot.CreateNewLootForBot(this.currentNPCLootableBot, this.currentRowAddItem);
+                loot.recordAction = DBAction.INSERT;
+                this.loots.Add(loot);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
+            }
+
         }
     }
 }
