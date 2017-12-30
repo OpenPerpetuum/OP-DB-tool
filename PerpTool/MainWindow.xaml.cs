@@ -461,7 +461,13 @@ namespace PerpTool
         {
             try
             {
-                //TODO
+                StringBuilder sb = new StringBuilder();
+                foreach (BotBonusObj bonus in this.BotBonusList)
+                {
+                    sb.AppendLine(this.BotBonus.Save(bonus));
+                }
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + currentBotComponentSelection.Name + ".sql", sb.ToString());
+                MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {

@@ -127,7 +127,7 @@ namespace Perptool.db
             }
         }
 
-        public int effectenchancer
+        public int effectenhancer
         {
             get
             {
@@ -153,7 +153,7 @@ namespace Perptool.db
             this.bonus = 0;
             this.note = string.Empty;
             this.targetpropertyID = 0;
-            this.effectenchancer = 0;
+            this.effectenhancer = 0;
         }
 
         public ObservableCollection<BotBonusObj> getByEntity(int definitionID)
@@ -196,18 +196,17 @@ namespace Perptool.db
         }
 
 
-        public string Save()//TODO not impl'd
+        public string Save(BotBonusObj bonusChanges)
         {
             string query = "";
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE aggregatevalues SET definition=@definition, field=@field, value=@value WHERE id = @id");
+                sqlCommand.Append("UPDATE chassisbonus SET effectenhancer=@effectenhancer, bonus=@bonus WHERE id = @id");
                 command.CommandText = sqlCommand.ToString();
-                command.Parameters.AddWithValue("@id", this.id);
-                command.Parameters.AddWithValue("@definition", this.definition);
-              //  command.Parameters.AddWithValue("@field", this.field);
-              //  command.Parameters.AddWithValue("@value", this.value);
+                command.Parameters.AddWithValue("@id", bonusChanges.id);
+                command.Parameters.AddWithValue("@bonus", bonusChanges.bonus);
+                command.Parameters.AddWithValue("@effectenhancer", bonusChanges.effectenhancer);
 
                 SqlConnection conn = new SqlConnection(this.ConnString);
                 conn.Open();
