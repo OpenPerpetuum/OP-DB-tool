@@ -12,10 +12,30 @@ namespace Perptool.db
 
     // THI IS SHIT. don't hate!
 
-    public class EntityItems
+    public class EntityItems : INotifyPropertyChanged
     {
         public int Definition { get; set; }
         public string Name { get; set; }
+        public string Options { get; set; }
+        // public string Note { get; set; }
+        // public int Enabled { get; set; }
+        public int Volume { get; set; }
+        public int Mass { get; set; }
+        //  public int Hidden { get; set; }
+        // public int Health { get; set; }
+        // public string DescriptionToken { get; set; }
+        //public int Purchasable { get; set; }
+        //public int TierType { get; set; }
+        // public int TierLevel { get; set; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged(string name)
+        {
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+
     }
 
     /// <summary>
@@ -548,7 +568,9 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("SELECT entitydefaults.definition, entitydefaults.definitionname FROM entitydefaults JOIN aggregatevalues ON (aggregatevalues.definition = entitydefaults.definition) GROUP BY entitydefaults.definition,  entitydefaults.definitionname");
+                sqlCommand.Append(@"SELECT entitydefaults.definition, entitydefaults.definitionname, entitydefaults.mass, entitydefaults.volume, entitydefaults.options
+                FROM entitydefaults JOIN aggregatevalues ON (aggregatevalues.definition = entitydefaults.definition) 
+                GROUP BY entitydefaults.definition, entitydefaults.definitionname, entitydefaults.mass, entitydefaults.volume, entitydefaults.options");
                 command.CommandText = sqlCommand.ToString();
                 command.Connection = conn;
                 conn.Open();
@@ -559,12 +581,17 @@ namespace Perptool.db
                         EntityItems item = new EntityItems();
                         item.Name = Convert.ToString(reader["definitionname"]);
                         item.Definition = Convert.ToInt32(reader["definition"]);
+                        item.Options = Convert.ToString(reader["options"]);
+                        item.Volume = Convert.ToInt32(reader["volume"]);
+                        item.Mass = Convert.ToInt32(reader["mass"]);
                         list.Add(item);
                     }
                 }
             }
             return list;
         }
+
+
 
 
         public List<EntityItems> GetAllNPCLootableBots()

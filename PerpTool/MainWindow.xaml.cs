@@ -61,7 +61,7 @@ namespace PerpTool
             LootableBots = Entities.GetAllNPCLootableBots();
             LootableEntityDefaults = Entities.GetLootableEntities();
 
-
+            this.selectedEntity = new ObservableCollection<EntityItems>();
             this.DataContext = this;
         }
 
@@ -77,6 +77,21 @@ namespace PerpTool
         public NPCLoot Loot { get; set; }
 
         public List<EntityItems> EntityItems { get; set; }
+
+        private ObservableCollection<EntityItems> _selectedEntity;
+        public ObservableCollection<EntityItems> selectedEntity
+        {
+            get
+            {
+                return _selectedEntity;
+            }
+            set
+            {
+                _selectedEntity = value;
+                OnPropertyChanged("selectedEntity");
+            }
+        }
+
 
         private List<FieldValuesStuff> _valstuffs;
         public List<FieldValuesStuff> FieldValuesList
@@ -169,6 +184,8 @@ namespace PerpTool
         private void ComboBox_DropDownClosed(object sender, EventArgs e)
         {
             EntityItems item = (EntityItems)combo.SelectedItem;
+            this.selectedEntity.Clear();
+            this.selectedEntity.Add(item);
             this.currentSelection = item;
             if (item == null) { return; }
             FieldValuesList = AgValues.GetValuesForEntity(item.Definition);
@@ -371,13 +388,14 @@ namespace PerpTool
                         Loot.updateSelf(item);
                         sb.Append(Loot.Save());
                         sb.AppendLine();
-                    }else if(item.recordAction == DBAction.INSERT)
+                    }
+                    else if (item.recordAction == DBAction.INSERT)
                     {
                         Loot.updateSelf(item);
                         sb.Append(Loot.Insert());
                         sb.AppendLine();
                     }
-                    else if(item.recordAction == DBAction.DELETE)
+                    else if (item.recordAction == DBAction.DELETE)
                     {
 
                     }
