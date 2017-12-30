@@ -54,7 +54,25 @@
                     <Button Content="Save Changes" Margin="274,0,0,0" Click="Button_Click" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="80"/>
                 </StackPanel>
             </TabItem>
-            <TabItem Header="Character / Account Stuff">
+
+                <TabItem Header="Edit Bot Bonuses">
+                    <StackPanel Background="#FFE5E5E5">
+                    <ComboBox x:Name="bot_combo_dropdown" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="600" ItemsSource="{Binding BotItems}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="Bot_ComboBox_DropDownClosed"/>
+                        <DataGrid Margin="10,10,10,10" ItemsSource="{Binding BotBonusList}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Visible" Height="186" >
+                            <DataGrid.Columns>
+                            <DataGridTextColumn Header="FieldName" Width="*" Binding="{Binding aggFieldName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="ExtensionName" Width="*" Binding="{Binding extensionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="Bonus per level" Width="100" Binding="{Binding bonus}"/>
+                            <DataGridTextColumn Header="EffectEnchance?" Width="100" Binding="{Binding effectenhancer}"/>
+                        </DataGrid.Columns>
+                        </DataGrid>
+
+                    <Button Content="Save Changes" Margin="274,0,0,0" Click="Bot_Bonus_Save_Click" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="80"/>
+                    </StackPanel>
+                </TabItem>
+
+
+                <TabItem Header="Character / Account Stuff">
                 <Grid Background="#FFE5E5E5">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="202*"/>

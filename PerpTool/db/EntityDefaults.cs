@@ -693,6 +693,32 @@ namespace Perptool.db
             return list;
         }
 
+        public List<EntityItems> GetAllDistinctBotItems()
+        {
+            List<EntityItems> list = new List<EntityItems>();
+
+            SqlConnection conn = new SqlConnection(this.ConnString);
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append("SELECT DISTINCT dbo.entitydefaults.definitionname, dbo.entitydefaults.definition FROM dbo.entitydefaults JOIN dbo.chassisbonus on dbo.chassisbonus.definition = dbo.entitydefaults.definition GROUP BY entitydefaults.definition,  entitydefaults.definitionname");
+                command.CommandText = sqlCommand.ToString();
+                command.Connection = conn;
+                conn.Open();
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        EntityItems item = new EntityItems();
+                        item.Name = Convert.ToString(reader["definitionname"]);
+                        item.Definition = Convert.ToInt32(reader["definition"]);
+                        list.Add(item);
+                    }
+                }
+            }
+            return list;
+        }
+
         /// <summary>
         /// fires when properties are set.
         /// </summary>
