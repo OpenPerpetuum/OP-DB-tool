@@ -450,7 +450,7 @@ namespace Perptool.db
             {
                 StringBuilder sqlCommand = new StringBuilder();
                 sqlCommand.Append("Insert into entitydefaults ");
-                sqlCommand.Append("(`definition`, `definitionname`, `quantity`, `attributeflags`, `categoryflags`, `options`, `note`, `enabled`, `volume`, `mass`, `hidden`, `health`, `descriptiontoken`, `purchasable`, `tiertype`, `tierlevel`) ");
+                sqlCommand.Append("( definition ,  definitionname ,  quantity ,  attributeflags ,  categoryflags ,  options ,  note ,  enabled ,  volume ,  mass ,  hidden ,  health ,  descriptiontoken ,  purchasable ,  tiertype ,  tierlevel ) ");
                 sqlCommand.Append(" Values ");
                 sqlCommand.Append("(@definition, @definitionname, @quantity, @attributeflags, @categoryflags, @options, @note, @enabled, @volume, @mass, @hidden, @health, @descriptiontoken, @purchasable, @tiertype, @tierlevel) ");
 
@@ -489,7 +489,7 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE entitydefaults Set `definitionname`= @definitionname, `quantity`= @quantity, `attributeflags`= @attributeflags, `categoryflags`= @categoryflags, `options`= @options, `note`= @note, `enabled`= @enabled, `volume`= @volume, `mass`= @mass, `hidden`= @hidden, `health`= @health, `descriptiontoken`= @descriptiontoken, `purchasable`= @purchasable, `tiertype`= @tiertype, `tierlevel`= @tierlevel where definition = @definition");
+                sqlCommand.Append("UPDATE entitydefaults Set  definitionname = @definitionname,  quantity = @quantity,  attributeflags = @attributeflags,  categoryflags = @categoryflags,  options = @options,  note = @note,  enabled = @enabled,  volume = @volume,  mass = @mass,  hidden = @hidden,  health = @health,  descriptiontoken = @descriptiontoken,  purchasable = @purchasable,  tiertype = @tiertype,  tierlevel = @tierlevel where definition = @definition");
 
                 command.CommandText = sqlCommand.ToString();
 
@@ -558,6 +558,52 @@ namespace Perptool.db
 
                 conn.Dispose();
             }
+        }
+
+
+        public string SaveWithEntityItemChange(EntityItems item)
+        {
+            string query = "";
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append("UPDATE entitydefaults SET options=@options, volume=@volume, mass=@mass WHERE definition=@definition");
+
+                command.CommandText = sqlCommand.ToString();
+
+                command.Parameters.AddWithValue("@definition", item.Definition);
+                command.Parameters.AddWithValue("@options", item.Options);
+                command.Parameters.AddWithValue("@volume", item.Volume);
+                command.Parameters.AddWithValue("@mass", item.Mass);
+
+                SqlConnection conn = new SqlConnection(this.ConnString);
+                conn.Open();
+                command.Connection = conn;
+                command.ExecuteNonQuery();
+                conn.Close();
+
+                if (this.note == null)
+                {
+                    command.Parameters.AddWithValue("@note", string.Empty);
+                }
+                else
+                {
+                    command.Parameters.AddWithValue("@note", this.note);
+                }
+                query = command.CommandText;
+                foreach (SqlParameter p in command.Parameters)
+                {
+                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    {
+                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
+                    }
+                    else
+                    {
+                        query = query.Replace(p.ParameterName, p.Value.ToString());
+                    }
+                }
+            }
+            return query;
         }
 
         public List<EntityItems> GetEntitiesWithFields()

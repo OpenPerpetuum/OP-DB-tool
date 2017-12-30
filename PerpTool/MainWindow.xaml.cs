@@ -78,6 +78,8 @@ namespace PerpTool
 
         public List<EntityItems> EntityItems { get; set; }
 
+
+        //TODO hack, using observable collection for one item BAD
         private ObservableCollection<EntityItems> _selectedEntity;
         public ObservableCollection<EntityItems> selectedEntity
         {
@@ -170,9 +172,19 @@ namespace PerpTool
                         AgFields.formula = item.FieldFormula;
                         sb.AppendLine(AgFields.Save());
                     }
-                    Console.WriteLine(sb.ToString());
-                    File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + currentSelection.Name + ".sql", sb.ToString());
+
                 }
+
+                if (selectedEntity.Count == 1) //TODO hack -- impl object that is observable by gui framework
+                {
+                    foreach (EntityItems eItem in this.selectedEntity)
+                    {
+                        sb.AppendLine(Entities.SaveWithEntityItemChange(eItem));
+                    }
+                }
+
+                Console.WriteLine(sb.ToString());
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + currentSelection.Name + ".sql", sb.ToString());
                 MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
             }
             catch (Exception ex)
