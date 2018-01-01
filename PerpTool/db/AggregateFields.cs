@@ -311,7 +311,7 @@ namespace Perptool.db
                 using (SqlCommand command = new SqlCommand())
                 {
                     StringBuilder sqlCommand = new StringBuilder();
-                    sqlCommand.Append("SELECT * from aggregatefields Where id=@id");
+                    sqlCommand.Append("SELECT * from aggregatefields Where id=@id;");
                     command.CommandText = sqlCommand.ToString();
                     command.Parameters.AddWithValue("@id", agFieldID);
                     command.Connection = conn;
@@ -348,7 +348,7 @@ namespace Perptool.db
                 sqlCommand.Append("Insert into aggregatefields ");
                 sqlCommand.Append("(`id`, `name`, `formula`, `measurementunit`, `measurementmultiplier`, `measurementoffset`, `category`, `digits`, `moreisbetter`, `usedinconfig`, `note`) ");
                 sqlCommand.Append(" Values ");
-                sqlCommand.Append("(@id, @name, @formula, @measurementunit, @measurementmultiplier, @measurementoffset, @category, @digits, @moreisbetter, @usedinconfig, @note) ");
+                sqlCommand.Append("(@id, @name, @formula, @measurementunit, @measurementmultiplier, @measurementoffset, @category, @digits, @moreisbetter, @usedinconfig, @note) ;");
 
                 command.CommandText = sqlCommand.ToString();
 
@@ -381,7 +381,7 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE aggregatefields SET [name]=@SQLname, [formula]=@formula, [measurementunit]=@measurementunit, [measurementmultiplier]=@measurementmultiplier, [measurementoffset]=@measurementoffset, [category]=@category, [digits]=@digits, [moreisbetter]=@moreisbetter, [usedinconfig]=@usedinconfig, [note]=@note WHERE id = @id");
+                sqlCommand.Append("UPDATE aggregatefields SET [name]=@SQLname, [formula]=@formula, [measurementunit]=@measurementunit, [measurementmultiplier]=@measurementmultiplier, [measurementoffset]=@measurementoffset, [category]=@category, [digits]=@digits, [moreisbetter]=@moreisbetter, [usedinconfig]=@usedinconfig, [note]=@note WHERE id = @id;");
                 command.CommandText = sqlCommand.ToString();
                 command.Parameters.AddWithValue("@id", this.id);
                 command.Parameters.AddWithValue("@SQLname", this.name);

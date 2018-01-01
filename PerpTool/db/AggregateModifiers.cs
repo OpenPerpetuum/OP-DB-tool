@@ -127,7 +127,7 @@ namespace Perptool.db
                 sqlCommand.Append("Insert into aggregatemodifiers ");
                 sqlCommand.Append("(`categoryflag`, `basefield`, `modifierfield`) ");
                 sqlCommand.Append(" Values ");
-                sqlCommand.Append("(@categoryflag, @basefield, @modifierfield) ");
+                sqlCommand.Append("(@categoryflag, @basefield, @modifierfield) ;");
 
                 command.CommandText = sqlCommand.ToString();
 
@@ -151,7 +151,7 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE aggregatemodifiers Set `basefield`=@basefield, `modifierfield`=@modifierfield where `categoryflag`=@categoryflag and `@basefield`=@basefield and `modifierfield`=@modifierfield");
+                sqlCommand.Append("UPDATE aggregatemodifiers Set `basefield`=@basefield, `modifierfield`=@modifierfield where `categoryflag`=@categoryflag and `@basefield`=@basefield and `modifierfield`=@modifierfield;");
 
                 command.CommandText = sqlCommand.ToString();
 
@@ -167,39 +167,6 @@ namespace Perptool.db
             }
         }
 
-        ///// <summary>
-        ///// gets a record by its record id
-        ///// </summary>
-        ///// <param name='id number'>id number</param>
-        //public void GetById(int categoryflag)
-        //{
-        //    SqlConnection conn = new SqlConnection(this.ConnString);
-        //    using (SqlCommand command = new SqlCommand())
-        //    {
-        //        StringBuilder sqlCommand = new StringBuilder();
-        //        sqlCommand.Append("SELECT * from aggregatemodifiers Where categoryflag=@categoryflag");
-        //        command.CommandText = sqlCommand.ToString();
-        //        command.Parameters.AddWithValue("@categoryflag", categoryflag);
-        //        command.Connection = conn;
-        //        conn.Open();
-        //        using (SqlDataReader reader = command.ExecuteReader())
-        //        {
-        //            while (reader.Read())
-        //            {
-        //                this.categoryflag = Convert.ToInt32(reader["categoryflag"]);
-        //                this.basefield = Convert.ToInt32(reader["basefield"]);
-        //                this.modifierfield = Convert.ToInt32(reader["modifierfield"]);
-        //            }
-        //        }
-
-        //        conn.Dispose();
-        //    }
-        //}
-
-        /// <summary>
-        /// fires when properties are set.
-        /// </summary>
-        /// <param name='name'>name of property being changed</param>
         protected void OnPropertyChanged(string name)
         {
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
