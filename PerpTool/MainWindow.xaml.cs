@@ -26,12 +26,6 @@ namespace PerpTool
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
 
-        public class comboitems
-        {
-            int Definition { get; set; }
-            string Name { get; set; }
-        }
-
         private string Connstr = "Server=localhost\\PERPSQL;Database=perpetuumsa;Trusted_Connection=True;Pooling=True;Connection Timeout=30;Connection Lifetime=260;Connection Reset=True;Min Pool Size=20;Max Pool Size=60;";
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -53,6 +47,7 @@ namespace PerpTool
             ZoneTbl = new Zones(Connstr);
             Spawn = new NPCSpawn(Connstr);
             Loot = new NPCLoot(Connstr);
+            BotBonus = new ChassisBonus(Connstr);
 
 
             EntityItems = Entities.GetEntitiesWithFields();
@@ -60,6 +55,9 @@ namespace PerpTool
             SpawnList = Spawn.GetAllSpawns();
             LootableBots = Entities.GetAllNPCLootableBots();
             LootableEntityDefaults = Entities.GetLootableEntities();
+            BotItems = Entities.GetAllDistinctBotItems();
+
+            this.selectedEntity = new ObservableCollection<EntityItems>();
 
 
             this.DataContext = this;
@@ -75,8 +73,27 @@ namespace PerpTool
         public Zones ZoneTbl { get; set; }
         public NPCSpawn Spawn { get; set; }
         public NPCLoot Loot { get; set; }
+        private ChassisBonus BotBonus { get; set; }
+        public List<EntityItems> BotItems { get; set; }
 
         public List<EntityItems> EntityItems { get; set; }
+
+
+        //TODO hack, using observable collection for one item BAD
+        private ObservableCollection<EntityItems> _selectedEntity;
+        public ObservableCollection<EntityItems> selectedEntity
+        {
+            get
+            {
+                return _selectedEntity;
+            }
+            set
+            {
+                _selectedEntity = value;
+                OnPropertyChanged("selectedEntity");
+            }
+        }
+
 
         private List<FieldValuesStuff> _valstuffs;
         public List<FieldValuesStuff> FieldValuesList
@@ -134,6 +151,20 @@ namespace PerpTool
             }
         }
 
+        private ObservableCollection<BotBonusObj> _botbonuslist;
+        public ObservableCollection<BotBonusObj> BotBonusList
+        {
+            get
+            {
+                return _botbonuslist;
+            }
+            set
+            {
+                _botbonuslist = value;
+                OnPropertyChanged("BotBonusList");
+            }
+        }
+
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
@@ -155,9 +186,19 @@ namespace PerpTool
                         AgFields.formula = item.FieldFormula;
                         sb.AppendLine(AgFields.Save());
                     }
-                    Console.WriteLine(sb.ToString());
-                    File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + currentSelection.Name + ".sql", sb.ToString());
+
                 }
+
+                if (selectedEntity.Count == 1) //TODO hack -- impl object that is observable by gui framework
+                {
+                    foreach (EntityItems eItem in this.selectedEntity)
+                    {
+                        sb.AppendLine(Entities.SaveWithEntityItemChange(eItem));
+                    }
+                }
+
+                Console.WriteLine(sb.ToString());
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + currentSelection.Name + ".sql", sb.ToString());
                 MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
             }
             catch (Exception ex)
@@ -169,6 +210,8 @@ namespace PerpTool
         private void ComboBox_DropDownClosed(object sender, EventArgs e)
         {
             EntityItems item = (EntityItems)combo.SelectedItem;
+            this.selectedEntity.Clear();
+            this.selectedEntity.Add(item);
             this.currentSelection = item;
             if (item == null) { return; }
             FieldValuesList = AgValues.GetValuesForEntity(item.Definition);
@@ -188,11 +231,6 @@ namespace PerpTool
         {
             EntityItems item = (EntityItems)npcloot.SelectedItem;
             this.currentRowAddItem = item;
-        }
-
-        private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
         }
 
         private List<NPCSpawn> _spawns;
@@ -371,15 +409,16 @@ namespace PerpTool
                         Loot.updateSelf(item);
                         sb.Append(Loot.Save());
                         sb.AppendLine();
-                    }else if(item.recordAction == DBAction.INSERT)
+                    }
+                    else if (item.recordAction == DBAction.INSERT)
                     {
                         Loot.updateSelf(item);
                         sb.Append(Loot.Insert());
                         sb.AppendLine();
                     }
-                    else if(item.recordAction == DBAction.DELETE)
+                    else if (item.recordAction == DBAction.DELETE)
                     {
-
+                        //TODO
                     }
                 }
                 File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + currentNPCLootableBot.Name + ".sql", sb.ToString());
@@ -405,6 +444,40 @@ namespace PerpTool
                 MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
             }
 
+        }
+
+
+
+        public EntityItems currentBotComponentSelection;
+        private void Bot_ComboBox_DropDownClosed(object sender, EventArgs e)
+        {
+            EntityItems item = (EntityItems)bot_combo_dropdown.SelectedItem;
+            this.currentBotComponentSelection = item;
+            if (item == null) { return; }
+            this.BotBonusList = BotBonus.getByEntity(item.Definition);
+        }
+
+        private void Bot_Bonus_Save_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach (BotBonusObj bonus in this.BotBonusList)
+                {
+                    sb.AppendLine(this.BotBonus.Save(bonus));
+                }
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + currentBotComponentSelection.Name + ".sql", sb.ToString());
+                MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
+            }
+
+        }
+
+        private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
         }
     }
 }

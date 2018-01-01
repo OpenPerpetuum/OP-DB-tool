@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:PerpTool"
         xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2" x:Class="PerpTool.MainWindow"
         mc:Ignorable="d"
-        Title="The Perpetuum DB Editing Tool - AWESOME Edition" Height="454" Width="655.5" ResizeMode="CanResize">
+        Title="The Perpetuum DB Editing Tool - AWESOME Edition" Height="Auto" Width="655.5" ResizeMode="CanResize">
 
     <Window.Resources>
         <Style x:Key="ColumnHeaderGripperStyle" TargetType="{x:Type Thumb}">
@@ -29,9 +29,18 @@
     <Grid>
         <TabControl Margin="10,0,9.667,9.667">
             <TabItem Header="Edit Item Properties">
-                <Grid Background="#FFE5E5E5">
+                <StackPanel Background="#FFE5E5E5">
                     <ComboBox x:Name="combo" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="600" ItemsSource="{Binding EntityItems}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="ComboBox_DropDownClosed"/>
-                    <DataGrid Margin="10,61,10,36" ItemsSource="{Binding FieldValuesList}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" >
+                    <DataGrid Margin="10,10,10,10" ItemsSource="{Binding selectedEntity}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Visible" Height="Auto" >
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID" Width="55" Binding="{Binding Definition}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="Name" Width="*" Binding="{Binding Name}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="Mass" Width="55" Binding="{Binding Mass}" />
+                            <DataGridTextColumn Header="Volume" Width="55" Binding="{Binding Volume}"/>
+                            <DataGridTextColumn Header="Options" Width="*" Binding="{Binding Options}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <DataGrid Margin="10,10,10,10" ItemsSource="{Binding FieldValuesList}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Visible" Height="Auto" >
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Field" Width="250" Binding="{Binding FieldName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
                             <DataGridTextColumn Header="Value" Width="55" Binding="{Binding FieldValue}"/>
@@ -41,10 +50,29 @@
                             <DataGridTextColumn Header="Formula" Width="55" Binding="{Binding FieldFormula}"/>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <Button Content="Save Changes" Margin="274,0,0,0" Click="Button_Click" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="75"/>
-                </Grid>
+
+                    <Button Content="Save Changes" Margin="274,0,0,0" Click="Button_Click" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="80"/>
+                </StackPanel>
             </TabItem>
-            <TabItem Header="Character / Account Stuff">
+
+                <TabItem Header="Edit Bot Bonuses">
+                    <StackPanel Background="#FFE5E5E5">
+                    <ComboBox x:Name="bot_combo_dropdown" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="600" ItemsSource="{Binding BotItems}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="Bot_ComboBox_DropDownClosed"/>
+                        <DataGrid Margin="10,10,10,10" ItemsSource="{Binding BotBonusList}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Visible" Height="186" >
+                            <DataGrid.Columns>
+                            <DataGridTextColumn Header="FieldName" Width="*" Binding="{Binding aggFieldName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="ExtensionName" Width="*" Binding="{Binding extensionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="Bonus per level" Width="100" Binding="{Binding bonus}"/>
+                            <DataGridTextColumn Header="EffectEnchance?" Width="100" Binding="{Binding effectenhancer}"/>
+                        </DataGrid.Columns>
+                        </DataGrid>
+
+                    <Button Content="Save Changes" Margin="274,0,0,0" Click="Bot_Bonus_Save_Click" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="80"/>
+                    </StackPanel>
+                </TabItem>
+
+
+                <TabItem Header="Character / Account Stuff">
                 <Grid Background="#FFE5E5E5">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="202*"/>

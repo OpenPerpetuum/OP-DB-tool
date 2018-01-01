@@ -12,10 +12,30 @@ namespace Perptool.db
 
     // THI IS SHIT. don't hate!
 
-    public class EntityItems
+    public class EntityItems : INotifyPropertyChanged
     {
         public int Definition { get; set; }
         public string Name { get; set; }
+        public string Options { get; set; }
+        // public string Note { get; set; }
+        // public int Enabled { get; set; }
+        public int Volume { get; set; }
+        public int Mass { get; set; }
+        //  public int Hidden { get; set; }
+        // public int Health { get; set; }
+        // public string DescriptionToken { get; set; }
+        //public int Purchasable { get; set; }
+        //public int TierType { get; set; }
+        // public int TierLevel { get; set; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged(string name)
+        {
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+
     }
 
     /// <summary>
@@ -430,7 +450,7 @@ namespace Perptool.db
             {
                 StringBuilder sqlCommand = new StringBuilder();
                 sqlCommand.Append("Insert into entitydefaults ");
-                sqlCommand.Append("(`definition`, `definitionname`, `quantity`, `attributeflags`, `categoryflags`, `options`, `note`, `enabled`, `volume`, `mass`, `hidden`, `health`, `descriptiontoken`, `purchasable`, `tiertype`, `tierlevel`) ");
+                sqlCommand.Append("( definition ,  definitionname ,  quantity ,  attributeflags ,  categoryflags ,  options ,  note ,  enabled ,  volume ,  mass ,  hidden ,  health ,  descriptiontoken ,  purchasable ,  tiertype ,  tierlevel ) ");
                 sqlCommand.Append(" Values ");
                 sqlCommand.Append("(@definition, @definitionname, @quantity, @attributeflags, @categoryflags, @options, @note, @enabled, @volume, @mass, @hidden, @health, @descriptiontoken, @purchasable, @tiertype, @tierlevel) ");
 
@@ -469,7 +489,7 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE entitydefaults Set `definitionname`= @definitionname, `quantity`= @quantity, `attributeflags`= @attributeflags, `categoryflags`= @categoryflags, `options`= @options, `note`= @note, `enabled`= @enabled, `volume`= @volume, `mass`= @mass, `hidden`= @hidden, `health`= @health, `descriptiontoken`= @descriptiontoken, `purchasable`= @purchasable, `tiertype`= @tiertype, `tierlevel`= @tierlevel where definition = @definition");
+                sqlCommand.Append("UPDATE entitydefaults Set  definitionname = @definitionname,  quantity = @quantity,  attributeflags = @attributeflags,  categoryflags = @categoryflags,  options = @options,  note = @note,  enabled = @enabled,  volume = @volume,  mass = @mass,  hidden = @hidden,  health = @health,  descriptiontoken = @descriptiontoken,  purchasable = @purchasable,  tiertype = @tiertype,  tierlevel = @tierlevel where definition = @definition");
 
                 command.CommandText = sqlCommand.ToString();
 
@@ -540,6 +560,52 @@ namespace Perptool.db
             }
         }
 
+
+        public string SaveWithEntityItemChange(EntityItems item)
+        {
+            string query = "";
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append("UPDATE entitydefaults SET options=@options, volume=@volume, mass=@mass WHERE definition=@definition");
+
+                command.CommandText = sqlCommand.ToString();
+
+                command.Parameters.AddWithValue("@definition", item.Definition);
+                command.Parameters.AddWithValue("@options", item.Options);
+                command.Parameters.AddWithValue("@volume", item.Volume);
+                command.Parameters.AddWithValue("@mass", item.Mass);
+
+                SqlConnection conn = new SqlConnection(this.ConnString);
+                conn.Open();
+                command.Connection = conn;
+                command.ExecuteNonQuery();
+                conn.Close();
+
+                if (this.note == null)
+                {
+                    command.Parameters.AddWithValue("@note", string.Empty);
+                }
+                else
+                {
+                    command.Parameters.AddWithValue("@note", this.note);
+                }
+                query = command.CommandText;
+                foreach (SqlParameter p in command.Parameters)
+                {
+                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    {
+                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
+                    }
+                    else
+                    {
+                        query = query.Replace(p.ParameterName, p.Value.ToString());
+                    }
+                }
+            }
+            return query;
+        }
+
         public List<EntityItems> GetEntitiesWithFields()
         {
             List<EntityItems> list = new List<EntityItems>();
@@ -548,7 +614,9 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("SELECT entitydefaults.definition, entitydefaults.definitionname FROM entitydefaults JOIN aggregatevalues ON (aggregatevalues.definition = entitydefaults.definition) GROUP BY entitydefaults.definition,  entitydefaults.definitionname");
+                sqlCommand.Append(@"SELECT entitydefaults.definition, entitydefaults.definitionname, entitydefaults.mass, entitydefaults.volume, entitydefaults.options
+                FROM entitydefaults JOIN aggregatevalues ON (aggregatevalues.definition = entitydefaults.definition) 
+                GROUP BY entitydefaults.definition, entitydefaults.definitionname, entitydefaults.mass, entitydefaults.volume, entitydefaults.options");
                 command.CommandText = sqlCommand.ToString();
                 command.Connection = conn;
                 conn.Open();
@@ -559,12 +627,17 @@ namespace Perptool.db
                         EntityItems item = new EntityItems();
                         item.Name = Convert.ToString(reader["definitionname"]);
                         item.Definition = Convert.ToInt32(reader["definition"]);
+                        item.Options = Convert.ToString(reader["options"]);
+                        item.Volume = Convert.ToInt32(reader["volume"]);
+                        item.Mass = Convert.ToInt32(reader["mass"]);
                         list.Add(item);
                     }
                 }
             }
             return list;
         }
+
+
 
 
         public List<EntityItems> GetAllNPCLootableBots()
@@ -603,6 +676,32 @@ namespace Perptool.db
             {
                 StringBuilder sqlCommand = new StringBuilder();
                 sqlCommand.Append("SELECT DISTINCT entitydefaults.definition, definitionname FROM dbo.entitydefaults JOIN npcloot ON npcloot.lootdefinition = entitydefaults.definition GROUP BY entitydefaults.definition, entitydefaults.definitionname");
+                command.CommandText = sqlCommand.ToString();
+                command.Connection = conn;
+                conn.Open();
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        EntityItems item = new EntityItems();
+                        item.Name = Convert.ToString(reader["definitionname"]);
+                        item.Definition = Convert.ToInt32(reader["definition"]);
+                        list.Add(item);
+                    }
+                }
+            }
+            return list;
+        }
+
+        public List<EntityItems> GetAllDistinctBotItems()
+        {
+            List<EntityItems> list = new List<EntityItems>();
+
+            SqlConnection conn = new SqlConnection(this.ConnString);
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append("SELECT DISTINCT dbo.entitydefaults.definitionname, dbo.entitydefaults.definition FROM dbo.entitydefaults JOIN dbo.chassisbonus on dbo.chassisbonus.definition = dbo.entitydefaults.definition GROUP BY entitydefaults.definition,  entitydefaults.definitionname");
                 command.CommandText = sqlCommand.ToString();
                 command.Connection = conn;
                 conn.Open();
