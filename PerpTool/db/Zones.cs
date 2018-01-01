@@ -791,7 +791,7 @@ namespace Perptool.db
                             tmp.zoneport = Convert.ToInt32(reader["zoneport"]);
                             tmp.isinstance = Convert.ToInt32(reader["isinstance"]);
                             tmp.enabled = Convert.ToInt32(reader["enabled"]);
-                            tmp.spawnid = Convert.ToInt32(reader["spawnid"]);
+                            if (reader["spawnid"] != DBNull.Value) { tmp.spawnid = Convert.ToInt32(reader["spawnid"]); }
                             tmp.plantruleset = Convert.ToInt32(reader["plantruleset"]);
                             tmp.pprotected = Convert.ToInt32(reader["protected"]);
                             tmp.raceid = Convert.ToInt32(reader["raceid"]);
