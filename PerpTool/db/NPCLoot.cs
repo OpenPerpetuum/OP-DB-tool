@@ -194,7 +194,7 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("SELECT * FROM npcloot WHERE id=@id");
+                sqlCommand.Append("SELECT * FROM npcloot WHERE id=@id;");
                 command.CommandText = sqlCommand.ToString();
                 command.Parameters.AddWithValue("@id", id);
                 command.Connection = conn;
@@ -239,7 +239,7 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("SELECT * FROM npcloot WHERE id=@id");
+                sqlCommand.Append("SELECT * FROM npcloot WHERE id=@id;");
                 command.CommandText = sqlCommand.ToString();
                 command.Parameters.AddWithValue("@id", id);
                 command.Connection = conn;
@@ -274,7 +274,7 @@ namespace Perptool.db
                 sqlCommand.Append("Insert into npcloot ");
                 sqlCommand.Append("(id, definition, lootdefinition, quantity, probability, repackaged, dontdamage, minquantity) ");
                 sqlCommand.Append(" Values ");
-                sqlCommand.Append("(@id, @definition, @lootdefinition, @quantity, @probability, @repackaged, @dontdamage, @minquantity) ");
+                sqlCommand.Append("(@id, @definition, @lootdefinition, @quantity, @probability, @repackaged, @dontdamage, @minquantity) ;");
 
                 command.CommandText = sqlCommand.ToString();
 
@@ -309,7 +309,7 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE npcloot SET [definition]=@definition, [lootdefinition]=@lootdefinition, [quantity]=@quantity, [probability]=@probability, [repackaged]=@repackaged, [dontdamage]=@dontdamage, [minquantity]=@minquantity WHERE [id]=@id");
+                sqlCommand.Append("UPDATE npcloot SET [definition]=@definition, [lootdefinition]=@lootdefinition, [quantity]=@quantity, [probability]=@probability, [repackaged]=@repackaged, [dontdamage]=@dontdamage, [minquantity]=@minquantity WHERE [id]=@id;");
                 command.CommandText = sqlCommand.ToString();
 
                 command.Parameters.AddWithValue("@id", this.id);
@@ -349,7 +349,7 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("INSERT INTO [dbo].[npcloot] ([definition],[lootdefinition],[quantity],[probability],[repackaged],[dontdamage],[minquantity]) VALUES(@definition, @lootdefinition, @quantity, @probability, @repackaged,@dontdamage, @minquantity)");
+                sqlCommand.Append("INSERT INTO [dbo].[npcloot] ([definition],[lootdefinition],[quantity],[probability],[repackaged],[dontdamage],[minquantity]) VALUES(@definition, @lootdefinition, @quantity, @probability, @repackaged,@dontdamage, @minquantity);");
                 command.CommandText = sqlCommand.ToString();
 
                 command.Parameters.AddWithValue("@definition", this.definition);
@@ -391,7 +391,7 @@ namespace Perptool.db
                 using (SqlCommand command = new SqlCommand())
                 {
                     StringBuilder sqlCommand = new StringBuilder();
-                    sqlCommand.Append("SELECT dbo.entitydefaults.definitionname, npcloot.id as npclootID, npcloot.* FROM dbo.npcloot JOIN dbo.entitydefaults on npcloot.lootdefinition = entitydefaults.definition WHERE npcloot.definition=@definition ");
+                    sqlCommand.Append("SELECT dbo.entitydefaults.definitionname, npcloot.id as npclootID, npcloot.* FROM dbo.npcloot JOIN dbo.entitydefaults on npcloot.lootdefinition = entitydefaults.definition WHERE npcloot.definition=@definition ;");
                     command.Parameters.AddWithValue("@definition", npcBotDef);
                     command.CommandText = sqlCommand.ToString();
                     command.Connection = conn;

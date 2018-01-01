@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:PerpTool"
         xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2" x:Class="PerpTool.MainWindow"
         mc:Ignorable="d"
-        Title="The Perpetuum DB Editing Tool - AWESOME Edition" Height="Auto" Width="655.5" ResizeMode="CanResize">
+        Title="The OpenPerpetuum DB Editing Tool - AWESOME Edition" Height="610" Width="666" ResizeMode="CanResize">
 
     <Window.Resources>
         <Style x:Key="ColumnHeaderGripperStyle" TargetType="{x:Type Thumb}">
@@ -26,9 +26,9 @@
         </Style>
     </Window.Resources>
 
-    <Grid>
-        <TabControl Margin="10,0,9.667,9.667">
-            <TabItem Header="Edit Item Properties">
+    <Grid Margin="0,0,0,16">
+        <TabControl Margin="10,0">
+            <TabItem Header="EntityDefault Editor">
                 <StackPanel Background="#FFE5E5E5">
                     <ComboBox x:Name="combo" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="600" ItemsSource="{Binding EntityItems}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="ComboBox_DropDownClosed"/>
                     <DataGrid Margin="10,10,10,10" ItemsSource="{Binding selectedEntity}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Visible" Height="Auto" >
@@ -55,24 +55,24 @@
                 </StackPanel>
             </TabItem>
 
-                <TabItem Header="Edit Bot Bonuses">
-                    <StackPanel Background="#FFE5E5E5">
+            <TabItem Header="Bot Bonuses">
+                <StackPanel Background="#FFE5E5E5">
                     <ComboBox x:Name="bot_combo_dropdown" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="600" ItemsSource="{Binding BotItems}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="Bot_ComboBox_DropDownClosed"/>
-                        <DataGrid Margin="10,10,10,10" ItemsSource="{Binding BotBonusList}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Visible" Height="186" >
-                            <DataGrid.Columns>
+                    <DataGrid Margin="10,10,10,10" ItemsSource="{Binding BotBonusList}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Visible" Height="186" >
+                        <DataGrid.Columns>
                             <DataGridTextColumn Header="FieldName" Width="*" Binding="{Binding aggFieldName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
                             <DataGridTextColumn Header="ExtensionName" Width="*" Binding="{Binding extensionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
                             <DataGridTextColumn Header="Bonus per level" Width="100" Binding="{Binding bonus}"/>
                             <DataGridTextColumn Header="EffectEnchance?" Width="100" Binding="{Binding effectenhancer}"/>
                         </DataGrid.Columns>
-                        </DataGrid>
+                    </DataGrid>
 
                     <Button Content="Save Changes" Margin="274,0,0,0" Click="Bot_Bonus_Save_Click" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="80"/>
-                    </StackPanel>
-                </TabItem>
+                </StackPanel>
+            </TabItem>
 
 
-                <TabItem Header="Character / Account Stuff">
+            <TabItem Header="Character / Account Stuff">
                 <Grid Background="#FFE5E5E5">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="202*"/>
@@ -129,7 +129,7 @@
                 </Grid>
             </TabItem>
 
-            <TabItem Header="Edit Loot Tables">
+            <TabItem Header="NPC Loot Tables">
                 <Grid Background="#FFE5E5E5">
                     <ComboBox x:Name="npclootcombo" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="600" ItemsSource="{Binding LootableBots}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="ComboBox_DropDownClosed_LootableNPCs"/>
                     <DataGrid Margin="10,61,10,31" ItemsSource="{Binding loots}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" >
@@ -146,6 +146,123 @@
                     <ComboBox x:Name="npcloot" HorizontalAlignment="Left" VerticalAlignment="Bottom"  Margin="138,0,0,0"  Width="350" Height="26" ItemsSource="{Binding LootableEntityDefaults}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="ComboBox_DropDownClosed_NPCLootableDefs"/>
                     <Button Content="Add new row" Margin="10,359,0,0" Click="NPC_Loot_Add_Row_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100"/>
                 </Grid>
+            </TabItem>
+
+            <TabItem Header="NPC Templates">
+                <StackPanel Background="#FFE5E5E5" >
+                    <ComboBox x:Name="npctemplatecombo" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="600" ItemsSource="{Binding NPCTemplates}" DisplayMemberPath="name" SelectedValuePath="id" DropDownClosed="ComboBox_DropDownClosed_NPCTemplates"/>
+                    <DataGrid Margin="10,10,10,10" ItemsSource="{Binding BotTemplate}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto" >
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Name" Width="*" Binding="{Binding recordName}"/>
+                            <DataGridTextColumn Header="Bot" Width="*" Binding="{Binding robotName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="Head" Width="*" Binding="{Binding headName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="Chassis" Width="*" Binding="{Binding chassisName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="Legs" Width="*" Binding="{Binding legName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="Cargo" Width="*" Binding="{Binding containerName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="Note" Width="*" Binding="{Binding recordNote}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <DataGrid  x:Name="head" Margin="10,10,10,10" ItemsSource="{Binding Path=BotTemplate[0].headModules}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Definition" Width="*" Binding="{Binding definitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="Slot" Width="*" Binding="{Binding slot}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="AmmoDefinition" Width="*" Binding="{Binding ammoDefinitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="AmmoQuantity" Width="*" Binding="{Binding ammoQuantity}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <DataGrid  x:Name="chassis"  Margin="10,10,10,10" ItemsSource="{Binding Path=BotTemplate[0].chassisModules}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Definition" Width="*" Binding="{Binding definitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="Slot" Width="*" Binding="{Binding slot}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="AmmoDefinition" Width="*" Binding="{Binding ammoDefinitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="AmmoQuantity" Width="*" Binding="{Binding ammoQuantity}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <DataGrid  x:Name="leg" Margin="10,10,10,10" ItemsSource="{Binding Path=BotTemplate[0].legModules}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Definition" Width="*" Binding="{Binding definitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="Slot" Width="*" Binding="{Binding slot}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="AmmoDefinition" Width="*" Binding="{Binding ammoDefinitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="AmmoQuantity" Width="*" Binding="{Binding ammoQuantity}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <DataGrid x:Name="items" Margin="10,10,10,10" ItemsSource="{Binding Path=BotTemplate[0].items}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Definition" Width="*" Binding="{Binding definitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                            <DataGridTextColumn Header="Quantity" Width="*" Binding="{Binding quantity}"/>
+                            <DataGridTextColumn Header="Repackaged" Width="*" Binding="{Binding repackaged}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <Grid>
+                        <Label Content="Module Selection"  Margin="5,105,519,-105"/>
+                        <ComboBox x:Name="moduledropdown" Margin="118,105,141,-95" Height="26" ItemsSource="{Binding ModuleList}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="ComboBox_DropDownClosed_ModuleDef"/>
+                        <Label Content="Ammo Selection"  Margin="5,131,519,-131" />
+                        <ComboBox x:Name="ammodropdown" Margin="118,136,141,-126" Height="26" ItemsSource="{Binding AmmoList}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="ComboBox_DropDownClosed_AmmoDef"/>
+                        <Button Content="Add Module To Head" Margin="239,167,238,-157" Click="Add_To_Head_Click" Width="155"/>
+                        <Button Content="Add Module To Chassis" Margin="239,192,238,-182" Click="Add_To_Chassis_Click" Width="155"/>
+                        <Button Content="Add Module To Leg" Margin="238,217,238,-207" Click="Add_To_Leg_Click" Width="155"/>
+                        <Button Content="Remove Module To Head" Margin="17,167,460,-157" Click="Remove_To_Head_Click" Width="155"/>
+                        <Button Content="Remove Module To Chassis" Margin="17,192,460,-182" Click="Remove_To_Chassis_Click" Width="155"/>
+                        <Button Content="Remove Module To Leg" Margin="17,217,460,-207" Click="Remove_To_Leg_Click" Width="155"/>
+                        <Button Content="Save Changes" Margin="510,217,22,-207" Click="NPCTemplate_Save_Click" Width="100"/>
+                    </Grid>
+                </StackPanel>
+
+            </TabItem>
+
+
+            <TabItem Header="NPC Templates Relations">
+                <StackPanel Background="#FFE5E5E5" >
+                    <ComboBox x:Name="npctemplaterelation" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="600" ItemsSource="{Binding NPCEntities}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="ComboBox_DropDownClosed_NPCTemplateRelations"/>
+                    <DataGrid Margin="10,10,10,10" ItemsSource="{Binding NPCTemplateRelationList}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto" >
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="EntityName" Width="*" Binding="{Binding definitionname}"/>
+                            <DataGridTextColumn Header="TemplateName" Width="*" Binding="{Binding templatename}"/>
+                            <DataGridTextColumn Header="Race" Width="*" Binding="{Binding raceid}"/>
+                            <DataGridTextColumn Header="Reward EP" Width="*" Binding="{Binding killep}"/>
+                            <DataGridTextColumn Header="MissionLevel" Width="*" Binding="{Binding missionlevel}"/>
+                            <DataGridTextColumn Header="Level Override" Width="*" Binding="{Binding missionleveloverride}"/>
+                            <DataGridTextColumn Header="Note" Width="*" Binding="{Binding note}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+
+                    <Grid>
+                        <Label Content="Template Selection"  Margin="2,57,509,-57" />
+                        <ComboBox x:Name="npctemplaterelation_change" Margin="123,62,46,-52" Height="26" ItemsSource="{Binding NPCTemplates}" DisplayMemberPath="name" SelectedValuePath="id" DropDownClosed="ComboBox_DropDownClosed_NPCTemplateRelationEdit"/>
+                        <Button Content="Change Template of Relation" Margin="123,119,332,-114" Click="ChangeTemplateClick"/>
+                        <Button Content="Save Changes" Margin="123,179,399,-169" Click="NPCTemplateRelation_Save_Click"/>
+                        <!--TODO<Button Content="Save New Record" Margin="123,235,399,-225" Click="NPCTemplateRelation_Save_New_Click"/>-->
+                    </Grid>
+                </StackPanel>
+
+            </TabItem>
+
+            <TabItem Header="NPC Groups">
+                <StackPanel Background="#FFE5E5E5" >
+                    <ComboBox x:Name="npcgroupcombo" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="600" ItemsSource="{Binding AllNPCPresences}" DisplayMemberPath="name" SelectedValuePath="id" DropDownClosed="ComboBox_DropDownClosed_NPCPresence"/>
+                    <DataGrid Margin="10,10,10,10" ItemsSource="{Binding SelectedNPCPresence}" AutoGenerateColumns="True" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto" >
+                        <DataGrid.Columns>
+
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <DataGrid x:Name="flockgrid" Margin="10,10,10,10" ItemsSource="{Binding NPCFlockList}" AutoGenerateColumns="True" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto" >
+                        <DataGrid.Columns>
+
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+
+                    <Grid>
+                        <ComboBox x:Name="editflockNPCdef" ItemsSource="{Binding NPCEntities}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="ComboBox_DropDownClosed_NPCDef_forFlock" Margin="10,0,0,47" HorizontalAlignment="Left" Width="336" Height="22" VerticalAlignment="Bottom"/>
+                        <Button Content="Change Flock NPC Def" Margin="407,0,0,47" Click="NPCFlock_Change_NPC" HorizontalAlignment="Left" Width="161" Height="22" VerticalAlignment="Bottom"/>
+
+                        <Button Content="Save Changes" Margin="458,0,0,0" Click="NPCPresence_Save" Height="22" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="110"/>
+                    </Grid>
+                </StackPanel>
+
             </TabItem>
 
 

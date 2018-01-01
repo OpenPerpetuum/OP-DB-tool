@@ -17,16 +17,8 @@ namespace Perptool.db
         public int Definition { get; set; }
         public string Name { get; set; }
         public string Options { get; set; }
-        // public string Note { get; set; }
-        // public int Enabled { get; set; }
-        public int Volume { get; set; }
-        public int Mass { get; set; }
-        //  public int Hidden { get; set; }
-        // public int Health { get; set; }
-        // public string DescriptionToken { get; set; }
-        //public int Purchasable { get; set; }
-        //public int TierType { get; set; }
-        // public int TierLevel { get; set; }
+        public decimal Volume { get; set; }
+        public decimal Mass { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -131,6 +123,13 @@ namespace Perptool.db
         public EntityDefaults(string connectionString)
         {
             this.ConnString = connectionString;
+        }
+
+        //Constructor overload to get Entity on creation
+        public EntityDefaults(string connString, int definition)
+        {
+            this.ConnString = connString;
+            this.GetById(definition);
         }
 
         /// <summary>
@@ -489,7 +488,7 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE entitydefaults Set  definitionname = @definitionname,  quantity = @quantity,  attributeflags = @attributeflags,  categoryflags = @categoryflags,  options = @options,  note = @note,  enabled = @enabled,  volume = @volume,  mass = @mass,  hidden = @hidden,  health = @health,  descriptiontoken = @descriptiontoken,  purchasable = @purchasable,  tiertype = @tiertype,  tierlevel = @tierlevel where definition = @definition");
+                sqlCommand.Append("UPDATE entitydefaults Set  definitionname = @definitionname,  quantity = @quantity,  attributeflags = @attributeflags,  categoryflags = @categoryflags,  options = @options,  note = @note,  enabled = @enabled,  volume = @volume,  mass = @mass,  hidden = @hidden,  health = @health,  descriptiontoken = @descriptiontoken,  purchasable = @purchasable,  tiertype = @tiertype,  tierlevel = @tierlevel where definition = @definition;");
 
                 command.CommandText = sqlCommand.ToString();
 
@@ -528,7 +527,7 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("SELECT * from entitydefaults Where definition=@definition");
+                sqlCommand.Append("SELECT * from entitydefaults Where definition=@definition;");
                 command.CommandText = sqlCommand.ToString();
                 command.Parameters.AddWithValue("@definition", definition);
                 command.Connection = conn;
@@ -555,11 +554,97 @@ namespace Perptool.db
                         this.tierlevel = Convert.ToInt32(reader["tierlevel"]);
                     }
                 }
-
                 conn.Dispose();
             }
         }
 
+        public EntityItems GetEntityByID(int definition)
+        {
+            EntityItems item = new EntityItems();
+            SqlConnection conn = new SqlConnection(this.ConnString);
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append("SELECT * from entitydefaults Where definition=@definition;");
+                command.CommandText = sqlCommand.ToString();
+                command.Parameters.AddWithValue("@definition", definition);
+                command.Connection = conn;
+                conn.Open();
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        item.Definition = Convert.ToInt32(reader["definition"]);
+                        item.Name = Convert.ToString(reader["definitionname"]);
+                        item.Options = Convert.ToString(reader["options"]);
+                        item.Volume = Convert.ToDecimal(reader["volume"]);
+                        item.Mass = Convert.ToDecimal(reader["mass"]);
+                    }
+                }
+                conn.Dispose();
+            }
+            return item;
+        }
+
+        public List<EntityItems> GetAllModules()
+        {
+            List<EntityItems> list = new List<EntityItems>();
+            SqlConnection conn = new SqlConnection(this.ConnString);
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append("SELECT * FROM entitydefaults WHERE options like '%#module%';");
+                command.CommandText = sqlCommand.ToString();
+                command.Parameters.AddWithValue("@definition", definition);
+                command.Connection = conn;
+                conn.Open();
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        EntityItems item = new EntityItems();
+                        item.Definition = Convert.ToInt32(reader["definition"]);
+                        item.Name = Convert.ToString(reader["definitionname"]);
+                        item.Options = Convert.ToString(reader["options"]);
+                        item.Volume = Convert.ToDecimal(reader["volume"]);
+                        item.Mass = Convert.ToDecimal(reader["mass"]);
+                        list.Add(item);
+                    }
+                }
+                conn.Dispose();
+            }
+            return list;
+        }
+
+        public List<EntityItems> GetAllAmmo()
+        {
+            List<EntityItems> list = new List<EntityItems>();
+            SqlConnection conn = new SqlConnection(this.ConnString);
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append("SELECT * FROM entitydefaults WHERE definitionname like '%ammo%';");
+                command.CommandText = sqlCommand.ToString();
+                command.Parameters.AddWithValue("@definition", definition);
+                command.Connection = conn;
+                conn.Open();
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        EntityItems item = new EntityItems();
+                        item.Definition = Convert.ToInt32(reader["definition"]);
+                        item.Name = Convert.ToString(reader["definitionname"]);
+                        item.Options = Convert.ToString(reader["options"]);
+                        item.Volume = Convert.ToDecimal(reader["volume"]);
+                        item.Mass = Convert.ToDecimal(reader["mass"]);
+                        list.Add(item);
+                    }
+                }
+                conn.Dispose();
+            }
+            return list;
+        }
 
         public string SaveWithEntityItemChange(EntityItems item)
         {
@@ -567,7 +652,7 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE entitydefaults SET options=@options, volume=@volume, mass=@mass WHERE definition=@definition");
+                sqlCommand.Append("UPDATE entitydefaults SET options=@options, volume=@volume, mass=@mass WHERE definition=@definition;");
 
                 command.CommandText = sqlCommand.ToString();
 
@@ -616,7 +701,7 @@ namespace Perptool.db
                 StringBuilder sqlCommand = new StringBuilder();
                 sqlCommand.Append(@"SELECT entitydefaults.definition, entitydefaults.definitionname, entitydefaults.mass, entitydefaults.volume, entitydefaults.options
                 FROM entitydefaults JOIN aggregatevalues ON (aggregatevalues.definition = entitydefaults.definition) 
-                GROUP BY entitydefaults.definition, entitydefaults.definitionname, entitydefaults.mass, entitydefaults.volume, entitydefaults.options");
+                GROUP BY entitydefaults.definition, entitydefaults.definitionname, entitydefaults.mass, entitydefaults.volume, entitydefaults.options;");
                 command.CommandText = sqlCommand.ToString();
                 command.Connection = conn;
                 conn.Open();
@@ -648,7 +733,7 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("SELECT DISTINCT dbo.entitydefaults.definitionname, dbo.entitydefaults.definition FROM dbo.entitydefaults JOIN dbo.npcloot on dbo.npcloot.definition = dbo.entitydefaults.definition GROUP BY entitydefaults.definition,  entitydefaults.definitionname");
+                sqlCommand.Append("SELECT DISTINCT dbo.entitydefaults.definitionname, dbo.entitydefaults.definition FROM dbo.entitydefaults JOIN dbo.npcloot on dbo.npcloot.definition = dbo.entitydefaults.definition GROUP BY entitydefaults.definition,  entitydefaults.definitionname;");
                 //sqlCommand.Append("");
                 command.CommandText = sqlCommand.ToString();
                 command.Connection = conn;
@@ -675,7 +760,7 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("SELECT DISTINCT entitydefaults.definition, definitionname FROM dbo.entitydefaults JOIN npcloot ON npcloot.lootdefinition = entitydefaults.definition GROUP BY entitydefaults.definition, entitydefaults.definitionname");
+                sqlCommand.Append("SELECT DISTINCT entitydefaults.definition, definitionname FROM dbo.entitydefaults JOIN npcloot ON npcloot.lootdefinition = entitydefaults.definition GROUP BY entitydefaults.definition, entitydefaults.definitionname;");
                 command.CommandText = sqlCommand.ToString();
                 command.Connection = conn;
                 conn.Open();
@@ -701,7 +786,7 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("SELECT DISTINCT dbo.entitydefaults.definitionname, dbo.entitydefaults.definition FROM dbo.entitydefaults JOIN dbo.chassisbonus on dbo.chassisbonus.definition = dbo.entitydefaults.definition GROUP BY entitydefaults.definition,  entitydefaults.definitionname");
+                sqlCommand.Append("SELECT DISTINCT dbo.entitydefaults.definitionname, dbo.entitydefaults.definition FROM dbo.entitydefaults JOIN dbo.chassisbonus on dbo.chassisbonus.definition = dbo.entitydefaults.definition GROUP BY entitydefaults.definition,  entitydefaults.definitionname;");
                 command.CommandText = sqlCommand.ToString();
                 command.Connection = conn;
                 conn.Open();
@@ -713,6 +798,37 @@ namespace Perptool.db
                         item.Name = Convert.ToString(reader["definitionname"]);
                         item.Definition = Convert.ToInt32(reader["definition"]);
                         list.Add(item);
+                    }
+                }
+            }
+            return list;
+        }
+
+        public List<EntityItems> GetAllNPCEntities()
+        {
+            List<EntityItems> list = new List<EntityItems>();
+            using (SqlConnection conn = new SqlConnection(this.ConnString))
+            {
+                using (SqlCommand command = new SqlCommand())
+                {
+                    StringBuilder sqlCommand = new StringBuilder();
+                    sqlCommand.Append(@"SELECT entitydefaults.* FROM entitydefaults
+	                JOIN robottemplaterelation ON robottemplaterelation.definition=entitydefaults.definition;");
+                    command.CommandText = sqlCommand.ToString();
+                    command.Connection = conn;
+                    conn.Open();
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            EntityItems item = new EntityItems();
+                            item.Name = Convert.ToString(reader["definitionname"]);
+                            item.Definition = Convert.ToInt32(reader["definition"]);
+                            item.Options = Convert.ToString(reader["options"]);
+                            item.Volume = Convert.ToInt32(reader["volume"]);
+                            item.Mass = Convert.ToInt32(reader["mass"]);
+                            list.Add(item);
+                        }
                     }
                 }
             }

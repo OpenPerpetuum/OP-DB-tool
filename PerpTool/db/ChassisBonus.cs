@@ -202,7 +202,7 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE chassisbonus SET effectenhancer=@effectenhancer, bonus=@bonus WHERE id = @id");
+                sqlCommand.Append("UPDATE chassisbonus SET effectenhancer=@effectenhancer, bonus=@bonus WHERE id = @id;");
                 command.CommandText = sqlCommand.ToString();
                 command.Parameters.AddWithValue("@id", bonusChanges.id);
                 command.Parameters.AddWithValue("@bonus", bonusChanges.bonus);

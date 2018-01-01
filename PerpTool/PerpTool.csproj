@@ -34,6 +34,18 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Perpetuum.ByteArrayExtensions, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\Perpetuum.ByteArrayExtensions.dll</HintPath>
+    </Reference>
+    <Reference Include="Perpetuum.Collections, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\Perpetuum.Collections.dll</HintPath>
+    </Reference>
+    <Reference Include="Perpetuum.GenXY, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\Perpetuum.GenXY.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationFramework.Aero2" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -68,6 +80,9 @@
     <Compile Include="db\AggregateModifiers.cs" />
     <Compile Include="db\AggregateValues.cs" />
     <Compile Include="db\Characters.cs" />
+    <Compile Include="db\NPCGroups.cs" />
+    <Compile Include="db\RobotTemplateRelation.cs" />
+    <Compile Include="db\RobotTemplate.cs" />
     <Compile Include="db\ChassisBonus.cs" />
     <Compile Include="db\NPCLoot.cs" />
     <Compile Include="db\EntityDefaults.cs" />

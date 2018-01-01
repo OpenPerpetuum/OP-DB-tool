@@ -185,7 +185,7 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE aggregatevalues SET definition=@definition, field=@field, value=@value WHERE id = @id");
+                sqlCommand.Append("UPDATE aggregatevalues SET definition=@definition, field=@field, value=@value WHERE id = @id;");
                 command.CommandText = sqlCommand.ToString();
                 command.Parameters.AddWithValue("@id", this.id);
                 command.Parameters.AddWithValue("@definition", this.definition);
@@ -217,7 +217,7 @@ namespace Perptool.db
                     StringBuilder sqlCommand = new StringBuilder();
                     sqlCommand.Append(@"SELECT aggregatefields.id as fieldid, aggregatevalues.id as valueid, aggregatefields.name as fieldname, aggregatevalues.value, 
                     aggregatefields.formula, aggregatefields.measurementunit, aggregatefields.measurementoffset, aggregatefields.measurementmultiplier
-                    from aggregatevalues join aggregatefields on (aggregatevalues.field = aggregatefields.id) Where definition=@id");
+                    from aggregatevalues join aggregatefields on (aggregatevalues.field = aggregatefields.id) Where definition=@id;");
                     command.CommandText = sqlCommand.ToString();
                     command.Parameters.AddWithValue("@id", EntityId);
                     command.Connection = conn;

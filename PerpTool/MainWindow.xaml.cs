@@ -1,19 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Perptool.db;
-using System.Collections;
 using System.ComponentModel;
 using System.IO;
 using System.Collections.ObjectModel;
@@ -38,6 +28,7 @@ namespace PerpTool
         public MainWindow()
         {
             InitializeComponent();
+
             AgModifiers = new AggregateModifiers(Connstr);
             AgFields = new AggregateFields(Connstr);
             Entities = new EntityDefaults(Connstr);
@@ -48,7 +39,10 @@ namespace PerpTool
             Spawn = new NPCSpawn(Connstr);
             Loot = new NPCLoot(Connstr);
             BotBonus = new ChassisBonus(Connstr);
-
+            NPCBotTemplates = new RobotTemplatesTable(Connstr);
+            NPCTemplateRelations = new RobotTemplateRelation(Connstr);
+            NPCPresenceTable = new NPCPresence(Connstr);
+            NPCFlockTable = new NPCFlock(Connstr);
 
             EntityItems = Entities.GetEntitiesWithFields();
             ZoneList = ZoneTbl.GetAllZones();
@@ -56,10 +50,17 @@ namespace PerpTool
             LootableBots = Entities.GetAllNPCLootableBots();
             LootableEntityDefaults = Entities.GetLootableEntities();
             BotItems = Entities.GetAllDistinctBotItems();
+            NPCTemplates = NPCBotTemplates.getAll();
+            AllNPCPresences = NPCPresenceTable.getAll();
 
+            this.AmmoList = Entities.GetAllAmmo();
+            this.ModuleList = Entities.GetAllModules();
+            this.NPCEntities = Entities.GetAllNPCEntities();
+            this.NPCTemplateRelationList = new ObservableCollection<BotTemplateRelation>();
+            this.SelectedNPCPresence = new ObservableCollection<NPCPresenceData>();
+            this.NPCFlockList = new ObservableCollection<NPCFlockData>();
+            this.BotTemplate = new ObservableCollection<RobotTemplate>();
             this.selectedEntity = new ObservableCollection<EntityItems>();
-
-
             this.DataContext = this;
         }
 
@@ -72,12 +73,20 @@ namespace PerpTool
         private Characters PerpChars { get; set; }
         public Zones ZoneTbl { get; set; }
         public NPCSpawn Spawn { get; set; }
-        public NPCLoot Loot { get; set; }
-        private ChassisBonus BotBonus { get; set; }
+        private RobotTemplateRelation NPCTemplateRelations { get; set; }
+        private NPCPresence NPCPresenceTable { get; set; }
+        private NPCFlock NPCFlockTable { get; set; }
+
+        public List<EntityItems> AmmoList { get; set; }
+        public List<EntityItems> ModuleList { get; set; }
         public List<EntityItems> BotItems { get; set; }
-
         public List<EntityItems> EntityItems { get; set; }
+        public List<EntityItems> NPCEntities { get; set; }
+        public List<NPCPresenceData> AllNPCPresences { get; set; }
 
+
+
+        #region EntityDefaults
 
         //TODO hack, using observable collection for one item BAD
         private ObservableCollection<EntityItems> _selectedEntity;
@@ -94,7 +103,6 @@ namespace PerpTool
             }
         }
 
-
         private List<FieldValuesStuff> _valstuffs;
         public List<FieldValuesStuff> FieldValuesList
         {
@@ -108,63 +116,6 @@ namespace PerpTool
                 OnPropertyChanged("FieldValuesList");
             }
         }
-
-        private ObservableCollection<LootItem> _lootdata;
-        public ObservableCollection<LootItem> loots
-        {
-            get
-            {
-                return _lootdata;
-            }
-            set
-            {
-                _lootdata = value;
-                OnPropertyChanged("loots");
-            }
-        }
-
-        private List<EntityItems> _itemdata;
-        public List<EntityItems> LootableBots
-        {
-            get
-            {
-                return _itemdata;
-            }
-            set
-            {
-                _itemdata = value;
-                OnPropertyChanged("LootableBots");
-            }
-        }
-
-        private List<EntityItems> _lootables;
-        public List<EntityItems> LootableEntityDefaults
-        {
-            get
-            {
-                return _lootables;
-            }
-            set
-            {
-                _lootables = value;
-                OnPropertyChanged("LootableEntityDefaults");
-            }
-        }
-
-        private ObservableCollection<BotBonusObj> _botbonuslist;
-        public ObservableCollection<BotBonusObj> BotBonusList
-        {
-            get
-            {
-                return _botbonuslist;
-            }
-            set
-            {
-                _botbonuslist = value;
-                OnPropertyChanged("BotBonusList");
-            }
-        }
-
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
@@ -216,22 +167,9 @@ namespace PerpTool
             if (item == null) { return; }
             FieldValuesList = AgValues.GetValuesForEntity(item.Definition);
         }
+        #endregion
 
-        public EntityItems currentNPCLootableBot;
-        private void ComboBox_DropDownClosed_LootableNPCs(object sender, EventArgs e)
-        {
-            EntityItems item = (EntityItems)npclootcombo.SelectedItem;
-            this.currentNPCLootableBot = item;
-            if (item == null) { return; }
-            this.loots = Loot.GetLootByDefinition(item.Definition);
-        }
-
-        public EntityItems currentRowAddItem;
-        private void ComboBox_DropDownClosed_NPCLootableDefs(object sender, EventArgs e)
-        {
-            EntityItems item = (EntityItems)npcloot.SelectedItem;
-            this.currentRowAddItem = item;
-        }
+        #region Zones
 
         private List<NPCSpawn> _spawns;
         public List<NPCSpawn> SpawnList
@@ -397,6 +335,273 @@ namespace PerpTool
             }
         }
 
+        #endregion
+
+        #region NPCTemplates
+
+        private RobotTemplatesTable NPCBotTemplates { get; set; }
+        //HACK
+        private ObservableCollection<RobotTemplate> _temp;
+        public ObservableCollection<RobotTemplate> BotTemplate
+        {
+            get
+            {
+                return _temp;
+            }
+            set
+            {
+                _temp = value;
+                OnPropertyChanged("BotTemplate");
+            }
+        }
+
+
+        private List<BotTemplateDropdownItem> _NPCTemplates;
+        public List<BotTemplateDropdownItem> NPCTemplates
+        {
+            get
+            {
+                return _NPCTemplates;
+            }
+            set
+            {
+                _NPCTemplates = value;
+                OnPropertyChanged("NPCTemplate");
+            }
+        }
+
+        public BotTemplateDropdownItem currentBotTemplateSelection;
+        private void ComboBox_DropDownClosed_NPCTemplates(object sender, EventArgs e)
+        {
+            BotTemplateDropdownItem item = (BotTemplateDropdownItem)npctemplatecombo.SelectedItem;
+            this.currentBotTemplateSelection = item;
+            if (item == null) { return; }
+            this.BotTemplate.Clear();
+            RobotTemplate robotTemp = NPCBotTemplates.GetById(item.id);
+            robotTemp.robotName = Entities.GetEntityByID(robotTemp.robotID).Name;
+            robotTemp.headName = Entities.GetEntityByID(robotTemp.headID).Name;
+            robotTemp.chassisName = Entities.GetEntityByID(robotTemp.chassisID).Name;
+            robotTemp.legName = Entities.GetEntityByID(robotTemp.legID).Name;
+            foreach (ModuleTemplate mod in robotTemp.headModules)
+            {
+                mod.definitionName = Entities.GetEntityByID(mod.definition).Name;
+                if (mod.ammoDefinition > 0)
+                {
+                    mod.ammoDefinitionName = Entities.GetEntityByID(mod.ammoDefinition).Name;
+                }
+            }
+            foreach (ModuleTemplate mod in robotTemp.chassisModules)
+            {
+                mod.definitionName = Entities.GetEntityByID(mod.definition).Name;
+                if (mod.ammoDefinition > 0)
+                {
+                    mod.ammoDefinitionName = Entities.GetEntityByID(mod.ammoDefinition).Name;
+                }
+            }
+            foreach (ModuleTemplate mod in robotTemp.legModules)
+            {
+                mod.definitionName = Entities.GetEntityByID(mod.definition).Name;
+                if (mod.ammoDefinition > 0)
+                {
+                    mod.ammoDefinitionName = Entities.GetEntityByID(mod.ammoDefinition).Name;
+                }
+            }
+            foreach (ItemTemplate iTemp in robotTemp.items)
+            {
+                iTemp.definitionName = Entities.GetEntityByID(iTemp.definition).Name;
+            }
+
+            this.BotTemplate.Add(robotTemp);
+        }
+
+        private void NPCTemplate_Save_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                StringBuilder sb = new StringBuilder();
+
+                foreach (RobotTemplate temp in this.BotTemplate)
+                {
+                    sb.AppendLine(NPCBotTemplates.SaveBotTemplate(temp));
+                }
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + this.currentBotTemplateSelection.name + ".sql", sb.ToString());
+                MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
+            }
+
+        }
+
+        public EntityItems selectedModule;
+        private void ComboBox_DropDownClosed_ModuleDef(object sender, EventArgs e)
+        {
+            EntityItems item = (EntityItems)moduledropdown.SelectedItem;
+            this.selectedModule = item;
+        }
+
+        public EntityItems selectedAmmo;
+        private void ComboBox_DropDownClosed_AmmoDef(object sender, EventArgs e)
+        {
+            EntityItems item = (EntityItems)ammodropdown.SelectedItem;
+            this.selectedAmmo = item;
+        }
+
+        private void Add_To_Head_Click(object sender, RoutedEventArgs e)
+        {
+            if (BotTemplate.Count == 1)
+            {
+                RobotTemplate temp = BotTemplate[0];
+                ModuleTemplate mod;
+                if (selectedAmmo == null)
+                {
+                    mod = new ModuleTemplate(selectedModule.Definition, temp.chassisModules.Count + 1, 0, 0, selectedModule.Name);
+                }
+                else
+                {
+                    mod = new ModuleTemplate(selectedModule.Definition, temp.chassisModules.Count + 1, selectedAmmo.Definition, 10, selectedModule.Name, selectedAmmo.Name);
+                }
+                temp.headModules.Add(mod);
+            }
+        }
+
+        private void Add_To_Chassis_Click(object sender, RoutedEventArgs e)
+        {
+            if (BotTemplate.Count == 1)
+            {
+                RobotTemplate temp = BotTemplate[0];
+                ModuleTemplate mod;
+                if (selectedAmmo == null)
+                {
+                    mod = new ModuleTemplate(selectedModule.Definition, temp.chassisModules.Count + 1, 0, 0, selectedModule.Name);
+                }
+                else
+                {
+                    mod = new ModuleTemplate(selectedModule.Definition, temp.chassisModules.Count + 1, selectedAmmo.Definition, 10, selectedModule.Name, selectedAmmo.Name);
+                }
+                temp.chassisModules.Add(mod);
+            }
+        }
+
+        private void Add_To_Leg_Click(object sender, RoutedEventArgs e)
+        {
+            if (BotTemplate.Count == 1)
+            {
+                RobotTemplate temp = BotTemplate[0];
+                ModuleTemplate mod;
+                if (selectedAmmo == null)
+                {
+                    mod = new ModuleTemplate(selectedModule.Definition, temp.legModules.Count + 1, 0, 0, selectedModule.Name);
+                }
+                else
+                {
+                    mod = new ModuleTemplate(selectedModule.Definition, temp.legModules.Count + 1, selectedAmmo.Definition, 10, selectedModule.Name, selectedAmmo.Name);
+                }
+                temp.legModules.Add(mod);
+            }
+        }
+
+
+        private void Remove_To_Head_Click(object sender, RoutedEventArgs e)
+        {
+            if (BotTemplate.Count == 1)
+            {
+                RobotTemplate temp = BotTemplate[0];
+                if (temp.headModules.Count > 0)
+                {
+                    temp.headModules.RemoveAt(temp.headModules.Count - 1);
+                }
+            }
+        }
+
+        private void Remove_To_Chassis_Click(object sender, RoutedEventArgs e)
+        {
+            if (BotTemplate.Count == 1)
+            {
+                RobotTemplate temp = BotTemplate[0];
+                if (temp.chassisModules.Count > 0)
+                {
+                    temp.chassisModules.RemoveAt(temp.chassisModules.Count - 1);
+                }
+            }
+        }
+
+        private void Remove_To_Leg_Click(object sender, RoutedEventArgs e)
+        {
+            if (BotTemplate.Count == 1)
+            {
+                RobotTemplate temp = BotTemplate[0];
+                if (temp.legModules.Count > 0)
+                {
+                    temp.legModules.RemoveAt(temp.legModules.Count - 1);
+                }
+            }
+        }
+
+        #endregion
+
+        #region NPCLoot
+        public NPCLoot Loot { get; set; }
+
+        private ObservableCollection<LootItem> _lootdata;
+        public ObservableCollection<LootItem> loots
+        {
+            get
+            {
+                return _lootdata;
+            }
+            set
+            {
+                _lootdata = value;
+                OnPropertyChanged("loots");
+            }
+        }
+
+        private List<EntityItems> _itemdata;
+        public List<EntityItems> LootableBots
+        {
+            get
+            {
+                return _itemdata;
+            }
+            set
+            {
+                _itemdata = value;
+                OnPropertyChanged("LootableBots");
+            }
+        }
+
+        private List<EntityItems> _lootables;
+        public List<EntityItems> LootableEntityDefaults
+        {
+            get
+            {
+                return _lootables;
+            }
+            set
+            {
+                _lootables = value;
+                OnPropertyChanged("LootableEntityDefaults");
+            }
+        }
+
+        public EntityItems currentNPCLootableBot;
+        private void ComboBox_DropDownClosed_LootableNPCs(object sender, EventArgs e)
+        {
+            EntityItems item = (EntityItems)npclootcombo.SelectedItem;
+            this.currentNPCLootableBot = item;
+            if (item == null) { return; }
+            this.loots = Loot.GetLootByDefinition(item.Definition);
+        }
+
+        public EntityItems currentRowAddItem;
+        private void ComboBox_DropDownClosed_NPCLootableDefs(object sender, EventArgs e)
+        {
+            EntityItems item = (EntityItems)npcloot.SelectedItem;
+            this.currentRowAddItem = item;
+        }
+
         private void NPC_Loot_Save_Button_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -446,7 +651,25 @@ namespace PerpTool
 
         }
 
+        #endregion
 
+        #region BotBonuses
+
+        private ChassisBonus BotBonus { get; set; }
+
+        private ObservableCollection<BotBonusObj> _botbonuslist;
+        public ObservableCollection<BotBonusObj> BotBonusList
+        {
+            get
+            {
+                return _botbonuslist;
+            }
+            set
+            {
+                _botbonuslist = value;
+                OnPropertyChanged("BotBonusList");
+            }
+        }
 
         public EntityItems currentBotComponentSelection;
         private void Bot_ComboBox_DropDownClosed(object sender, EventArgs e)
@@ -475,6 +698,191 @@ namespace PerpTool
             }
 
         }
+
+        #endregion
+
+        #region NPCTemplateRelation
+        //TODO hack, using observable collection for one item BAD
+        private ObservableCollection<BotTemplateRelation> _selectedTempRelation;
+        public ObservableCollection<BotTemplateRelation> NPCTemplateRelationList
+        {
+            get
+            {
+                return _selectedTempRelation;
+            }
+            set
+            {
+                _selectedTempRelation = value;
+                OnPropertyChanged("NPCTemplateRelationList");
+            }
+        }
+
+        public EntityItems selectedNPCTemplateRelation;
+        private void ComboBox_DropDownClosed_NPCTemplateRelations(object sender, EventArgs e)
+        {
+            EntityItems item = (EntityItems)npctemplaterelation.SelectedItem;
+            this.selectedNPCTemplateRelation = item;
+            if (item == null) { return; }
+            this.NPCTemplateRelationList.Clear();
+            NPCTemplateRelationList.Add(this.NPCTemplateRelations.GetById(item.Definition));
+        }
+
+        public BotTemplateDropdownItem currentBotTemplateSelection_forRelation;
+        private void ComboBox_DropDownClosed_NPCTemplateRelationEdit(object sender, EventArgs e)
+        {
+            BotTemplateDropdownItem item = (BotTemplateDropdownItem)npctemplaterelation_change.SelectedItem;
+            this.currentBotTemplateSelection_forRelation = item;
+            if (item == null) { return; }
+        }
+
+        private void ChangeTemplateClick(object sender, RoutedEventArgs e)
+        {
+            if (NPCTemplateRelationList.Count == 1)
+            {
+                BotTemplateRelation temp = NPCTemplateRelationList[0];
+                temp.templateid = currentBotTemplateSelection_forRelation.id;
+                temp.templatename = currentBotTemplateSelection_forRelation.name;
+                NPCTemplateRelationList.Clear();
+                NPCTemplateRelationList.Add(temp);
+            }
+        }
+
+        private void NPCTemplateRelation_Save_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach (BotTemplateRelation relation in this.NPCTemplateRelationList)
+                {
+                    sb.AppendLine(NPCTemplateRelations.Save(relation));
+                }
+
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + selectedNPCTemplateRelation.Name + "_template_relation.sql", sb.ToString());
+                MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
+            }
+
+        }
+
+
+        private void NPCTemplateRelation_Save_New_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                //TODO Insert on relation table.. requires unique def or templ?
+                throw new NotImplementedException();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
+            }
+
+        }
+        #endregion
+
+        #region NPCGroup
+
+
+        //TODO hack, using observable collection for one item BAD
+        private ObservableCollection<NPCPresenceData> _selectedNPCPresence;
+        public ObservableCollection<NPCPresenceData> SelectedNPCPresence
+        {
+            get
+            {
+                return _selectedNPCPresence;
+            }
+            set
+            {
+                _selectedNPCPresence = value;
+                OnPropertyChanged("SelectedNPCPresence");
+            }
+        }
+
+        //TODO hack, using observable collection for one item BAD
+        private ObservableCollection<NPCFlockData> _flockList;
+        public ObservableCollection<NPCFlockData> NPCFlockList
+        {
+            get
+            {
+                return _flockList;
+            }
+            set
+            {
+                _flockList = value;
+                OnPropertyChanged("NPCFlockList");
+            }
+        }
+
+
+        public NPCPresenceData selectedPresence;
+        private void ComboBox_DropDownClosed_NPCPresence(object sender, EventArgs e)
+        {
+            NPCPresenceData item = (NPCPresenceData)npcgroupcombo.SelectedItem;
+            this.selectedPresence = item;
+            if (item == null) { return; }
+            this.NPCFlockList.Clear();
+            List<NPCFlockData> flocks = NPCFlockTable.getByPresenceID(item.id);
+            foreach (NPCFlockData flock in flocks)
+            {
+                this.NPCFlockList.Add(flock);
+            }
+            SelectedNPCPresence.Clear();
+            SelectedNPCPresence.Add(item);
+        }
+
+        public EntityItems selectedNPC;
+        private void ComboBox_DropDownClosed_NPCDef_forFlock(object sender, EventArgs e)
+        {
+            EntityItems item = (EntityItems)editflockNPCdef.SelectedItem;
+            this.selectedNPC = item;
+            if (item == null) { return; }
+        }
+
+        private void NPCFlock_Change_NPC(object sender, RoutedEventArgs e)
+        {
+            NPCFlockData flock = (NPCFlockData)flockgrid.SelectedItem;
+
+            if (selectedNPC == null || flock == null) {
+                MessageBox.Show("Select NPC from dropdown, click on the flock you want to change, then press button.", "Warn", 0, MessageBoxImage.Error);
+                return;
+            }
+            int index = this.NPCFlockList.IndexOf(flock);
+            if (index == -1) {
+                MessageBox.Show("Invalid Flock Selection?!", "Error", 0, MessageBoxImage.Error);
+                return;
+            }
+            flock.definition = this.selectedNPC.Definition;
+            flock.NPCDefinitionName = this.selectedNPC.Name;
+            this.NPCFlockList[index] = flock;
+            
+
+        }
+
+        private void NPCPresence_Save(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach (NPCFlockData flock in this.NPCFlockList)
+                {
+                    sb.AppendLine(NPCFlockTable.Save(flock));
+                }
+                foreach (NPCPresenceData pres in this.SelectedNPCPresence)
+                {
+                    sb.AppendLine(NPCPresenceTable.Save(pres));
+                }
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + selectedPresence.name + "_NPCPresence_flocks.sql", sb.ToString());
+                MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
+            }
+        }
+        #endregion
 
         private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {

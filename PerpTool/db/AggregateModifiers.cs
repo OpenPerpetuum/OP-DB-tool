@@ -127,7 +127,7 @@ namespace Perptool.db
                 sqlCommand.Append("Insert into aggregatemodifiers ");
                 sqlCommand.Append("(`categoryflag`, `basefield`, `modifierfield`) ");
                 sqlCommand.Append(" Values ");
-                sqlCommand.Append("(@categoryflag, @basefield, @modifierfield) ");
+                sqlCommand.Append("(@categoryflag, @basefield, @modifierfield) ;");
 
                 command.CommandText = sqlCommand.ToString();
 
@@ -151,7 +151,7 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE aggregatemodifiers Set `basefield`=@basefield, `modifierfield`=@modifierfield where `categoryflag`=@categoryflag and `@basefield`=@basefield and `modifierfield`=@modifierfield");
+                sqlCommand.Append("UPDATE aggregatemodifiers Set `basefield`=@basefield, `modifierfield`=@modifierfield where `categoryflag`=@categoryflag and `@basefield`=@basefield and `modifierfield`=@modifierfield;");
 
                 command.CommandText = sqlCommand.ToString();
 
