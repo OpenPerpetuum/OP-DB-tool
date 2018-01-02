@@ -67,6 +67,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Types\AttributeFlags.cs" />
+    <Compile Include="Types\CategoryFlags.cs" />
+    <Page Include="Dialogs\CreateRobotTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -88,6 +94,9 @@
     <Compile Include="db\EntityDefaults.cs" />
     <Compile Include="db\NPCSpawn.cs" />
     <Compile Include="db\Zones.cs" />
+    <Compile Include="Dialogs\CreateRobotTemplate.xaml.cs">
+      <DependentUpon>CreateRobotTemplate.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

@@ -336,7 +336,7 @@ namespace Perptool.db
 
         public string SaveBotTemplate(RobotTemplate bot)
         {
-            string query = "";
+            string query = string.Empty;
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();

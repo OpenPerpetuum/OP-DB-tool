@@ -151,7 +151,7 @@
 
             <TabItem Header="NPC Templates">
                 <StackPanel Background="#FFE5E5E5" >
-                    <ComboBox x:Name="npctemplatecombo" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="600" ItemsSource="{Binding NPCTemplates}" DisplayMemberPath="name" SelectedValuePath="id" DropDownClosed="ComboBox_DropDownClosed_NPCTemplates"/>
+                    <ComboBox x:Name="npctemplatecombo" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="613" ItemsSource="{Binding NPCTemplates}" DisplayMemberPath="name" SelectedValuePath="id" DropDownClosed="ComboBox_DropDownClosed_NPCTemplates"/>
                     <DataGrid Margin="10,10,10,10" ItemsSource="{Binding BotTemplate}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto" >
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Name" Width="*" Binding="{Binding recordName}"/>
@@ -163,7 +163,7 @@
                             <DataGridTextColumn Header="Note" Width="*" Binding="{Binding recordNote}"/>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <DataGrid  x:Name="head" Margin="10,10,10,10" ItemsSource="{Binding Path=BotTemplate[0].headModules}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto">
+                    <DataGrid  x:Name="head" Margin="10,10,10,10" ItemsSource="{Binding BotTemplate[0].headModules}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Definition" Width="*" Binding="{Binding definitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
                             <DataGridTextColumn Header="Slot" Width="*" Binding="{Binding slot}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
@@ -171,7 +171,7 @@
                             <DataGridTextColumn Header="AmmoQuantity" Width="*" Binding="{Binding ammoQuantity}"/>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <DataGrid  x:Name="chassis"  Margin="10,10,10,10" ItemsSource="{Binding Path=BotTemplate[0].chassisModules}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto">
+                    <DataGrid  x:Name="chassis"  Margin="10,10,10,10" ItemsSource="{Binding BotTemplate[0].chassisModules}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Definition" Width="*" Binding="{Binding definitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
                             <DataGridTextColumn Header="Slot" Width="*" Binding="{Binding slot}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
@@ -179,7 +179,7 @@
                             <DataGridTextColumn Header="AmmoQuantity" Width="*" Binding="{Binding ammoQuantity}"/>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <DataGrid  x:Name="leg" Margin="10,10,10,10" ItemsSource="{Binding Path=BotTemplate[0].legModules}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto">
+                    <DataGrid  x:Name="leg" Margin="10,10,10,10" ItemsSource="{Binding BotTemplate[0].legModules}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Definition" Width="*" Binding="{Binding definitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
                             <DataGridTextColumn Header="Slot" Width="*" Binding="{Binding slot}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
@@ -187,7 +187,7 @@
                             <DataGridTextColumn Header="AmmoQuantity" Width="*" Binding="{Binding ammoQuantity}" />
                         </DataGrid.Columns>
                     </DataGrid>
-                    <DataGrid x:Name="items" Margin="10,10,10,10" ItemsSource="{Binding Path=BotTemplate[0].items}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto">
+                    <DataGrid x:Name="items" Margin="10,10,10,10" ItemsSource="{Binding BotTemplate[0].items}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Definition" Width="*" Binding="{Binding definitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
                             <DataGridTextColumn Header="Quantity" Width="*" Binding="{Binding quantity}"/>
@@ -195,7 +195,7 @@
                         </DataGrid.Columns>
                     </DataGrid>
 
-                    <Grid>
+                    <Grid Margin="0,0,0.333,0">
                         <Label Content="Module Selection"  Margin="5,105,519,-105"/>
                         <ComboBox x:Name="moduledropdown" Margin="118,105,141,-95" Height="26" ItemsSource="{Binding ModuleList}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="ComboBox_DropDownClosed_ModuleDef"/>
                         <Label Content="Ammo Selection"  Margin="5,131,519,-131" />
@@ -207,6 +207,7 @@
                         <Button Content="Remove Module To Chassis" Margin="17,192,460,-182" Click="Remove_To_Chassis_Click" Width="155"/>
                         <Button Content="Remove Module To Leg" Margin="17,217,460,-207" Click="Remove_To_Leg_Click" Width="155"/>
                         <Button Content="Save Changes" Margin="510,217,22,-207" Click="NPCTemplate_Save_Click" Width="100"/>
+                        <Button Content="New NPC" Margin="511,167,22,-157" Click="Button_Click_2"/>
                     </Grid>
                 </StackPanel>
 
