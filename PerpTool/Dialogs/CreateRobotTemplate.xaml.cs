@@ -30,13 +30,18 @@ namespace PerpTool.Dialogs
             Entities = new EntityDefaults(this.Connstr);
             RTemplate = new RobotTemplatesTable(this.Connstr);
             BotTemplate = new RobotTemplate();
+            HeadSlotList = new CompositeCollection();
+            ChassisSlotList = new CompositeCollection();
+            LegSlotList = new CompositeCollection();
 
             BotsList = Entities.GetEntitiesByCategory(Types.CategoryFlags.cf_robots);
             HeadsList = Entities.GetEntitiesByCategory(Types.CategoryFlags.cf_robot_head);
             ChassisList = Entities.GetEntitiesByCategory(Types.CategoryFlags.cf_robot_chassis);
             LegsList = Entities.GetEntitiesByCategory(Types.CategoryFlags.cf_robot_leg);
             InventoryList = Entities.GetEntitiesByCategory(Types.CategoryFlags.cf_robot_inventory);
-            ModulesList = Entities.GetEntitiesByAttribute(Types.AttributeFlags.small, Types.AttributeFlags.medium);
+            // oh dear god. Shitshow ahead!
+            Mods = Entities.GetAllEntities();
+
 
             this.DataContext = this;
 
@@ -52,6 +57,7 @@ namespace PerpTool.Dialogs
         public EntityDefaults Entities { get; set; }
         public RobotTemplatesTable RTemplate { get; set; }
         public RobotTemplate BotTemplate { get; set; }
+        List<EntityDefaults> Mods { get; set; }
 
         private List<EntityDefaults> _bots;
         public List<EntityDefaults> BotsList
@@ -137,20 +143,156 @@ namespace PerpTool.Dialogs
             }
         }
 
-        private List<EntityDefaults> _moduleslist;
-        public List<EntityDefaults> ModulesList
+        private List<EntityDefaults> _headmoduleslist;
+        public List<EntityDefaults> HeadModulesList
         {
             get
             {
-                return _moduleslist;
+                return _headmoduleslist;
             }
             set
             {
-                _moduleslist = value;
-                OnPropertyChanged("ModulesList");
+                _headmoduleslist = value;
+                OnPropertyChanged("HeadModulesList");
             }
         }
 
+        private List<EntityDefaults> _chassismoduleslist;
+        public List<EntityDefaults> ChassisModulesList
+        {
+            get
+            {
+                return _chassismoduleslist;
+            }
+            set
+            {
+                _chassismoduleslist = value;
+                OnPropertyChanged("ChassisModulesList");
+            }
+        }
+
+        private CompositeCollection _hslist;
+        public CompositeCollection HeadSlotList
+        {
+            get
+            {
+                return _hslist;
+            }
+            set
+            {
+                _hslist = value;
+                OnPropertyChanged("HeadSlotList");
+            }
+        }
+
+        private CompositeCollection _chassissslotlist;
+        public CompositeCollection ChassisSlotList
+        {
+            get
+            {
+                return _chassissslotlist;
+            }
+            set
+            {
+                _chassissslotlist = value;
+                OnPropertyChanged("ChassisSlotList");
+            }
+        }
+
+        private CompositeCollection _legslotlist;
+        public CompositeCollection LegSlotList
+        {
+            get
+            {
+                return _legslotlist;
+            }
+            set
+            {
+                _legslotlist = value;
+                OnPropertyChanged("LegSlotList");
+            }
+        }
+
+        private EntityDefaults _selhead;
+        public EntityDefaults SelectedHead
+        {
+            get
+            {
+                return _selhead;
+            }
+            set
+            {
+                _selhead = value;
+                // probably should not be here in the setter....
+                HeadSlotList.Clear();
+                if (value != null)
+                {
+                    for (int i = 0; i < value.options.slotFlags.Length; i++)
+                    {
+                        ModuleTemplate tmp = new ModuleTemplate();
+                        BotTemplate.headModules.Add(tmp);
+                        HeadSlotList.Add(new Usercontrols.RobotTemplateSlot(tmp)
+                        {
+                            ModulesList = Mods.Where(m => m.options.moduleFlag == SelectedHead.options.slotFlags[i]).ToList()
+                        });
+                    }
+                }
+                OnPropertyChanged("SelectedHead");
+            }
+        }
+
+        private EntityDefaults _selchassis;
+        public EntityDefaults SelectedChassis
+        {
+            get
+            {
+                return _selchassis;
+            }
+            set
+            {
+                _selchassis = value;
+                // probably should not be here in the setter....
+                ChassisSlotList.Clear();
+                if (value != null)
+                {
+                    for (int i = 0; i < value.options.slotFlags.Length; i++)
+                    {
+                        ModuleTemplate tmp = new ModuleTemplate();
+                        BotTemplate.chassisModules.Add(tmp);
+                        ChassisSlotList.Add(new Usercontrols.RobotTemplateSlot(tmp)
+                        {
+                            ModulesList = Mods.Where(m => m.options.moduleFlag == SelectedChassis.options.slotFlags[i]).ToList()
+                        });
+                    }
+                }
+                OnPropertyChanged("SelectedChassis");
+            }
+        }
+
+        private EntityDefaults _selleg;
+        public EntityDefaults SelectedLeg
+        {
+            get
+            {
+                return _selleg;
+            }
+            set
+            {
+                _selleg = value;
+                // probably should not be here in the setter....
+                LegSlotList.Clear();
+                if (value != null)
+                {
+                    for (int i = 0; i < value.options.slotFlags.Length; i++)
+                    {
+                        ModuleTemplate tmp = new ModuleTemplate();
+                        BotTemplate.headModules.Add(tmp);
+                        LegSlotList.Add(new Usercontrols.RobotTemplateSlot(tmp) { });
+                    }
+                }
+                OnPropertyChanged("SelectedLeg");
+            }
+        }
 
         private void Button_Save(object sender, RoutedEventArgs e)
         {

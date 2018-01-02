@@ -35,6 +35,14 @@ namespace Perptool.db
         public ObservableCollection<ModuleTemplate> legModules { get; set; }
         public ObservableCollection<ItemTemplate> items { get; set; }
 
+        public RobotTemplate()
+        {
+            headModules = new ObservableCollection<ModuleTemplate>();
+            chassisModules = new ObservableCollection<ModuleTemplate>();
+            legModules = new ObservableCollection<ModuleTemplate>();
+            items = new ObservableCollection<ItemTemplate>();
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected void OnPropertyChanged(string name)
@@ -158,6 +166,10 @@ namespace Perptool.db
             this.ammoQuantity = ammoQuantity;
             this.definitionName = defName;
             this.ammoDefinitionName = ammoName;
+        }
+
+        public ModuleTemplate()
+        {
         }
 
         public static ModuleTemplate CreateFromDictionary(IDictionary<string, object> d)

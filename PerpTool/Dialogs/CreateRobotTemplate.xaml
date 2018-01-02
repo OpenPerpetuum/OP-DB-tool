@@ -11,50 +11,38 @@
         <TextBox HorizontalAlignment="Left" Height="23" Margin="108,14,0,0" TextWrapping="Wrap" Text="{Binding RTemplate.name}" VerticalAlignment="Top" Width="281"/>
         <ComboBox HorizontalAlignment="Left" Margin="108,50,0,0" VerticalAlignment="Top" Width="331" ItemsSource="{Binding BotsList}" DisplayMemberPath="definitionname" SelectedValuePath="definition" SelectedItem="{Binding SelectedBot}"/>
         <!-- WHAT THE FSCK BUCK!!!!-->
-        <ComboBox HorizontalAlignment="Left" Margin="108,77,0,0" VerticalAlignment="Top" Width="331" ItemsSource="{Binding HeadsList}" DisplayMemberPath="definitionname" SelectedValuePath="definition" SelectedValue="{Binding SelectedBot.options.Head, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-        <ComboBox HorizontalAlignment="Left" Margin="108,104,0,0" VerticalAlignment="Top" Width="331" ItemsSource="{Binding ChassisList}" DisplayMemberPath="definitionname" SelectedValuePath="definition" SelectedValue="{Binding SelectedBot.options.Chassis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+        <ComboBox HorizontalAlignment="Left" Margin="108,77,0,0" VerticalAlignment="Top" Width="331" ItemsSource="{Binding HeadsList}" DisplayMemberPath="definitionname" SelectedValuePath="definition" SelectedValue="{Binding SelectedBot.options.Head, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding SelectedHead, UpdateSourceTrigger=PropertyChanged}" />
+        <ComboBox HorizontalAlignment="Left" Margin="108,104,0,0" VerticalAlignment="Top" Width="331" ItemsSource="{Binding ChassisList}" DisplayMemberPath="definitionname" SelectedValuePath="definition" SelectedValue="{Binding SelectedBot.options.Chassis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding SelectedChassis, UpdateSourceTrigger=PropertyChanged}"/>
         <Label Content="Bot" HorizontalAlignment="Left" Margin="75,46,0,0" VerticalAlignment="Top"/>
         <Label Content="Head" HorizontalAlignment="Left" Margin="65,73,0,0" VerticalAlignment="Top"/>
         <Label Content="Chassis" HorizontalAlignment="Left" Margin="54,100,0,0" VerticalAlignment="Top"/>
-        <ComboBox HorizontalAlignment="Left" Margin="108,131,0,0" VerticalAlignment="Top" Width="331" ItemsSource="{Binding LegsList}" DisplayMemberPath="definitionname" SelectedValuePath="definition" SelectedValue="{Binding SelectedBot.options.Leg, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        <ComboBox HorizontalAlignment="Left" Margin="108,131,0,0" VerticalAlignment="Top" Width="331" ItemsSource="{Binding LegsList}" DisplayMemberPath="definitionname" SelectedValuePath="definition" SelectedValue="{Binding SelectedBot.options.Leg, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding SelectedLeg, UpdateSourceTrigger=PropertyChanged}"/>
         <ComboBox HorizontalAlignment="Left" Margin="108,159,0,0" VerticalAlignment="Top" Width="331" ItemsSource="{Binding InventoryList}" DisplayMemberPath="definitionname" SelectedValuePath="definition" SelectedValue="{Binding SelectedBot.options.Inventory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
         <Label Content="Legs" HorizontalAlignment="Left" Margin="69,126,0,0" VerticalAlignment="Top"/>
         <TabControl HorizontalAlignment="Left" Height="275" Margin="10,195,0,0" VerticalAlignment="Top" Width="525">
             <TabItem Header="Head Modules">
                 <Grid Background="#FFE5E5E5">
-                    <ComboBox HorizontalAlignment="Left" Margin="60,25,0,0" VerticalAlignment="Top" Width="120"/>
-                    <ComboBox HorizontalAlignment="Left" Margin="60,51,0,0" VerticalAlignment="Top" Width="120"/>
-                    <ComboBox HorizontalAlignment="Left" Margin="60,78,0,0" VerticalAlignment="Top" Width="120"/>
-                    <ComboBox HorizontalAlignment="Left" Margin="60,105,0,0" VerticalAlignment="Top" Width="120"/>
-                    <ComboBox HorizontalAlignment="Left" Margin="60,132,0,0" VerticalAlignment="Top" Width="120"/>
-                    <ComboBox HorizontalAlignment="Left" Margin="60,159,0,0" VerticalAlignment="Top" Width="120"/>
-                    <ComboBox HorizontalAlignment="Left" Margin="60,187,0,0" VerticalAlignment="Top" Width="120"/>
-                    <ComboBox HorizontalAlignment="Left" Margin="60,215,0,0" VerticalAlignment="Top" Width="120"/>
-                    <ComboBox HorizontalAlignment="Left" Margin="185,25,0,0" VerticalAlignment="Top" Width="120"/>
-                    <ComboBox HorizontalAlignment="Left" Margin="185,51,0,0" VerticalAlignment="Top" Width="120"/>
-                    <ComboBox HorizontalAlignment="Left" Margin="185,78,0,0" VerticalAlignment="Top" Width="120"/>
-                    <ComboBox HorizontalAlignment="Left" Margin="185,105,0,0" VerticalAlignment="Top" Width="120"/>
-                    <ComboBox HorizontalAlignment="Left" Margin="185,132,0,0" VerticalAlignment="Top" Width="120"/>
-                    <ComboBox HorizontalAlignment="Left" Margin="185,159,0,0" VerticalAlignment="Top" Width="120"/>
-                    <ComboBox HorizontalAlignment="Left" Margin="185,187,0,0" VerticalAlignment="Top" Width="120"/>
-                    <ComboBox HorizontalAlignment="Left" Margin="185,215,0,0" VerticalAlignment="Top" Width="120"/>
-                    <Label Content="Module Definition" HorizontalAlignment="Left" Margin="67,1,0,0" VerticalAlignment="Top"/>
-                    <Label Content="Ammo Definition" HorizontalAlignment="Left" Margin="195,1,0,0" VerticalAlignment="Top"/>
-                    <Label Content="Slot #" HorizontalAlignment="Left" Margin="10,1,0,0" VerticalAlignment="Top"/>
-
+                    <Label Content="Module Definition" HorizontalAlignment="Left" Margin="61,1,0,0" VerticalAlignment="Top"/>
+                    <Label Content="Ammo Definition" HorizontalAlignment="Left" Margin="247,1,0,0" VerticalAlignment="Top"/>
+                    <ListView HorizontalAlignment="Left" Height="216" Margin="0,31,-0.333,-0.333" VerticalAlignment="Top" Width="519" ItemsSource="{Binding HeadSlotList}" IsSynchronizedWithCurrentItem="True"/>
                 </Grid>
             </TabItem>
             <TabItem Header="Chassis Modules">
-                <Grid Background="#FFE5E5E5"/>
+                <Grid Background="#FFE5E5E5">
+                    <ListView HorizontalAlignment="Left" Height="216" Margin="0,31,-0.333,-0.333" VerticalAlignment="Top" Width="519" ItemsSource="{Binding ChassisSlotList}" IsSynchronizedWithCurrentItem="True"/>
+                </Grid>
             </TabItem>
             <TabItem Header="Leg Modules">
-                <Grid Background="#FFE5E5E5"/>
+                <Grid Background="#FFE5E5E5">
+                    <ListView HorizontalAlignment="Left" Height="216" Margin="0,31,-0.333,-0.333" VerticalAlignment="Top" Width="519" ItemsSource="{Binding LegSlotList}" IsSynchronizedWithCurrentItem="True"/>
+                </Grid>
             </TabItem>
             <TabItem Header="something here">
                 <Grid Background="#FFE5E5E5"/>
             </TabItem>
         </TabControl>
         <Button Content="Save It" HorizontalAlignment="Left" Margin="234,486,0,0" VerticalAlignment="Top" Width="75" Click="Button_Save"/>
+        <Label Content="Inventory" HorizontalAlignment="Left" Margin="43,156,0,0" VerticalAlignment="Top"/>
 
     </Grid>
 </Window>

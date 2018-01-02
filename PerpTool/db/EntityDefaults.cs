@@ -37,7 +37,15 @@ namespace Perptool.db
         public int Chassis { get; set; }
         public int Leg { get; set; }
         public int Inventory { get; set; }
-        public int slotFlags { get; set; }
+        public int[] slotFlags { get; set; }
+        public decimal height { get; set; }
+        public int max_locked_targets { get; set; }
+        public decimal max_targeting_range { get; set; }
+        public decimal sensor_strength { get; set; }
+        public decimal cpu { get; set; }
+        public int moduleFlag { get; set; }
+        public int ammoCapacity { get; set; }
+        public long ammoType { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -910,7 +918,8 @@ namespace Perptool.db
             return list;
         }
 
-        public List<EntityDefaults> GetEntitiesByAttribute(params AttributeFlags[] AttributeFlag)
+        // this sort of works.
+        public List<EntityDefaults> GetEntitiesByAttribute(AttributeFlags AttributeFlag)
         {
             List<EntityDefaults> list = new List<EntityDefaults>();
             using (SqlConnection conn = new SqlConnection(this.ConnString))
@@ -918,15 +927,8 @@ namespace Perptool.db
                 using (SqlCommand command = new SqlCommand())
                 {
                     StringBuilder sqlCommand = new StringBuilder();
-                    sqlCommand.Append("select * from entitydefaults where 1=1 ");
-                    for (int i=0; i < AttributeFlag.Length; i++)
-                    {
-                        sqlCommand.Append(string.Format("or (attributeflags & @flag{0}) = @flag{0} ", i ));
-                        command.Parameters.AddWithValue(string.Format("@flag{0}",i), AttributeFlag[i]);
-                    }
-
-                    //sqlCommand.Append("select * from entitydefaults where (attributeflags & @flag) = @flag");
-                    //command.Parameters.AddWithValue("@flag", AttributeFlag);
+                    sqlCommand.Append("select * from entitydefaults where (attributeflags & @flag) = @flag ");
+                    command.Parameters.AddWithValue("@flag", AttributeFlag);
 
                     command.CommandText = sqlCommand.ToString();
                     command.Connection = conn;
@@ -962,6 +964,56 @@ namespace Perptool.db
             return list;
         }
 
+
+        // NOT SMART!
+        // Got a better idea?
+        // Yeah. Don't do it?
+        // ok, let's do it.
+        public List<EntityDefaults> GetAllEntities()
+        {
+            List<EntityDefaults> list = new List<EntityDefaults>();
+            using (SqlConnection conn = new SqlConnection(this.ConnString))
+            {
+                using (SqlCommand command = new SqlCommand())
+                {
+                    StringBuilder sqlCommand = new StringBuilder();
+                    sqlCommand.Append("select * from entitydefaults;");
+
+                    command.CommandText = sqlCommand.ToString();
+                    command.Connection = conn;
+                    conn.Open();
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            EntityDefaults tmp = new EntityDefaults(this.ConnString);
+
+                            tmp.definition = Convert.ToInt32(reader["definition"]);
+                            tmp.definitionname = Convert.ToString(reader["definitionname"]);
+                            tmp.quantity = Convert.ToInt32(reader["quantity"]);
+                            tmp.attributeflags = Convert.ToInt64(reader["attributeflags"]);
+                            tmp.categoryflags = Convert.ToInt64(reader["categoryflags"]);
+                            tmp.options = CreateFromOptions(Convert.ToString(reader["options"]));
+                            tmp.note = Convert.ToString(reader["note"]);
+                            tmp.enabled = Convert.ToInt32(reader["enabled"]);
+                            tmp.volume = Convert.ToDecimal(reader["volume"]);
+                            tmp.mass = Convert.ToDecimal(reader["mass"]);
+                            tmp.hidden = Convert.ToString(reader["hidden"]);
+                            tmp.health = Convert.ToDecimal(reader["health"]);
+                            tmp.descriptiontoken = Convert.ToString(reader["descriptiontoken"]);
+                            tmp.purchasable = Convert.ToInt32(reader["purchasable"]);
+                            if (reader["tiertype"] != DBNull.Value) { tmp.tiertype = Convert.ToInt32(reader["tiertype"]); }
+                            if (reader["tierlevel"] != DBNull.Value) { tmp.tierlevel = Convert.ToInt32(reader["tierlevel"]); }
+
+                            list.Add(tmp);
+                        }
+                    }
+                }
+            }
+            return list;
+        }
+
+
         private EntityOptions CreateFromOptions(string descGenXY)
         {
             Dictionary<string, object> dict = GenxyConverter.Deserialize(descGenXY);
@@ -985,6 +1037,24 @@ namespace Perptool.db
 
             success = d.TryGetValue("inventory", out object inv) && success;
             EntityOpts.Inventory = Convert.ToInt32(inv);
+
+            success = d.TryGetValue("slotFlags", out object slotflags) && success;
+            EntityOpts.slotFlags = (int[])slotflags;
+
+            if (d.TryGetValue("moduleFlag", out object moduleflag))
+            {
+                EntityOpts.moduleFlag = (int)moduleflag;
+            }
+
+            if (d.TryGetValue("ammoCapacity", out object ammocap))
+            {
+                EntityOpts.ammoCapacity = (int)ammocap;
+            }
+
+            if (d.TryGetValue("ammoType", out object ammotype))
+            {
+                EntityOpts.ammoType = (long)ammotype;
+            }
 
             return EntityOpts;
         }
