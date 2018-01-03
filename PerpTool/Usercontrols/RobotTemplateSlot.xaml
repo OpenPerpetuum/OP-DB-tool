@@ -7,7 +7,7 @@
              mc:Ignorable="d" Height="21.265" Width="480.668">
     <Grid>
         <ComboBox HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Width="190" ItemsSource="{Binding ModulesList}" DisplayMemberPath="definitionname" SelectedValuePath="definition" SelectedValue="{Binding Module.definition}" SelectedItem="{Binding SelectedModule}"/>
-        <ComboBox HorizontalAlignment="Left" Margin="205,0,0,0" VerticalAlignment="Top" Width="190" ItemsSource="{Binding AmmoList}" DisplayMemberPath="definitionname" SelectedValuePath="definition" SelectedValue="{Binding Module.ammoDefinition}" />
+        <ComboBox HorizontalAlignment="Left" Margin="205,0,0,0" VerticalAlignment="Top" Width="190" ItemsSource="{Binding AmmoList}" DisplayMemberPath="definitionname" SelectedValuePath="definition" SelectedValue="{Binding Module.ammoDefinition}" IsEnabled="{Binding SelectedModule.options.ammoCapacity}"/>
         <TextBox HorizontalAlignment="Left" Height="21" Margin="400,0,0,0" TextWrapping="Wrap" Text="{Binding Module.ammoQuantity}" VerticalAlignment="Top" Width="71" IsEnabled="{Binding SelectedModule.options.ammoCapacity}"/>
     </Grid>
 </UserControl>
