@@ -1,4 +1,5 @@
 ﻿using Perptool.db;
+using PerpTool.Types;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -211,7 +212,7 @@ namespace PerpTool.Dialogs
                 _legslotlist = value;
                 OnPropertyChanged("LegSlotList");
             }
-        }
+        }        
 
         private EntityDefaults _selhead;
         public EntityDefaults SelectedHead
@@ -224,16 +225,67 @@ namespace PerpTool.Dialogs
             {
                 _selhead = value;
                 // probably should not be here in the setter....
+                // yes, this is HORRID. laugh it up.
                 HeadSlotList.Clear();
                 if (value != null)
                 {
                     for (int i = 0; i < value.options.slotFlags.Length; i++)
                     {
-                        ModuleTemplate tmp = new ModuleTemplate();
-                        BotTemplate.headModules.Add(tmp);
-                        HeadSlotList.Add(new Usercontrols.RobotTemplateSlot(tmp)
+
+                        List<EntityDefaults> foo = new List<EntityDefaults>();
+
+                        if (SelectedHead.options.slotFlags[i].HasFlag(SlotFlags.chassis))
                         {
-                            ModulesList = Mods.Where(m => m.options.moduleFlag == SelectedHead.options.slotFlags[i]).ToList()
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.chassis)).ToList());
+                        }
+                        if (SelectedHead.options.slotFlags[i].HasFlag(SlotFlags.ew_and_engineering))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.ew_and_engineering)).ToList());
+                        }
+                        if (SelectedHead.options.slotFlags[i].HasFlag(SlotFlags.head))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.head)).ToList());
+                        }
+                        if (SelectedHead.options.slotFlags[i].HasFlag(SlotFlags.industrial))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.industrial)).ToList());
+                        }
+                        if (SelectedHead.options.slotFlags[i].HasFlag(SlotFlags.large))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.large)).ToList());
+                        }
+                        if (SelectedHead.options.slotFlags[i].HasFlag(SlotFlags.leg))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.leg)).ToList());
+                        }
+                        if (SelectedHead.options.slotFlags[i].HasFlag(SlotFlags.medium))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.medium)).ToList());
+                        }
+                        if (SelectedHead.options.slotFlags[i].HasFlag(SlotFlags.melee))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.melee)).ToList());
+                        }
+                        if (SelectedHead.options.slotFlags[i].HasFlag(SlotFlags.missile))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.missile)).ToList());
+                        }
+                        if (SelectedHead.options.slotFlags[i].HasFlag(SlotFlags.small))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.small)).ToList());
+                        }
+                        if (SelectedHead.options.slotFlags[i].HasFlag(SlotFlags.turret))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.turret)).ToList());
+                        }
+
+                        ModuleTemplate tmp = new ModuleTemplate();
+                        tmp.slot = i + 1;
+                        BotTemplate.headModules.Add(tmp);
+                        HeadSlotList.Add(new Usercontrols.RobotTemplateSlot()
+                        {
+                            ModulesList = foo,
+                            Module = tmp
                         });
                     }
                 }
@@ -257,11 +309,62 @@ namespace PerpTool.Dialogs
                 {
                     for (int i = 0; i < value.options.slotFlags.Length; i++)
                     {
-                        ModuleTemplate tmp = new ModuleTemplate();
-                        BotTemplate.chassisModules.Add(tmp);
-                        ChassisSlotList.Add(new Usercontrols.RobotTemplateSlot(tmp)
+
+                        List<EntityDefaults> foo = new List<EntityDefaults>();
+
+                        if (SelectedChassis.options.slotFlags[i].HasFlag(SlotFlags.chassis))
                         {
-                            ModulesList = Mods.Where(m => m.options.moduleFlag == SelectedChassis.options.slotFlags[i]).ToList()
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.chassis)).ToList());
+                        }
+                        if (SelectedChassis.options.slotFlags[i].HasFlag(SlotFlags.ew_and_engineering))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.ew_and_engineering)).ToList());
+                        }
+                        if (SelectedChassis.options.slotFlags[i].HasFlag(SlotFlags.head))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.head)).ToList());
+                        }
+                        if (SelectedChassis.options.slotFlags[i].HasFlag(SlotFlags.industrial))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.industrial)).ToList());
+                        }
+                        if (SelectedChassis.options.slotFlags[i].HasFlag(SlotFlags.large))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.large)).ToList());
+                        }
+                        if (SelectedChassis.options.slotFlags[i].HasFlag(SlotFlags.leg))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.leg)).ToList());
+                        }
+                        if (SelectedChassis.options.slotFlags[i].HasFlag(SlotFlags.medium))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.medium)).ToList());
+                        }
+                        if (SelectedChassis.options.slotFlags[i].HasFlag(SlotFlags.melee))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.melee)).ToList());
+                        }
+                        if (SelectedChassis.options.slotFlags[i].HasFlag(SlotFlags.missile))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.missile)).ToList());
+                        }
+                        if (SelectedChassis.options.slotFlags[i].HasFlag(SlotFlags.small))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.small)).ToList());
+                        }
+                        if (SelectedChassis.options.slotFlags[i].HasFlag(SlotFlags.turret))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.turret)).ToList());
+                        }
+
+                        ModuleTemplate tmp = new ModuleTemplate();
+                        tmp.slot = i + 1;
+                        BotTemplate.chassisModules.Add(tmp);
+                        ChassisSlotList.Add(new Usercontrols.RobotTemplateSlot()
+                        {
+                            ModulesList = foo,
+                            Module = tmp
+                            
                         });
                     }
                 }
@@ -285,18 +388,101 @@ namespace PerpTool.Dialogs
                 {
                     for (int i = 0; i < value.options.slotFlags.Length; i++)
                     {
+                        List<EntityDefaults> foo = new List<EntityDefaults>();
+
+                        if (SelectedLeg.options.slotFlags[i].HasFlag(SlotFlags.chassis))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.chassis)).ToList());
+                        }
+                        if (SelectedLeg.options.slotFlags[i].HasFlag(SlotFlags.ew_and_engineering))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.ew_and_engineering)).ToList());
+                        }
+                        if (SelectedLeg.options.slotFlags[i].HasFlag(SlotFlags.head))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.head)).ToList());
+                        }
+                        if (SelectedLeg.options.slotFlags[i].HasFlag(SlotFlags.industrial))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.industrial)).ToList());
+                        }
+                        if (SelectedLeg.options.slotFlags[i].HasFlag(SlotFlags.large))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.large)).ToList());
+                        }
+                        if (SelectedLeg.options.slotFlags[i].HasFlag(SlotFlags.leg))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.leg)).ToList());
+                        }
+                        if (SelectedLeg.options.slotFlags[i].HasFlag(SlotFlags.medium))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.medium)).ToList());
+                        }
+                        if (SelectedLeg.options.slotFlags[i].HasFlag(SlotFlags.melee))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.melee)).ToList());
+                        }
+                        if (SelectedLeg.options.slotFlags[i].HasFlag(SlotFlags.missile))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.missile)).ToList());
+                        }
+                        if (SelectedLeg.options.slotFlags[i].HasFlag(SlotFlags.small))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.small)).ToList());
+                        }
+                        if (SelectedLeg.options.slotFlags[i].HasFlag(SlotFlags.turret))
+                        {
+                            foo.AddRange(Mods.Where(m => m.options.moduleFlag.HasFlag(SlotFlags.turret)).ToList());
+                        }
+
                         ModuleTemplate tmp = new ModuleTemplate();
-                        BotTemplate.headModules.Add(tmp);
-                        LegSlotList.Add(new Usercontrols.RobotTemplateSlot(tmp) { });
+                        tmp.slot = i + 1;
+                        BotTemplate.legModules.Add(tmp);
+                        LegSlotList.Add(new Usercontrols.RobotTemplateSlot()
+                        {
+                            ModulesList = foo,
+                            Module = tmp
+
+                        });
                     }
                 }
                 OnPropertyChanged("SelectedLeg");
             }
         }
 
+        private EntityDefaults _selinv;
+        public EntityDefaults SelectedInv
+        {
+            get
+            {
+                return _selinv;
+            }
+            set
+            {
+                _selinv = value;
+                OnPropertyChanged("SelectedInv");
+            }
+        }
+
         private void Button_Save(object sender, RoutedEventArgs e)
         {
+            BotTemplate.containerID = this.SelectedInv.definition;
+            BotTemplate.robotID = this.SelectedBot.definition;
+            BotTemplate.chassisID = this.SelectedChassis.definition;
+            BotTemplate.headID = this.SelectedHead.definition;
+            BotTemplate.legID = this.SelectedLeg.definition;
 
+
+            RTemplate.description = BotTemplate.ToGenXY();
+            RTemplate.SaveNewBotTemplate();
         }
+
+
+        //private List<EntityDefaults> FilterEntitiesForSlots(EntityDefaults Entity)
+        //{
+        //    if (Entity.options.slotFlags[].HasFlag())
+
+        //}
+
     }
 }

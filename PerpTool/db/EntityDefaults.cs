@@ -37,13 +37,13 @@ namespace Perptool.db
         public int Chassis { get; set; }
         public int Leg { get; set; }
         public int Inventory { get; set; }
-        public int[] slotFlags { get; set; }
+        public SlotFlags[] slotFlags { get; set; }
         public decimal height { get; set; }
         public int max_locked_targets { get; set; }
         public decimal max_targeting_range { get; set; }
         public decimal sensor_strength { get; set; }
         public decimal cpu { get; set; }
-        public int moduleFlag { get; set; }
+        public SlotFlags moduleFlag { get; set; }
         public int ammoCapacity { get; set; }
         public long ammoType { get; set; }
 
@@ -1038,12 +1038,14 @@ namespace Perptool.db
             success = d.TryGetValue("inventory", out object inv) && success;
             EntityOpts.Inventory = Convert.ToInt32(inv);
 
-            success = d.TryGetValue("slotFlags", out object slotflags) && success;
-            EntityOpts.slotFlags = (int[])slotflags;
+            if (d.TryGetValue("slotFlags", out object slotflags))
+            {
+                EntityOpts.slotFlags = (SlotFlags[])slotflags;
+            }
 
             if (d.TryGetValue("moduleFlag", out object moduleflag))
             {
-                EntityOpts.moduleFlag = (int)moduleflag;
+                EntityOpts.moduleFlag = (SlotFlags)moduleflag;
             }
 
             if (d.TryGetValue("ammoCapacity", out object ammocap))

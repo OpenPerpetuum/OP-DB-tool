@@ -307,7 +307,7 @@ namespace Perptool.db
             }
         }
 
-        public GenxyString description
+        public string description
         {
             get
             {
@@ -342,7 +342,7 @@ namespace Perptool.db
         {
             this.id = 0;
             this.name = string.Empty;
-            this.description = new GenxyString();
+            this.description = string.Empty;
             this.note = string.Empty;
         }
 
@@ -360,6 +360,41 @@ namespace Perptool.db
                 command.Parameters.AddWithValue("@name", bot.recordName);
                 command.Parameters.AddWithValue("@description", bot.ToGenXY());
                 command.Parameters.AddWithValue("@note", bot.recordNote);
+
+                SqlConnection conn = new SqlConnection(this.ConnString);
+                conn.Open();
+                command.Connection = conn;
+                command.ExecuteNonQuery();
+                conn.Close();
+                query = command.CommandText;
+                foreach (SqlParameter p in command.Parameters)
+                {
+                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    {
+                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
+                    }
+                    else
+                    {
+                        query = query.Replace(p.ParameterName, p.Value.ToString());
+                    }
+                }
+            }
+            return query;
+        }
+
+        public string SaveNewBotTemplate()
+        {
+            string query = string.Empty;
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append("INSERT INTO robottemplates ([name], [description], [note]) VALUES (@name, @description, @note)");
+
+                command.CommandText = sqlCommand.ToString();
+
+                command.Parameters.AddWithValue("@name", this.name);
+                command.Parameters.AddWithValue("@description", this.description);
+                command.Parameters.AddWithValue("@note", this.note);
 
                 SqlConnection conn = new SqlConnection(this.ConnString);
                 conn.Open();
