@@ -892,7 +892,11 @@ namespace PerpTool
         {
             Dialogs.CreateRobotTemplate dlg = new Dialogs.CreateRobotTemplate();
             bool? result = dlg.ShowDialog();
-
+            if (result == true)
+            {
+                // FIXME: load the record here for the user to edit it.
+                dlg.Close();
+            }
            
         }
     }

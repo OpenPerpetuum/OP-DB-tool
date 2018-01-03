@@ -474,7 +474,20 @@ namespace PerpTool.Dialogs
 
 
             RTemplate.description = BotTemplate.ToGenXY();
-            RTemplate.SaveNewBotTemplate();
+            try
+            {
+                RTemplate.SaveNewBotTemplate();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error Saving!" + ex.Message, "Error", 0, MessageBoxImage.Error);
+                return;
+            }
+
+            MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
+
+            this.DialogResult = true;
+            this.Hide();
         }
 
 
