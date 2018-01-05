@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Perpetuum.GenXY;
+using PerpTool.Types;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -26,14 +28,38 @@ namespace Perptool.db
         {
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
+    }    
 
 
+    public class EntityOptions : INotifyPropertyChanged
+    {
+        public int Head { get; set; }
+        public int Chassis { get; set; }
+        public int Leg { get; set; }
+        public int Inventory { get; set; }
+        public SlotFlags[] slotFlags { get; set; }
+        public decimal height { get; set; }
+        public int max_locked_targets { get; set; }
+        public decimal max_targeting_range { get; set; }
+        public decimal sensor_strength { get; set; }
+        public decimal cpu { get; set; }
+        public SlotFlags moduleFlag { get; set; }
+        public int ammoCapacity { get; set; }
+        public long ammoType { get; set; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged(string name)
+        {
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
     }
+
 
     /// <summary>
     /// Table Class
     /// </summary>
-    class EntityDefaults : INotifyPropertyChanged
+    public class EntityDefaults : INotifyPropertyChanged
     {
 
         /// <summary>
@@ -54,17 +80,17 @@ namespace Perptool.db
         /// <summary>
         /// private field
         /// </summary>
-        private int privateattributeflags;
+        private Int64 privateattributeflags;
 
         /// <summary>
         /// private field
         /// </summary>
-        private int privatecategoryflags;
+        private Int64 privatecategoryflags;
 
         /// <summary>
         /// private field
         /// </summary>
-        private string privateoptions;
+        private EntityOptions privateoptions;
 
         /// <summary>
         /// private field
@@ -192,7 +218,7 @@ namespace Perptool.db
         /// <summary>
         /// Gets or sets public field attributeflags
         /// </summary>
-        public int attributeflags
+        public Int64 attributeflags
         {
             get
             {
@@ -209,7 +235,7 @@ namespace Perptool.db
         /// <summary>
         /// Gets or sets public field categoryflags
         /// </summary>
-        public int categoryflags
+        public Int64 categoryflags
         {
             get
             {
@@ -226,7 +252,7 @@ namespace Perptool.db
         /// <summary>
         /// Gets or sets public field options
         /// </summary>
-        public string options
+        public EntityOptions options
         {
             get
             {
@@ -427,7 +453,7 @@ namespace Perptool.db
             this.quantity = 0;
             this.attributeflags = 0;
             this.categoryflags = 0;
-            this.options = string.Empty;
+            this.options = null;
             this.note = string.Empty;
             this.enabled = 0;
             this.volume = 0;
@@ -541,7 +567,7 @@ namespace Perptool.db
                         this.quantity = Convert.ToInt32(reader["quantity"]);
                         this.attributeflags = Convert.ToInt32(reader["attributeflags"]);
                         this.categoryflags = Convert.ToInt32(reader["categoryflags"]);
-                        this.options = Convert.ToString(reader["options"]);
+                        this.options = CreateFromOptions(Convert.ToString(reader["options"]));
                         this.note = Convert.ToString(reader["note"]);
                         this.enabled = Convert.ToInt32(reader["enabled"]);
                         this.volume = Convert.ToDecimal(reader["volume"]);
@@ -550,8 +576,8 @@ namespace Perptool.db
                         this.health = Convert.ToDecimal(reader["health"]);
                         this.descriptiontoken = Convert.ToString(reader["descriptiontoken"]);
                         this.purchasable = Convert.ToInt32(reader["purchasable"]);
-                        this.tiertype = Convert.ToInt32(reader["tiertype"]);
-                        this.tierlevel = Convert.ToInt32(reader["tierlevel"]);
+                        if (reader["tiertype"] != DBNull.Value) { this.tiertype = Convert.ToInt32(reader["tiertype"]); }
+                        if (reader["tierlevel"] != DBNull.Value) { this.tierlevel = Convert.ToInt32(reader["tierlevel"]); }
                     }
                 }
                 conn.Dispose();
@@ -833,6 +859,206 @@ namespace Perptool.db
                 }
             }
             return list;
+        }
+
+
+        private CategoryFlags GetCategoryFlagsMask(CategoryFlags categoryFlags)
+        {
+            ulong num = ulong.MaxValue;
+            while ((categoryFlags & (CategoryFlags)num) > CategoryFlags.undefined)
+            {
+                num <<= 8;
+            }
+            return (CategoryFlags)(~(CategoryFlags)num);
+        }
+
+        public List<EntityDefaults> GetEntitiesByCategory(CategoryFlags CategoryFlag)
+        {
+            List<EntityDefaults> list = new List<EntityDefaults>();
+            using (SqlConnection conn = new SqlConnection(this.ConnString))
+            {
+                using (SqlCommand command = new SqlCommand())
+                {
+                    StringBuilder sqlCommand = new StringBuilder();
+                    sqlCommand.Append("select * from entitydefaults where (categoryflags & CAST(@mask as BIGINT)) = @flag");
+                    command.Parameters.AddWithValue("@mask", GetCategoryFlagsMask(CategoryFlag));
+                    command.Parameters.AddWithValue("@flag", CategoryFlag);
+
+                    command.CommandText = sqlCommand.ToString();
+                    command.Connection = conn;
+                    conn.Open();
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            EntityDefaults tmp = new EntityDefaults(this.ConnString);
+
+                            tmp.definition = Convert.ToInt32(reader["definition"]);
+                            tmp.definitionname = Convert.ToString(reader["definitionname"]);
+                            tmp.quantity = Convert.ToInt32(reader["quantity"]);
+                            tmp.attributeflags = Convert.ToInt64(reader["attributeflags"]);
+                            tmp.categoryflags = Convert.ToInt64(reader["categoryflags"]);
+                            tmp.options = CreateFromOptions(Convert.ToString(reader["options"]));
+                            tmp.note = Convert.ToString(reader["note"]);
+                            tmp.enabled = Convert.ToInt32(reader["enabled"]);
+                            tmp.volume = Convert.ToDecimal(reader["volume"]);
+                            tmp.mass = Convert.ToDecimal(reader["mass"]);
+                            tmp.hidden = Convert.ToString(reader["hidden"]);
+                            tmp.health = Convert.ToDecimal(reader["health"]);
+                            tmp.descriptiontoken = Convert.ToString(reader["descriptiontoken"]);
+                            tmp.purchasable = Convert.ToInt32(reader["purchasable"]);
+                            if (reader["tiertype"] != DBNull.Value) { tmp.tiertype = Convert.ToInt32(reader["tiertype"]); }
+                            if (reader["tierlevel"] != DBNull.Value) { tmp.tierlevel = Convert.ToInt32(reader["tierlevel"]); }
+
+                            list.Add(tmp);
+                        }
+                    }
+                }
+            }
+            return list;
+        }
+
+        // this sort of works.
+        public List<EntityDefaults> GetEntitiesByAttribute(AttributeFlags AttributeFlag)
+        {
+            List<EntityDefaults> list = new List<EntityDefaults>();
+            using (SqlConnection conn = new SqlConnection(this.ConnString))
+            {
+                using (SqlCommand command = new SqlCommand())
+                {
+                    StringBuilder sqlCommand = new StringBuilder();
+                    sqlCommand.Append("select * from entitydefaults where (attributeflags & @flag) = @flag ");
+                    command.Parameters.AddWithValue("@flag", AttributeFlag);
+
+                    command.CommandText = sqlCommand.ToString();
+                    command.Connection = conn;
+                    conn.Open();
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            EntityDefaults tmp = new EntityDefaults(this.ConnString);
+
+                            tmp.definition = Convert.ToInt32(reader["definition"]);
+                            tmp.definitionname = Convert.ToString(reader["definitionname"]);
+                            tmp.quantity = Convert.ToInt32(reader["quantity"]);
+                            tmp.attributeflags = Convert.ToInt64(reader["attributeflags"]);
+                            tmp.categoryflags = Convert.ToInt64(reader["categoryflags"]);
+                            tmp.options = CreateFromOptions(Convert.ToString(reader["options"]));
+                            tmp.note = Convert.ToString(reader["note"]);
+                            tmp.enabled = Convert.ToInt32(reader["enabled"]);
+                            tmp.volume = Convert.ToDecimal(reader["volume"]);
+                            tmp.mass = Convert.ToDecimal(reader["mass"]);
+                            tmp.hidden = Convert.ToString(reader["hidden"]);
+                            tmp.health = Convert.ToDecimal(reader["health"]);
+                            tmp.descriptiontoken = Convert.ToString(reader["descriptiontoken"]);
+                            tmp.purchasable = Convert.ToInt32(reader["purchasable"]);
+                            if (reader["tiertype"] != DBNull.Value) { tmp.tiertype = Convert.ToInt32(reader["tiertype"]); }
+                            if (reader["tierlevel"] != DBNull.Value) { tmp.tierlevel = Convert.ToInt32(reader["tierlevel"]); }
+
+                            list.Add(tmp);
+                        }
+                    }
+                }
+            }
+            return list;
+        }
+
+
+        // NOT SMART!
+        // Got a better idea?
+        // Yeah. Don't do it?
+        // ok, let's do it.
+        public List<EntityDefaults> GetAllEntities()
+        {
+            List<EntityDefaults> list = new List<EntityDefaults>();
+            using (SqlConnection conn = new SqlConnection(this.ConnString))
+            {
+                using (SqlCommand command = new SqlCommand())
+                {
+                    StringBuilder sqlCommand = new StringBuilder();
+                    sqlCommand.Append("select * from entitydefaults;");
+
+                    command.CommandText = sqlCommand.ToString();
+                    command.Connection = conn;
+                    conn.Open();
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            EntityDefaults tmp = new EntityDefaults(this.ConnString);
+
+                            tmp.definition = Convert.ToInt32(reader["definition"]);
+                            tmp.definitionname = Convert.ToString(reader["definitionname"]);
+                            tmp.quantity = Convert.ToInt32(reader["quantity"]);
+                            tmp.attributeflags = Convert.ToInt64(reader["attributeflags"]);
+                            tmp.categoryflags = Convert.ToInt64(reader["categoryflags"]);
+                            tmp.options = CreateFromOptions(Convert.ToString(reader["options"]));
+                            tmp.note = Convert.ToString(reader["note"]);
+                            tmp.enabled = Convert.ToInt32(reader["enabled"]);
+                            tmp.volume = Convert.ToDecimal(reader["volume"]);
+                            tmp.mass = Convert.ToDecimal(reader["mass"]);
+                            tmp.hidden = Convert.ToString(reader["hidden"]);
+                            tmp.health = Convert.ToDecimal(reader["health"]);
+                            tmp.descriptiontoken = Convert.ToString(reader["descriptiontoken"]);
+                            tmp.purchasable = Convert.ToInt32(reader["purchasable"]);
+                            if (reader["tiertype"] != DBNull.Value) { tmp.tiertype = Convert.ToInt32(reader["tiertype"]); }
+                            if (reader["tierlevel"] != DBNull.Value) { tmp.tierlevel = Convert.ToInt32(reader["tierlevel"]); }
+
+                            list.Add(tmp);
+                        }
+                    }
+                }
+            }
+            return list;
+        }
+
+
+        private EntityOptions CreateFromOptions(string descGenXY)
+        {
+            Dictionary<string, object> dict = GenxyConverter.Deserialize(descGenXY);
+            EntityOptions tmp = GetEntityOptionsFromXY(dict);
+            return tmp;
+        }
+
+
+        private static EntityOptions GetEntityOptionsFromXY(IDictionary<string, object> d)
+        {
+
+            EntityOptions EntityOpts = new EntityOptions();
+            bool success = d.TryGetValue("head", out object head);
+            EntityOpts.Head = (Convert.ToInt32(head));
+
+            success = d.TryGetValue("chassis", out object chassis) && success;
+            EntityOpts.Chassis = Convert.ToInt32(chassis);
+
+            success = d.TryGetValue("leg", out object leg) && success;
+            EntityOpts.Leg = Convert.ToInt32(leg);
+
+            success = d.TryGetValue("inventory", out object inv) && success;
+            EntityOpts.Inventory = Convert.ToInt32(inv);
+
+            if (d.TryGetValue("slotFlags", out object slotflags))
+            {
+                EntityOpts.slotFlags = (SlotFlags[])slotflags;
+            }
+
+            if (d.TryGetValue("moduleFlag", out object moduleflag))
+            {
+                EntityOpts.moduleFlag = (SlotFlags)moduleflag;
+            }
+
+            if (d.TryGetValue("ammoCapacity", out object ammocap))
+            {
+                EntityOpts.ammoCapacity = (int)ammocap;
+            }
+
+            if (d.TryGetValue("ammoType", out object ammotype))
+            {
+                EntityOpts.ammoType = (long)ammotype;
+            }
+
+            return EntityOpts;
         }
 
         /// <summary>

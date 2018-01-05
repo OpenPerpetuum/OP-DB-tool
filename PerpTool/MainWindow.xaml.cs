@@ -887,5 +887,17 @@ namespace PerpTool
         private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
         }
+
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+            Dialogs.CreateRobotTemplate dlg = new Dialogs.CreateRobotTemplate();
+            bool? result = dlg.ShowDialog();
+            if (result == true)
+            {
+                // FIXME: load the record here for the user to edit it.
+                dlg.Close();
+            }
+           
+        }
     }
 }
