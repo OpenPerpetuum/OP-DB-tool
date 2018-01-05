@@ -29,9 +29,12 @@
     <Grid Margin="0,0,0,16">
         <TabControl Margin="10,0">
             <TabItem Header="EntityDefault Editor">
-                <StackPanel Background="#FFE5E5E5">
-                    <ComboBox x:Name="combo" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="600" ItemsSource="{Binding EntityItems}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="ComboBox_DropDownClosed"/>
-                    <DataGrid Margin="10,10,10,10" ItemsSource="{Binding selectedEntity}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Visible" Height="Auto" >
+                <Grid Background="#FFE5E5E5">
+                    <Label Content="Entity Defs" Margin="10,0,0,426" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="82"/>
+                    <Label Content="Category" HorizontalAlignment="Left" Margin="10,0,0,466" VerticalAlignment="Bottom" Width="77"/>
+                    <ComboBox x:Name="categorycombo" Margin="92,0,0,466" VerticalAlignment="Bottom" ItemsSource="{Binding CatFlags}" DropDownClosed="ComboBox_DropDownClosed_CatFlag" HorizontalAlignment="Left" Width="530"/>
+                    <ComboBox x:Name="combo" HorizontalAlignment="Left" Margin="92,0,0,429" VerticalAlignment="Bottom" Width="530" ItemsSource="{Binding EntityItems}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="ComboBox_DropDownClosed"/>
+                    <DataGrid Margin="10,109,0,309" ItemsSource="{Binding selectedEntity}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Visible" Height="Auto" HorizontalAlignment="Left" Width="612" >
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="ID" Width="55" Binding="{Binding Definition}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
                             <DataGridTextColumn Header="Name" Width="*" Binding="{Binding Name}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
@@ -40,7 +43,7 @@
                             <DataGridTextColumn Header="Options" Width="*" Binding="{Binding Options}"/>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <DataGrid Margin="10,10,10,10" ItemsSource="{Binding FieldValuesList}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Visible" Height="Auto" >
+                    <DataGrid Margin="10,0,0,193" ItemsSource="{Binding FieldValuesList}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Visible" Height="111" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="612" >
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Field" Width="250" Binding="{Binding FieldName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
                             <DataGridTextColumn Header="Value" Width="55" Binding="{Binding FieldValue}"/>
@@ -51,8 +54,8 @@
                         </DataGrid.Columns>
                     </DataGrid>
 
-                    <Button Content="Save Changes" Margin="274,0,0,0" Click="Button_Click" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="80"/>
-                </StackPanel>
+                    <Button Content="Save Changes" Margin="273,465,0,0" Click="Button_Click" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="80"/>
+                </Grid>
             </TabItem>
 
             <TabItem Header="Bot Bonuses">

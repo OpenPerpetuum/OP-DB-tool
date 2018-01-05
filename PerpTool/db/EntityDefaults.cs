@@ -28,7 +28,7 @@ namespace Perptool.db
         {
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
-    }    
+    }
 
 
     public class EntityOptions : INotifyPropertyChanged
@@ -61,7 +61,7 @@ namespace Perptool.db
     /// </summary>
     public class EntityDefaults : INotifyPropertyChanged
     {
-
+        #region privates
         /// <summary>
         /// private field
         /// </summary>
@@ -141,7 +141,7 @@ namespace Perptool.db
         /// private field
         /// </summary>
         private int privatetierlevel;
-
+        #endregion
         /// <summary>
         /// Initializes a new instance of the <see cref='entitydefaultsTbl' /> class.
         /// </summary>
@@ -862,6 +862,29 @@ namespace Perptool.db
         }
 
 
+        public static EntityItems GetEntityItem(EntityDefaults entity)
+        {
+            EntityItems item = new EntityItems();
+            item.Definition = entity.definition;
+            item.Mass = entity.mass;
+            item.Name = entity.definitionname;
+            //item.Options = entity.options;
+            item.Volume = entity.volume;
+            return item;
+        }
+
+        public List<EntityItems> GetEntityItemsByCategory(CategoryFlags flag)
+        {
+            List<EntityDefaults> list = this.GetEntitiesByCategory(flag);
+            List<EntityItems> items = new List<EntityItems>();
+            foreach (EntityDefaults def in list)
+            {
+                items.Add(EntityDefaults.GetEntityItem(def));
+            }
+            return items;
+        }
+
+
         private CategoryFlags GetCategoryFlagsMask(CategoryFlags categoryFlags)
         {
             ulong num = ulong.MaxValue;
@@ -871,6 +894,8 @@ namespace Perptool.db
             }
             return (CategoryFlags)(~(CategoryFlags)num);
         }
+
+
 
         public List<EntityDefaults> GetEntitiesByCategory(CategoryFlags CategoryFlag)
         {

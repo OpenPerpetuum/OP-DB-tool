@@ -7,6 +7,8 @@ using Perptool.db;
 using System.ComponentModel;
 using System.IO;
 using System.Collections.ObjectModel;
+using PerpTool.Types;
+using System.Linq;
 
 namespace PerpTool
 {
@@ -53,6 +55,8 @@ namespace PerpTool
             NPCTemplates = NPCBotTemplates.getAll();
             AllNPCPresences = NPCPresenceTable.getAll();
 
+            CatFlags = this.GetAllCategoryFlags();
+
             this.AmmoList = Entities.GetAllAmmo();
             this.ModuleList = Entities.GetAllModules();
             this.NPCEntities = Entities.GetAllNPCEntities();
@@ -63,7 +67,7 @@ namespace PerpTool
             this.selectedEntity = new ObservableCollection<EntityItems>();
             this.DataContext = this;
         }
-
+        public IEnumerable<CategoryFlags> CatFlags { get; set; }
         private EntityItems currentSelection { get; set; }
         private AggregateModifiers AgModifiers { get; set; }
         private AggregateFields AgFields { get; set; }
@@ -80,13 +84,42 @@ namespace PerpTool
         public List<EntityItems> AmmoList { get; set; }
         public List<EntityItems> ModuleList { get; set; }
         public List<EntityItems> BotItems { get; set; }
-        public List<EntityItems> EntityItems { get; set; }
         public List<EntityItems> NPCEntities { get; set; }
         public List<NPCPresenceData> AllNPCPresences { get; set; }
 
 
 
+
+
         #region EntityDefaults
+
+        // New methods to filter by CF
+        private List<EntityItems> _privlist;
+        public List<EntityItems> EntityItems
+        {
+            get
+            {
+                return this._privlist;
+            }
+
+            set
+            {
+                this._privlist = value;
+                this.OnPropertyChanged("EntityItems");
+            }
+        }
+
+        public IEnumerable<CategoryFlags> GetAllCategoryFlags()
+        {
+            return Enum.GetValues(typeof(CategoryFlags)).Cast<CategoryFlags>();
+        }
+
+        private void ComboBox_DropDownClosed_CatFlag(object sender, EventArgs e)
+        {
+            CategoryFlags flag = (CategoryFlags)categorycombo.SelectedItem;
+            EntityItems = Entities.GetEntityItemsByCategory(flag);
+
+        }
 
         //TODO hack, using observable collection for one item BAD
         private ObservableCollection<EntityItems> _selectedEntity;
@@ -845,19 +878,21 @@ namespace PerpTool
         {
             NPCFlockData flock = (NPCFlockData)flockgrid.SelectedItem;
 
-            if (selectedNPC == null || flock == null) {
+            if (selectedNPC == null || flock == null)
+            {
                 MessageBox.Show("Select NPC from dropdown, click on the flock you want to change, then press button.", "Warn", 0, MessageBoxImage.Error);
                 return;
             }
             int index = this.NPCFlockList.IndexOf(flock);
-            if (index == -1) {
+            if (index == -1)
+            {
                 MessageBox.Show("Invalid Flock Selection?!", "Error", 0, MessageBoxImage.Error);
                 return;
             }
             flock.definition = this.selectedNPC.Definition;
             flock.NPCDefinitionName = this.selectedNPC.Name;
             this.NPCFlockList[index] = flock;
-            
+
 
         }
 
@@ -897,7 +932,7 @@ namespace PerpTool
                 // FIXME: load the record here for the user to edit it.
                 dlg.Close();
             }
-           
+
         }
     }
 }
