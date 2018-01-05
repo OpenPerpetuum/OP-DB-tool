@@ -8,17 +8,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data.SqlClient;
 using System.Collections.ObjectModel;
+using PerpTool.db;
 
 namespace Perptool.db
 {
-    public enum DBAction
-    {
-        UPDATE,
-        INSERT,
-        DELETE
-    }
-
-
     public class LootItem
     {
         public int NPCDefinition { get; set; }

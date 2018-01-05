@@ -1,0 +1,38 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace PerpTool.db
+{
+    public static class Utilities
+    {
+
+        public static int handleNullableInt(object readValue)
+        {
+            if (DBNull.Value == readValue)
+            {
+                return -1;
+            }
+            return Convert.ToInt32(readValue);
+        }
+
+        public static object getNullableInt(int v)
+        {
+            if (v < 0)
+            {
+                return (object)DBNull.Value;
+            }
+            return v;
+        }
+
+    }
+
+    public enum DBAction
+    {
+        UPDATE,
+        INSERT,
+        DELETE
+    }
+}

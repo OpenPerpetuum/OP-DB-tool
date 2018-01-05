@@ -53,6 +53,59 @@ namespace Perptool.db
         {
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
+
+        private Dictionary<string, object> ToDictionary()
+        {
+            Dictionary<string, object> dictionary = new Dictionary<string, object>();
+            if (this.Head > 0)
+            {
+                dictionary["head"] = this.Head;
+            }
+            if (this.Chassis > 0)
+            {
+                dictionary["chassis"] = this.Chassis;
+            }
+            if (this.Leg > 0)
+            {
+                dictionary["leg"] = this.Leg;
+            }
+            if (this.Inventory > 0)
+            {
+                dictionary["container"] = this.Inventory;
+            }
+            if (this.slotFlags != null && this.slotFlags.Length > 0)
+            {
+                dictionary["slotFlags"] = this.slotFlags;
+            }
+            if (this.moduleFlag > 0)
+            {
+                dictionary["moduleFlag"] = this.moduleFlag;
+            }
+            if (this.ammoCapacity > 0)
+            {
+                dictionary["ammoCapacity"] = this.ammoCapacity;
+            }
+            if (this.ammoCapacity > 0)
+            {
+                dictionary["ammoCapacity"] = this.ammoCapacity;
+            }
+            if (this.ammoType > 0)
+            {
+                dictionary["ammoType"] = this.ammoType;
+            }
+            return dictionary;
+        }
+
+        public string ToGenXY()
+        {
+            Dictionary<string, object> d = this.ToDictionary();
+            if (d.Count > 0)
+            {
+                return GenxyConverter.Serialize(d);
+            }
+            return "";
+
+        }
     }
 
 
@@ -469,24 +522,23 @@ namespace Perptool.db
         /// <summary>
         /// saves a new record
         /// </summary>
-        public void SaveNewRecord()
+        public string SaveNewRecord()
         {
+            String query = "";
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("Insert into entitydefaults ");
-                sqlCommand.Append("( definition ,  definitionname ,  quantity ,  attributeflags ,  categoryflags ,  options ,  note ,  enabled ,  volume ,  mass ,  hidden ,  health ,  descriptiontoken ,  purchasable ,  tiertype ,  tierlevel ) ");
-                sqlCommand.Append(" Values ");
-                sqlCommand.Append("(@definition, @definitionname, @quantity, @attributeflags, @categoryflags, @options, @note, @enabled, @volume, @mass, @hidden, @health, @descriptiontoken, @purchasable, @tiertype, @tierlevel) ");
+                sqlCommand.Append(@"INSERT INTO entitydefaults ( definitionname ,  quantity ,  attributeflags ,  categoryflags ,  options ,  note ,  enabled ,  volume ,  mass ,  hidden , 
+                health ,  descriptiontoken ,  purchasable ,  tiertype ,  tierlevel ) 
+                VALUES ( @defname, @quantity, @attributeflags, @categoryflags, @options, @note, @enabled, @volume, @mass, @hidden, @health, @descriptiontoken, @purchasable, @tiertype, @tierlevel); ");
 
                 command.CommandText = sqlCommand.ToString();
 
-                command.Parameters.AddWithValue("@definition", this.definition);
-                command.Parameters.AddWithValue("@definitionname", this.definitionname);
+                command.Parameters.AddWithValue("@defname", this.definitionname);
                 command.Parameters.AddWithValue("@quantity", this.quantity);
                 command.Parameters.AddWithValue("@attributeflags", this.attributeflags);
                 command.Parameters.AddWithValue("@categoryflags", this.categoryflags);
-                command.Parameters.AddWithValue("@options", this.options);
+                command.Parameters.AddWithValue("@options", this.options.ToGenXY());
                 command.Parameters.AddWithValue("@note", this.note);
                 command.Parameters.AddWithValue("@enabled", this.enabled);
                 command.Parameters.AddWithValue("@volume", this.volume);
@@ -503,27 +555,52 @@ namespace Perptool.db
                 command.Connection = conn;
                 command.ExecuteNonQuery();
                 conn.Close();
+
+                if (this.note == null)
+                {
+                    command.Parameters.AddWithValue("@note", string.Empty);
+                }
+                else
+                {
+                    command.Parameters.AddWithValue("@note", this.note);
+                }
+                query = command.CommandText;
+                foreach (SqlParameter p in command.Parameters)
+                {
+                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    {
+                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
+                    }
+                    else
+                    {
+                        query = query.Replace(p.ParameterName, p.Value.ToString());
+                    }
+                }
             }
+            return query;
         }
+
+
 
         /// <summary>
         /// saves existing record
         /// </summary>
-        public void Save()
+        public string Save()
         {
+            string query = "";
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE entitydefaults Set  definitionname = @definitionname,  quantity = @quantity,  attributeflags = @attributeflags,  categoryflags = @categoryflags,  options = @options,  note = @note,  enabled = @enabled,  volume = @volume,  mass = @mass,  hidden = @hidden,  health = @health,  descriptiontoken = @descriptiontoken,  purchasable = @purchasable,  tiertype = @tiertype,  tierlevel = @tierlevel where definition = @definition;");
+                sqlCommand.Append("UPDATE entitydefaults Set  definitionname = @defname,  quantity = @quantity,  attributeflags = @attributeflags,  categoryflags = @categoryflags,  options = @options,  note = @note,  enabled = @enabled,  volume = @volume,  mass = @mass,  hidden = @hidden,  health = @health,  descriptiontoken = @descriptiontoken,  purchasable = @purchasable,  tiertype = @tiertype,  tierlevel = @tierlevel where definition = @definition;");
 
                 command.CommandText = sqlCommand.ToString();
 
                 command.Parameters.AddWithValue("@definition", this.definition);
-                command.Parameters.AddWithValue("@definitionname", this.definitionname);
+                command.Parameters.AddWithValue("@defname", this.definitionname);
                 command.Parameters.AddWithValue("@quantity", this.quantity);
                 command.Parameters.AddWithValue("@attributeflags", this.attributeflags);
                 command.Parameters.AddWithValue("@categoryflags", this.categoryflags);
-                command.Parameters.AddWithValue("@options", this.options);
+                command.Parameters.AddWithValue("@options", this.options.ToGenXY());
                 command.Parameters.AddWithValue("@note", this.note);
                 command.Parameters.AddWithValue("@enabled", this.enabled);
                 command.Parameters.AddWithValue("@volume", this.volume);
@@ -540,14 +617,36 @@ namespace Perptool.db
                 command.Connection = conn;
                 command.ExecuteNonQuery();
                 conn.Close();
+
+                if (this.note == null)
+                {
+                    command.Parameters.AddWithValue("@note", string.Empty);
+                }
+                else
+                {
+                    command.Parameters.AddWithValue("@note", this.note);
+                }
+                query = command.CommandText;
+                foreach (SqlParameter p in command.Parameters)
+                {
+                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    {
+                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
+                    }
+                    else
+                    {
+                        query = query.Replace(p.ParameterName, p.Value.ToString());
+                    }
+                }
             }
+            return query;
         }
 
         /// <summary>
         /// gets a record by its record id
         /// </summary>
         /// <param name='recnum'>record number</param>
-        public void GetById(int definition)
+        public EntityDefaults GetById(int definition)
         {
             SqlConnection conn = new SqlConnection(this.ConnString);
             using (SqlCommand command = new SqlCommand())
@@ -582,6 +681,7 @@ namespace Perptool.db
                 }
                 conn.Dispose();
             }
+            return this;
         }
 
         public EntityItems GetEntityByID(int definition)
@@ -673,6 +773,51 @@ namespace Perptool.db
         }
 
         public string SaveWithEntityItemChange(EntityItems item)
+        {
+            string query = "";
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append("UPDATE entitydefaults SET options=@options, volume=@volume, mass=@mass WHERE definition=@definition;");
+
+                command.CommandText = sqlCommand.ToString();
+
+                command.Parameters.AddWithValue("@definition", item.Definition);
+                command.Parameters.AddWithValue("@options", item.Options);
+                command.Parameters.AddWithValue("@volume", item.Volume);
+                command.Parameters.AddWithValue("@mass", item.Mass);
+
+                SqlConnection conn = new SqlConnection(this.ConnString);
+                conn.Open();
+                command.Connection = conn;
+                command.ExecuteNonQuery();
+                conn.Close();
+
+                if (this.note == null)
+                {
+                    command.Parameters.AddWithValue("@note", string.Empty);
+                }
+                else
+                {
+                    command.Parameters.AddWithValue("@note", this.note);
+                }
+                query = command.CommandText;
+                foreach (SqlParameter p in command.Parameters)
+                {
+                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    {
+                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
+                    }
+                    else
+                    {
+                        query = query.Replace(p.ParameterName, p.Value.ToString());
+                    }
+                }
+            }
+            return query;
+        }
+
+        public string InsertWithEntityItemChange(EntityItems item)
         {
             string query = "";
             using (SqlCommand command = new SqlCommand())

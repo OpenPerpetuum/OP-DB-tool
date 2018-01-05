@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PerpTool.db;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -17,7 +18,7 @@ namespace Perptool.db
     /// <summary>
     /// Table Class
     /// </summary>
-    class AggregateFields : INotifyPropertyChanged
+    public class AggregateFields : INotifyPropertyChanged
     {
         /// <summary>
         /// private field
@@ -328,14 +329,52 @@ namespace Perptool.db
                             this.measurementoffset = Convert.ToDecimal(reader["measurementoffset"]);
                             this.category = Convert.ToInt32(reader["category"]);
                             this.digits = Convert.ToInt32(reader["digits"]);
-                            this.moreisbetter = Convert.ToInt32(reader["moreisbetter"]);
-                            this.usedinconfig = Convert.ToInt32(reader["usedinconfig"]);
+                            this.moreisbetter = Utilities.handleNullableInt(reader["moreisbetter"]);
+                            this.usedinconfig = Utilities.handleNullableInt(reader["usedinconfig"]);
                             this.note = Convert.ToString(reader["note"]);
                         }
                     }
                 }
             }
         }
+
+        public List<AggregateFields> GetAllFields()
+        {
+            List<AggregateFields> list = new List<AggregateFields>();
+            using (SqlConnection conn = new SqlConnection(this.ConnString))
+            {
+                using (SqlCommand command = new SqlCommand())
+                {
+                    StringBuilder sqlCommand = new StringBuilder();
+                    sqlCommand.Append("SELECT * from aggregatefields;");
+                    command.CommandText = sqlCommand.ToString();
+                    command.Connection = conn;
+                    conn.Open();
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            AggregateFields af = new AggregateFields(this.ConnString);
+                            af.id = Convert.ToInt32(reader["id"]);
+                            af.name = Convert.ToString(reader["name"]);
+                            af.formula = Convert.ToInt32(reader["formula"]);
+                            af.measurementunit = Convert.ToString(reader["measurementunit"]);
+                            af.measurementmultiplier = Convert.ToDecimal(reader["measurementmultiplier"]);
+                            af.measurementoffset = Convert.ToDecimal(reader["measurementoffset"]);
+                            af.category = Convert.ToInt32(reader["category"]);
+                            af.digits = Convert.ToInt32(reader["digits"]);
+                            af.moreisbetter = Utilities.handleNullableInt(reader["moreisbetter"]);
+                            af.usedinconfig = Utilities.handleNullableInt(reader["usedinconfig"]);
+                            af.note = Convert.ToString(reader["note"]);
+                            list.Add(af);
+                        }
+                    }
+                }
+            }
+            return list;
+        }
+
+        
 
         /// <summary>
         /// saves a new record
@@ -360,8 +399,8 @@ namespace Perptool.db
                 command.Parameters.AddWithValue("@measurementoffset", this.measurementoffset);
                 command.Parameters.AddWithValue("@category", this.category);
                 command.Parameters.AddWithValue("@digits", this.digits);
-                command.Parameters.AddWithValue("@moreisbetter", this.moreisbetter);
-                command.Parameters.AddWithValue("@usedinconfig", this.usedinconfig);
+                command.Parameters.AddWithValue("@moreisbetter", Utilities.getNullableInt(this.moreisbetter));
+                command.Parameters.AddWithValue("@usedinconfig", Utilities.getNullableInt(this.usedinconfig));
                 command.Parameters.AddWithValue("@note", this.note);
 
                 SqlConnection conn = new SqlConnection(this.ConnString);
@@ -391,8 +430,8 @@ namespace Perptool.db
                 command.Parameters.AddWithValue("@measurementoffset", this.measurementoffset);
                 command.Parameters.AddWithValue("@category", this.category);
                 command.Parameters.AddWithValue("@digits", this.digits);
-                command.Parameters.AddWithValue("@moreisbetter", this.moreisbetter);
-                command.Parameters.AddWithValue("@usedinconfig", this.usedinconfig);
+                command.Parameters.AddWithValue("@moreisbetter", Utilities.getNullableInt(this.moreisbetter));
+                command.Parameters.AddWithValue("@usedinconfig", Utilities.getNullableInt(this.usedinconfig));
                 if (this.note == null)
                 {
                     command.Parameters.AddWithValue("@note", string.Empty);
@@ -409,9 +448,6 @@ namespace Perptool.db
                 query = command.CommandText;
                 foreach (SqlParameter p in command.Parameters)
                 {
-                    Console.WriteLine(p.SqlDbType.ToString());
-                    Console.WriteLine(p.SqlValue.ToString());
-                    Console.WriteLine(p.Value.ToString());
                     if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
                     {
                         query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");

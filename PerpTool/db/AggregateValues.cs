@@ -1,6 +1,9 @@
-﻿using System;
+﻿using PerpTool.db;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Text;
@@ -12,12 +15,14 @@ namespace Perptool.db
     {
         public int FieldId { get; set; }
         public int ValueId { get; set; }
-        public string  FieldName { get; set; }
+        public int Definition { get; set; }
+        public string FieldName { get; set; }
         public decimal FieldValue { get; set; }
         public string FieldUnits { get; set; }
         public decimal FieldOffset { get; set; }
         public decimal FieldMultiplier { get; set; }
         public int FieldFormula { get; set; }
+        public DBAction dBAction { get; set; }
     }
 
 
@@ -147,33 +152,6 @@ namespace Perptool.db
             this.value = 0;
         }
 
-        /// <summary>
-        /// saves a new record
-        /// </summary>
-        public void SaveNewRecord()
-        {
-            using (SqlCommand command = new SqlCommand())
-            {
-                StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("Insert into aggregatevalues ");
-                sqlCommand.Append("(`id`, `definition`, `field`, `value`) ");
-                sqlCommand.Append(" Values ");
-                sqlCommand.Append("(@id, @definition, @field, @value) ");
-
-                command.CommandText = sqlCommand.ToString();
-
-                command.Parameters.AddWithValue("@id", this.id);
-                command.Parameters.AddWithValue("@definition", this.definition);
-                command.Parameters.AddWithValue("@field", this.field);
-                command.Parameters.AddWithValue("@value", this.value);
-
-                SqlConnection conn = new SqlConnection(this.ConnString);
-                conn.Open();
-                command.Connection = conn;
-                command.ExecuteNonQuery();
-                conn.Close();
-            }
-        }
 
         /// <summary>
         /// saves existing record
@@ -207,9 +185,9 @@ namespace Perptool.db
         }
 
 
-        public List<FieldValuesStuff> GetValuesForEntity(int EntityId)
+        public ObservableCollection<FieldValuesStuff> GetValuesForEntity(int EntityId)
         {
-            List<FieldValuesStuff> list = new List<FieldValuesStuff>();
+            ObservableCollection<FieldValuesStuff> list = new ObservableCollection<FieldValuesStuff>();
             using (SqlConnection conn = new SqlConnection(this.ConnString))
             {
                 using (SqlCommand command = new SqlCommand())
@@ -227,6 +205,8 @@ namespace Perptool.db
                         while (reader.Read())
                         {
                             FieldValuesStuff tmp = new FieldValuesStuff();
+                            tmp.dBAction = DBAction.UPDATE;
+                            tmp.Definition = EntityId;
                             tmp.FieldId = Convert.ToInt32(reader["fieldid"]);
                             tmp.ValueId = Convert.ToInt32(reader["valueid"]);
                             tmp.FieldName = Convert.ToString(reader["fieldname"]);
@@ -267,6 +247,40 @@ namespace Perptool.db
                     }
                 }
             }
+        }
+
+        public string Insert(FieldValuesStuff data)
+        {
+            string query = "";
+
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append("INSERT INTO [dbo].[aggregatevalues] ([definition],[field],[value]) VALUES (@definition, @field, @value);");
+                command.CommandText = sqlCommand.ToString();
+                command.Parameters.AddWithValue("@definition", data.Definition);
+                command.Parameters.AddWithValue("@field", data.FieldId);
+                command.Parameters.AddWithValue("@value", data.FieldValue);
+
+                SqlConnection conn = new SqlConnection(this.ConnString);
+                conn.Open();
+                command.Connection = conn;
+                command.ExecuteNonQuery();
+                conn.Close();
+                query = command.CommandText;
+                foreach (SqlParameter p in command.Parameters)
+                {
+                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    {
+                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
+                    }
+                    else
+                    {
+                        query = query.Replace(p.ParameterName, p.Value.ToString());
+                    }
+                }
+            }
+            return query;
         }
 
         /// <summary>

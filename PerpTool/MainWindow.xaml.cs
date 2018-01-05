@@ -9,6 +9,7 @@ using System.IO;
 using System.Collections.ObjectModel;
 using PerpTool.Types;
 using System.Linq;
+using PerpTool.db;
 
 namespace PerpTool
 {
@@ -55,8 +56,8 @@ namespace PerpTool
             NPCTemplates = NPCBotTemplates.getAll();
             AllNPCPresences = NPCPresenceTable.getAll();
 
-            CatFlags = this.GetAllCategoryFlags();
-
+            this.CatFlags = this.GetAllCategoryFlags();
+            this.AllAggregateFields = AgFields.GetAllFields();
             this.AmmoList = Entities.GetAllAmmo();
             this.ModuleList = Entities.GetAllModules();
             this.NPCEntities = Entities.GetAllNPCEntities();
@@ -64,7 +65,7 @@ namespace PerpTool
             this.SelectedNPCPresence = new ObservableCollection<NPCPresenceData>();
             this.NPCFlockList = new ObservableCollection<NPCFlockData>();
             this.BotTemplate = new ObservableCollection<RobotTemplate>();
-            this.selectedEntity = new ObservableCollection<EntityItems>();
+            this.selectedEntity = new ObservableCollection<EntityDefaults>();
             this.DataContext = this;
         }
         public IEnumerable<CategoryFlags> CatFlags { get; set; }
@@ -86,9 +87,7 @@ namespace PerpTool
         public List<EntityItems> BotItems { get; set; }
         public List<EntityItems> NPCEntities { get; set; }
         public List<NPCPresenceData> AllNPCPresences { get; set; }
-
-
-
+        public List<AggregateFields> AllAggregateFields { get; set; }
 
 
         #region EntityDefaults
@@ -108,36 +107,22 @@ namespace PerpTool
                 this.OnPropertyChanged("EntityItems");
             }
         }
-
-        public IEnumerable<CategoryFlags> GetAllCategoryFlags()
-        {
-            return Enum.GetValues(typeof(CategoryFlags)).Cast<CategoryFlags>();
-        }
-
-        private void ComboBox_DropDownClosed_CatFlag(object sender, EventArgs e)
-        {
-            CategoryFlags flag = (CategoryFlags)categorycombo.SelectedItem;
-            EntityItems = Entities.GetEntityItemsByCategory(flag);
-
-        }
-
-        //TODO hack, using observable collection for one item BAD
-        private ObservableCollection<EntityItems> _selectedEntity;
-        public ObservableCollection<EntityItems> selectedEntity
+        private ObservableCollection<EntityDefaults> _privEntity;
+        public ObservableCollection<EntityDefaults> selectedEntity
         {
             get
             {
-                return _selectedEntity;
+                return this._privEntity;
             }
             set
             {
-                _selectedEntity = value;
-                OnPropertyChanged("selectedEntity");
+                this._privEntity = value;
+                this.OnPropertyChanged("selectedEntity");
             }
         }
 
-        private List<FieldValuesStuff> _valstuffs;
-        public List<FieldValuesStuff> FieldValuesList
+        private ObservableCollection<FieldValuesStuff> _valstuffs;
+        public ObservableCollection<FieldValuesStuff> FieldValuesList
         {
             get
             {
@@ -150,12 +135,97 @@ namespace PerpTool
             }
         }
 
+        public IEnumerable<CategoryFlags> GetAllCategoryFlags()
+        {
+            return Enum.GetValues(typeof(CategoryFlags)).Cast<CategoryFlags>();
+        }
+
+        private void ComboBox_DropDownClosed_CatFlag(object sender, EventArgs e)
+        {
+            CategoryFlags flag = (CategoryFlags)categorycombo.SelectedItem;
+            EntityItems = Entities.GetEntityItemsByCategory(flag);
+
+        }
+        private AggregateFields selectedAggField;
+        private void ComboBox_DropDownClosed_AggField(object sender, EventArgs e)
+        {
+            this.selectedAggField = (AggregateFields)AggFieldCombo.SelectedItem;
+            System.Console.WriteLine(this.selectedAggField);
+        }
+        private void AggFieldAdd_Click(object sender, EventArgs e)
+        {
+            if (this.selectedAggField == null || this.selectedEntity.Count != 1) { return; }
+            FieldValuesStuff f = new FieldValuesStuff();
+            f.dBAction = DBAction.INSERT;
+            f.Definition = this.selectedEntity[0].definition;
+            f.FieldFormula = this.selectedAggField.formula;
+            f.FieldId = this.selectedAggField.id;
+            f.FieldMultiplier = this.selectedAggField.measurementmultiplier;
+            f.FieldName = this.selectedAggField.name;
+            f.FieldOffset = this.selectedAggField.measurementoffset;
+            f.FieldUnits = this.selectedAggField.measurementunit;
+            f.FieldValue = 0;
+            f.ValueId = -1;
+            this.FieldValuesList.Add(f);
+        }
+
+        private void AggFieldRemove_Click(object sender, EventArgs e)
+        {
+            if (this.FieldValuesList.Count <= 0) { return; } 
+            this.FieldValuesList.RemoveAt(this.FieldValuesList.Count - 1);
+        }
+
+        //Save/Insert
+        private void EntityDefault_Save_New_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (this.selectedEntity.Count == 1)
+                {
+                    EntityDefaults entity = this.selectedEntity[0];
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine(handleAggregateFieldValuesSave(FieldValuesList));
+                    sb.AppendLine(entity.SaveNewRecord());
+                    Console.WriteLine(sb.ToString());
+                    this.selectedEntity.Clear();
+                    File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + entity.definitionname + ".sql", sb.ToString());
+                    MessageBox.Show("Saved NEW Record!", "Info", 0, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
+            }
+        }
+
+        //Save/update
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                StringBuilder sb = new StringBuilder();
-                foreach (FieldValuesStuff item in FieldValuesList)
+                if (this.selectedEntity.Count == 1)
+                {
+                    EntityDefaults entity = this.selectedEntity[0];
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine(handleAggregateFieldValuesSave(FieldValuesList));
+                    sb.AppendLine(entity.Save());
+                    Console.WriteLine(sb.ToString());
+                    File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + entity.definitionname + ".sql", sb.ToString());
+                    MessageBox.Show("Saved Record!", "Info", 0, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
+            }
+        }
+
+        private string handleAggregateFieldValuesSave(ObservableCollection<FieldValuesStuff> list)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (FieldValuesStuff item in list)
+            {
+                if (item.dBAction == DBAction.UPDATE)
                 {
                     AgValues.GetById(item.ValueId);
                     if (AgValues.value != item.FieldValue)
@@ -170,32 +240,28 @@ namespace PerpTool
                         AgFields.formula = item.FieldFormula;
                         sb.AppendLine(AgFields.Save());
                     }
-
                 }
-
-                if (selectedEntity.Count == 1) //TODO hack -- impl object that is observable by gui framework
+                else if (item.dBAction == DBAction.INSERT)
                 {
-                    foreach (EntityItems eItem in this.selectedEntity)
+                    sb.AppendLine(AgValues.Insert(item));
+                    item.dBAction = DBAction.UPDATE;
+
+                    AgFields.GetById(item.FieldId);
+                    if (AgFields.formula != item.FieldFormula)
                     {
-                        sb.AppendLine(Entities.SaveWithEntityItemChange(eItem));
+                        AgFields.formula = item.FieldFormula;
+                        sb.AppendLine(AgFields.Save()); //New AggValues use old AggFields -- this remains an update iff changed
                     }
                 }
-
-                Console.WriteLine(sb.ToString());
-                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + currentSelection.Name + ".sql", sb.ToString());
-                MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
-            }
+            return sb.ToString();
         }
 
         private void ComboBox_DropDownClosed(object sender, EventArgs e)
         {
             EntityItems item = (EntityItems)combo.SelectedItem;
             this.selectedEntity.Clear();
-            this.selectedEntity.Add(item);
+            this.selectedEntity.Add(Entities.GetById(item.Definition));
             this.currentSelection = item;
             if (item == null) { return; }
             FieldValuesList = AgValues.GetValuesForEntity(item.Definition);

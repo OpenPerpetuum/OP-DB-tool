@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PerpTool.db;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -22,17 +23,6 @@ namespace Perptool.db
         public int missionleveloverride { get; set; }
         public int killep { get; set; }
         public string note { get; set; }
-        //NULLABLE INTS FLAGGED AS -1
-        //CHECK ON SAVE/UPDATE - SAVE DB.NULL
-
-        public object getNullableInt(int v)
-        {
-            if (v < 0)
-            {
-                return (object)DBNull.Value;
-            }
-            return v;
-        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -198,9 +188,9 @@ namespace Perptool.db
                 command.Parameters.AddWithValue("@templateid", item.templateid);
                 command.Parameters.AddWithValue("@itemscoresum", item.itemscoresum);
                 command.Parameters.AddWithValue("@raceid", item.raceid);
-                command.Parameters.AddWithValue("@missionlevel", item.getNullableInt(item.missionlevel));
-                command.Parameters.AddWithValue("@levelOverride", item.getNullableInt(item.missionleveloverride));
-                command.Parameters.AddWithValue("@killep", item.getNullableInt(item.killep));
+                command.Parameters.AddWithValue("@missionlevel", Utilities.getNullableInt(item.missionlevel));
+                command.Parameters.AddWithValue("@levelOverride", Utilities.getNullableInt(item.missionleveloverride));
+                command.Parameters.AddWithValue("@killep", Utilities.getNullableInt(item.killep));
                 command.Parameters.AddWithValue("@note", item.note);
 
                 SqlConnection conn = new SqlConnection(this.ConnString);
@@ -253,24 +243,15 @@ namespace Perptool.db
                             temprelation.templatename = Convert.ToString(reader["name"]);
                             temprelation.itemscoresum = Convert.ToInt32(reader["itemscoresum"]);
                             temprelation.raceid = Convert.ToInt32(reader["raceid"]);
-                            temprelation.missionlevel = handleNullableInt(reader["missionlevel"]);
-                            temprelation.missionleveloverride = handleNullableInt(reader["missionleveloverride"]);
-                            temprelation.killep = handleNullableInt(reader["killep"]);
+                            temprelation.missionlevel = Utilities.handleNullableInt(reader["missionlevel"]);
+                            temprelation.missionleveloverride = Utilities.handleNullableInt(reader["missionleveloverride"]);
+                            temprelation.killep = Utilities.handleNullableInt(reader["killep"]);
                             temprelation.note = Convert.ToString(reader["note"]);
                         }
                     }
                 }
             }
             return temprelation;
-        }
-
-        private int handleNullableInt(object readValue)
-        {
-            if (DBNull.Value==readValue)
-            {
-                return -1;
-            }
-            return Convert.ToInt32(readValue);
         }
 
         protected void OnPropertyChanged(string name)
