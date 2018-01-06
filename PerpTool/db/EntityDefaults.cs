@@ -1400,15 +1400,10 @@ namespace Perptool.db
             return item;
         }
 
-        public List<EntityItems> GetEntityItemsByCategory(CategoryFlags flag)
+        public List<EntityDefaults> GetEntityItemsByCategory(CategoryFlags flag)
         {
             List<EntityDefaults> list = this.GetEntitiesByCategory(flag);
-            List<EntityItems> items = new List<EntityItems>();
-            foreach (EntityDefaults def in list)
-            {
-                items.Add(EntityDefaults.GetEntityItem(def));
-            }
-            return items;
+            return list;
         }
 
 

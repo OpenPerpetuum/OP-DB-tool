@@ -29,12 +29,13 @@
     <Grid Margin="0,0,0,16">
         <TabControl Margin="10,0">
             <TabItem Header="EntityDefault Editor">
-                <ScrollViewer>
-                    <Grid Background="#FFE5E5E5" Width="Auto" Height="Auto">
+                <ScrollViewer ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                    <Grid Background="#FFE5E5E5" HorizontalAlignment="Left" VerticalAlignment="Top" Width="Auto" Height="Auto">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="5"/>
                             <RowDefinition Height="33"/>
                             <RowDefinition Height="33"/>
+                            <RowDefinition Height="24"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
@@ -46,31 +47,61 @@
                             <RowDefinition Height="Auto"/>
 
                         </Grid.RowDefinitions>
-                        <Label Content="Entity Defs" Height="Auto" Grid.Row="2"/>
-                        <Label Content="Category" Grid.Row="1"/>
-                        <ComboBox x:Name="categorycombo" Margin="107,0,25,0" ItemsSource="{Binding CatFlags}" DropDownClosed="ComboBox_DropDownClosed_CatFlag" Grid.Row="1"/>
-                        <ComboBox x:Name="combo" ItemsSource="{Binding EntityItems}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="ComboBox_DropDownClosed" Grid.Row="2" Margin="107,0,25,0"/>
-                        <DataGrid Height="Auto" ItemsSource="{Binding selectedEntity}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Visible" Grid.Row="3" Margin="0,0,10,0" >
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="ID" Width="*" Binding="{Binding definition}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                                <DataGridTextColumn Header="Name" Width="*" Binding="{Binding definitionname}"/>
-                                <DataGridTextColumn Header="Note" Width="*" Binding="{Binding note}"/>
-                                <DataGridTextColumn Header="Mass" Width="*" Binding="{Binding mass}"/>
-                                <DataGridTextColumn Header="Volume" Width="*" Binding="{Binding volume}"/>
-                                <DataGridTextColumn Header="Health" Width="*" Binding="{Binding health}"/>
-                                <DataGridTextColumn Header="Quantity" Width="*" Binding="{Binding quantity}"/>
-                                <DataGridTextColumn Header="TierLevel" Width="*" Binding="{Binding tierlevel}"/>
-                                <DataGridTextColumn Header="TierType" Width="*" Binding="{Binding tiertype}"/>
-                                <DataGridTextColumn Header="AttributeFlags" Width="*" Binding="{Binding attributeflags}"/>
-                                <DataGridTextColumn Header="CategoryFlags" Width="*" Binding="{Binding categoryflags}"/>
-                                <DataGridTextColumn Header="Enabled" Width="*" Binding="{Binding enabled}"/>
-                                <DataGridTextColumn Header="Purchasable" Width="*" Binding="{Binding purchasable}"/>
-                                <DataGridTextColumn Header="Hidden" Width="*" Binding="{Binding hidden}"/>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <Label Content="Category" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                        <Label Content="Entity Defs" Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                        <ComboBox Grid.Row="1" Grid.Column="1"  Grid.ColumnSpan="5"  x:Name="categorycombo" ItemsSource="{Binding CatFlags}" SelectedItem="{Binding SelectedCategoryFlag}" DropDownClosed="ComboBox_DropDownClosed_CatFlag"  />
+                        <ComboBox Grid.Row="2" Grid.Column="1"  Grid.ColumnSpan="5"  x:Name="combo" ItemsSource="{Binding EntitiesList}" DisplayMemberPath="definitionname" SelectedValuePath="definition" SelectedItem="{Binding SelectedEntity}"  />
 
-                        <Expander Header="Entity Options Field" Height="Auto" Grid.Row="5" Margin="0,0,10,0">
+                        <Label   Grid.Row="3" Grid.Column="0" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="definition"/>
+                        <TextBox Grid.Row="4" Grid.Column="0" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.definition}" TextWrapping="Wrap"/>
+                        <Label   Grid.Row="3" Grid.Column="1" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="definitionname"/>
+                        <TextBox Grid.Row="4" Grid.Column="1" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.definitionname}" TextWrapping="Wrap"/>
+                        <Label   Grid.Row="3" Grid.Column="2" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="note"/>
+                        <TextBox Grid.Row="4" Grid.Column="2" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.note}" TextWrapping="Wrap"/>
+                        <Label   Grid.Row="3" Grid.Column="3" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="mass"/>
+                        <TextBox Grid.Row="4" Grid.Column="3" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.mass}" TextWrapping="Wrap"/>
+                        <Label   Grid.Row="3" Grid.Column="4" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="volume"/>
+                        <TextBox Grid.Row="4" Grid.Column="4" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.volume}" TextWrapping="Wrap"/>
+                        <Label   Grid.Row="3" Grid.Column="5" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="health"/>
+                        <TextBox Grid.Row="4" Grid.Column="5" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.health}" TextWrapping="Wrap"/>
+                        <Label   Grid.Row="3" Grid.Column="6" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="quantity"/>
+                        <TextBox Grid.Row="4" Grid.Column="6" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.quantity}" TextWrapping="Wrap"/>
+                        <Label   Grid.Row="3" Grid.Column="7" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="quantity"/>
+                        <TextBox Grid.Row="4" Grid.Column="7" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.tierlevel}" TextWrapping="Wrap"/>
+                        <Label   Grid.Row="3" Grid.Column="8" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="quantity"/>
+                        <TextBox Grid.Row="4" Grid.Column="8" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.tiertype}" TextWrapping="Wrap"/>
+                        <Label   Grid.Row="3" Grid.Column="9" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="quantity"/>
+                        <TextBox Grid.Row="4" Grid.Column="9" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.attributeflags}" TextWrapping="Wrap"/>
+                        <Label   Grid.Row="3" Grid.Column="10" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="quantity"/>
+                        <TextBox Grid.Row="4" Grid.Column="10" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.categoryflags}" TextWrapping="Wrap"/>
+                        <Label   Grid.Row="3" Grid.Column="11" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="quantity"/>
+                        <TextBox Grid.Row="4" Grid.Column="11" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.enabled}" TextWrapping="Wrap"/>
+                        <Label   Grid.Row="3" Grid.Column="12" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="quantity"/>
+                        <TextBox Grid.Row="4" Grid.Column="12" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.purchasable}" TextWrapping="Wrap"/>
+                        <Label   Grid.Row="3" Grid.Column="13" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="quantity"/>
+                        <TextBox Grid.Row="4" Grid.Column="13" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.hidden}" TextWrapping="Wrap"/>
+
+
+
+                        <Expander Grid.Column="0"  Grid.ColumnSpan="8" Header="Entity Options Field" Height="Auto" Grid.Row="5" Margin="0,0,10,0">
                             <DataGrid Margin="5" Height="Auto" ItemsSource="{Binding selectedEntityOptions}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Visible" >
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Head" Width="*" Binding="{Binding Head}"/>
@@ -84,7 +115,7 @@
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Expander>
-                        <Expander Header="Entity Options SlotFlags Field" Height="Auto" Grid.Row="6" Margin="0,0,10,0">
+                        <Expander Grid.Column="0"  Grid.ColumnSpan="8" Header="Entity Options SlotFlags Field" Height="Auto" Grid.Row="6" Margin="0,0,10,0">
                             <DataGrid Margin="5" Height="Auto" ItemsSource="{Binding selectedEntityOptions[0].Slots}" AutoGenerateColumns="True" CanUserAddRows="True" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Auto" >
                                 <DataGrid.Columns>
 
@@ -92,7 +123,7 @@
                             </DataGrid>
                         </Expander>
 
-                        <Expander Header="Modifier Fields and Values" Height="Auto" Grid.Row="7" Margin="0,0,10,0">
+                        <Expander Grid.Column="0"  Grid.ColumnSpan="8" Header="Modifier Fields and Values" Height="Auto" Grid.Row="7" Margin="0,0,10,0">
                             <DataGrid Margin="5" Height="Auto" ItemsSource="{Binding FieldValuesList}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Visible" >
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Field" Width="250" Binding="{Binding FieldName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
@@ -105,7 +136,7 @@
                             </DataGrid>
                         </Expander>
 
-                        <Grid Grid.Row="8">
+                        <Grid Grid.Column="0"  Grid.ColumnSpan="8" Grid.Row="8">
                             <ComboBox x:Name="AggFieldCombo" HorizontalAlignment="Left" VerticalAlignment="Bottom"  Margin="10,0,0,10"  Width="278" Height="26" ItemsSource="{Binding AllAggregateFields}" DisplayMemberPath="name" SelectedValuePath="id" DropDownClosed="ComboBox_DropDownClosed_AggField"/>
                             <Button Content="Remove Field" Margin="293,0,0,41" Click="AggFieldRemove_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100" />
                             <Button Content="Add New Field" Margin="293,0,0,10" Click="AggFieldAdd_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100" />

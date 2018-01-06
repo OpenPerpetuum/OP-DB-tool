@@ -65,7 +65,6 @@ namespace PerpTool
             this.SelectedNPCPresence = new ObservableCollection<NPCPresenceData>();
             this.NPCFlockList = new ObservableCollection<NPCFlockData>();
             this.BotTemplate = new ObservableCollection<RobotTemplate>();
-            this.selectedEntity = new ObservableCollection<EntityDefaults>();
             this.DataContext = this;
         }
 
@@ -89,7 +88,7 @@ namespace PerpTool
         public List<EntityItems> NPCEntities { get; set; }
         public List<NPCPresenceData> AllNPCPresences { get; set; }
         public List<AggregateFields> AllAggregateFields { get; set; }
-        
+
 
 
         #region EntityDefaults
@@ -108,17 +107,31 @@ namespace PerpTool
                 this.OnPropertyChanged("EntityItems");
             }
         }
-        private ObservableCollection<EntityDefaults> _privEntity;
-        public ObservableCollection<EntityDefaults> selectedEntity
+        //private ObservableCollection<EntityDefaults> _privEntity;
+        //public ObservableCollection<EntityDefaults> selectedEntity
+        //{
+        //    get
+        //    {
+        //        return this._privEntity;
+        //    }
+        //    set
+        //    {
+        //        this._privEntity = value;
+        //        this.OnPropertyChanged("selectedEntity");
+        //    }
+        //}
+
+        private EntityDefaults _privateSelectedEntity;
+        public EntityDefaults SelectedEntity
         {
             get
             {
-                return this._privEntity;
+                return this._privateSelectedEntity;
             }
             set
             {
-                this._privEntity = value;
-                this.OnPropertyChanged("selectedEntity");
+                this._privateSelectedEntity = value;
+                OnPropertyChanged("SelectedEntity");
             }
         }
 
@@ -141,11 +154,38 @@ namespace PerpTool
             return Enum.GetValues(typeof(CategoryFlags)).Cast<CategoryFlags>();
         }
 
+        private CategoryFlags _privateCategoryFlag;
+        public CategoryFlags SelectedCategoryFlag
+        {
+            get
+            {
+                return this._privateCategoryFlag;
+            }
+            set
+            {
+                this._privateCategoryFlag = value;
+                OnPropertyChanged("SelectedCategoryFlag");
+            }
+        }
+
+        private List<EntityDefaults> _EntitiesList;
+        public List<EntityDefaults> EntitiesList
+        {
+            get
+            {
+                return this._EntitiesList;
+            }
+            set
+            {
+                this._EntitiesList = value;
+                OnPropertyChanged("EntitiesList");
+            }
+        }
         private void ComboBox_DropDownClosed_CatFlag(object sender, EventArgs e)
         {
-            CategoryFlags flag = (CategoryFlags)categorycombo.SelectedItem;
-            EntityItems = Entities.GetEntityItemsByCategory(flag);
-
+            //Still needs to perform query to grab entities by catflag at selection-confirm
+            //Could be pre-populated... its a lot though
+            this.EntitiesList = Entities.GetEntityItemsByCategory(SelectedCategoryFlag);
         }
 
         private AggregateFields selectedAggField;
@@ -157,10 +197,10 @@ namespace PerpTool
 
         private void AggFieldAdd_Click(object sender, EventArgs e)
         {
-            if (this.selectedAggField == null || this.selectedEntity.Count != 1) { return; }
+            if (this.selectedAggField == null || this.SelectedEntity == null) { return; }
             FieldValuesStuff f = new FieldValuesStuff();
             f.dBAction = DBAction.INSERT;
-            f.Definition = this.selectedEntity[0].definition;
+            f.Definition = this.SelectedEntity.definition;
             f.FieldFormula = this.selectedAggField.formula;
             f.FieldId = this.selectedAggField.id;
             f.FieldMultiplier = this.selectedAggField.measurementmultiplier;
@@ -174,7 +214,7 @@ namespace PerpTool
 
         private void AggFieldRemove_Click(object sender, EventArgs e)
         {
-            if (this.FieldValuesList.Count <= 0) { return; } 
+            if (this.FieldValuesList.Count <= 0) { return; }
             this.FieldValuesList.RemoveAt(this.FieldValuesList.Count - 1);
         }
 
@@ -183,13 +223,12 @@ namespace PerpTool
         {
             try
             {
-                if (this.selectedEntity.Count == 1)
+                if (this.SelectedEntity != null)
                 {
-                    EntityDefaults entity = this.selectedEntity[0];
+                    EntityDefaults entity = this.SelectedEntity;
                     StringBuilder sb = new StringBuilder();
                     sb.AppendLine(handleAggregateFieldValuesSave(FieldValuesList));
                     sb.AppendLine(entity.SaveNewRecord());
-                    this.selectedEntity.Clear();
                     File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + entity.definitionname + ".sql", sb.ToString());
                     MessageBox.Show("Saved NEW Record!", "Info", 0, MessageBoxImage.Information);
                 }
@@ -205,9 +244,9 @@ namespace PerpTool
         {
             try
             {
-                if (this.selectedEntity.Count == 1)
+                if (this.SelectedEntity != null)
                 {
-                    EntityDefaults entity = this.selectedEntity[0];
+                    EntityDefaults entity = this.SelectedEntity;
                     StringBuilder sb = new StringBuilder();
                     sb.AppendLine(handleAggregateFieldValuesSave(FieldValuesList));
                     sb.AppendLine(entity.Save());
@@ -272,18 +311,6 @@ namespace PerpTool
             }
         }
 
-        private void ComboBox_DropDownClosed(object sender, EventArgs e)
-        {
-            EntityItems item = (EntityItems)combo.SelectedItem;
-            if (item == null) { return; }
-            FieldValuesList = AgValues.GetValuesForEntity(item.Definition);
-            this.selectedEntity.Clear();
-            this.selectedEntity.Add(Entities.GetById(item.Definition));
-            this.currentSelection = item;
-            this.selectedEntityOptions = new ObservableCollection<EntityOptions>();
-            this.selectedEntityOptions.Add(item.Options);
-        }
-
         public List<FieldValuesStuff> copyOfFields = new List<FieldValuesStuff>();
         private void CopyFields_click(object sender, EventArgs e)
         {
@@ -292,9 +319,9 @@ namespace PerpTool
 
         private void PasteFields_Click(object sender, EventArgs e)
         {
-            foreach(FieldValuesStuff fields in this.copyOfFields)
+            foreach (FieldValuesStuff fields in this.copyOfFields)
             {
-                EntityDefaults entity = this.selectedEntity[0];
+                EntityDefaults entity = this.SelectedEntity;
                 fields.Definition = entity.definition;
                 fields.dBAction = DBAction.INSERT;
                 this.FieldValuesList.Add(fields);
