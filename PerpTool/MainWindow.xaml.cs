@@ -50,17 +50,18 @@ namespace PerpTool
             EntityItems = Entities.GetEntitiesWithFields();
             ZoneList = ZoneTbl.GetAllZones();
             SpawnList = Spawn.GetAllSpawns();
-            LootableBots = Entities.GetAllNPCLootableBots();
+            LootableBots = Entities.GetEntitiesByCategory(CategoryFlags.cf_npc);
             LootableEntityDefaults = Entities.GetLootableEntities();
-            BotItems = Entities.GetAllDistinctBotItems();
+            AllRobotComponents = Entities.GetEntitiesByCategory(CategoryFlags.cf_robot_components);
             NPCTemplates = NPCBotTemplates.getAll();
             AllNPCPresences = NPCPresenceTable.getAll();
 
+
             this.CatFlags = this.GetAllCategoryFlags();
             this.AllAggregateFields = AgFields.GetAllFields();
-            this.AmmoList = Entities.GetAllAmmo();
-            this.ModuleList = Entities.GetAllModules();
-            this.NPCEntities = Entities.GetAllNPCEntities();
+            this.AmmoList = Entities.GetEntitiesByCategory(CategoryFlags.cf_ammo);
+            this.ModuleList = Entities.GetEntitiesByCategory(CategoryFlags.cf_robot_equipment);
+            this.NPCEntities = Entities.GetEntitiesByCategory(CategoryFlags.cf_npc);
             this.NPCTemplateRelationList = new ObservableCollection<BotTemplateRelation>();
             this.SelectedNPCPresence = new ObservableCollection<NPCPresenceData>();
             this.NPCFlockList = new ObservableCollection<NPCFlockData>();
@@ -82,10 +83,10 @@ namespace PerpTool
         private NPCPresence NPCPresenceTable { get; set; }
         private NPCFlock NPCFlockTable { get; set; }
 
-        public List<EntityItems> AmmoList { get; set; }
-        public List<EntityItems> ModuleList { get; set; }
-        public List<EntityItems> BotItems { get; set; }
-        public List<EntityItems> NPCEntities { get; set; }
+        public List<EntityDefaults> AmmoList { get; set; }
+        public List<EntityDefaults> ModuleList { get; set; }
+        public List<EntityDefaults> AllRobotComponents { get; set; }
+        public List<EntityDefaults> NPCEntities { get; set; }
         public List<NPCPresenceData> AllNPCPresences { get; set; }
         public List<AggregateFields> AllAggregateFields { get; set; }
 
@@ -107,19 +108,6 @@ namespace PerpTool
                 this.OnPropertyChanged("EntityItems");
             }
         }
-        //private ObservableCollection<EntityDefaults> _privEntity;
-        //public ObservableCollection<EntityDefaults> selectedEntity
-        //{
-        //    get
-        //    {
-        //        return this._privEntity;
-        //    }
-        //    set
-        //    {
-        //        this._privEntity = value;
-        //        this.OnPropertyChanged("selectedEntity");
-        //    }
-        //}
 
         private EntityDefaults _privateSelectedEntity;
         public EntityDefaults SelectedEntity
@@ -185,7 +173,15 @@ namespace PerpTool
         {
             //Still needs to perform query to grab entities by catflag at selection-confirm
             //Could be pre-populated... its a lot though
-            this.EntitiesList = Entities.GetEntityItemsByCategory(SelectedCategoryFlag);
+            this.EntitiesList = Entities.GetEntitiesByCategory(SelectedCategoryFlag);
+        }
+
+        private void ComboBox_DropDownClosed_EntitySelect(object sender, EventArgs e)
+        {
+            EntityDefaults entity = (EntityDefaults)combo.SelectedItem;
+            if (entity == null || entity != this.SelectedEntity) { return; }
+            this.FieldValuesList = new ObservableCollection<FieldValuesStuff>();
+            this.FieldValuesList = AgValues.GetValuesForEntity(this.SelectedEntity.definition);
         }
 
         private AggregateFields selectedAggField;
@@ -211,10 +207,11 @@ namespace PerpTool
             f.ValueId = -1;
             this.FieldValuesList.Add(f);
         }
-
+        public List<FieldValuesStuff> fieldValuesToDelete = new List<FieldValuesStuff>();
         private void AggFieldRemove_Click(object sender, EventArgs e)
         {
             if (this.FieldValuesList.Count <= 0) { return; }
+            this.fieldValuesToDelete.Add(this.FieldValuesList.Last<FieldValuesStuff>());
             this.FieldValuesList.RemoveAt(this.FieldValuesList.Count - 1);
         }
 
@@ -260,6 +257,7 @@ namespace PerpTool
             }
         }
 
+
         private string handleAggregateFieldValuesSave(ObservableCollection<FieldValuesStuff> list)
         {
             StringBuilder sb = new StringBuilder();
@@ -268,31 +266,17 @@ namespace PerpTool
                 if (item.dBAction == DBAction.UPDATE)
                 {
                     AgValues.GetById(item.ValueId);
-                    if (AgValues.value != item.FieldValue)
-                    {
-                        AgValues.value = item.FieldValue;
-                        sb.AppendLine(AgValues.Save());
-                    }
-
-                    AgFields.GetById(item.FieldId);
-                    if (AgFields.formula != item.FieldFormula)
-                    {
-                        AgFields.formula = item.FieldFormula;
-                        sb.AppendLine(AgFields.Save());
-                    }
+                    sb.AppendLine(AgValues.Save());
+                    sb.AppendLine(AgFields.Save());
                 }
                 else if (item.dBAction == DBAction.INSERT)
                 {
                     sb.AppendLine(AgValues.Insert(item));
                     item.dBAction = DBAction.UPDATE;
-
                     AgFields.GetById(item.FieldId);
-                    if (AgFields.formula != item.FieldFormula)
-                    {
-                        AgFields.formula = item.FieldFormula;
-                        sb.AppendLine(AgFields.Save()); //New AggValues use old AggFields -- this remains an update iff changed
-                    }
+                    sb.AppendLine(AgFields.Save()); //New AggValues use old AggFields -- this remains an update iff changed
                 }
+                //TODO implement DELETE!!!
             }
             return sb.ToString();
         }
@@ -531,7 +515,19 @@ namespace PerpTool
             }
         }
 
-        public BotTemplateDropdownItem currentBotTemplateSelection;
+        private BotTemplateDropdownItem _currentBotTemplateSelection;
+        public BotTemplateDropdownItem currentBotTemplateSelection
+        {
+            get
+            {
+                return this._currentBotTemplateSelection;
+            }
+            set
+            {
+                this._currentBotTemplateSelection = value;
+                OnPropertyChanged("currentBotTemplateSelection");
+            }
+        }
         private void ComboBox_DropDownClosed_NPCTemplates(object sender, EventArgs e)
         {
             BotTemplateDropdownItem item = (BotTemplateDropdownItem)npctemplatecombo.SelectedItem;
@@ -595,18 +591,32 @@ namespace PerpTool
 
         }
 
-        public EntityItems selectedModule;
-        private void ComboBox_DropDownClosed_ModuleDef(object sender, EventArgs e)
+        private EntityDefaults _selectedModule;
+        public EntityDefaults SelectedModule
         {
-            EntityItems item = (EntityItems)moduledropdown.SelectedItem;
-            this.selectedModule = item;
+            get
+            {
+                return this._selectedModule;
+            }
+            set
+            {
+                this._selectedModule = value;
+                OnPropertyChanged("SelectedModule");
+            }
         }
 
-        public EntityItems selectedAmmo;
-        private void ComboBox_DropDownClosed_AmmoDef(object sender, EventArgs e)
+        private EntityDefaults _selectedAmmo;
+        public EntityDefaults SelectedAmmo
         {
-            EntityItems item = (EntityItems)ammodropdown.SelectedItem;
-            this.selectedAmmo = item;
+            get
+            {
+                return this._selectedAmmo;
+            }
+            set
+            {
+                this._selectedAmmo = value;
+                OnPropertyChanged("SelectedAmmo");
+            }
         }
 
         private void Add_To_Head_Click(object sender, RoutedEventArgs e)
@@ -615,13 +625,13 @@ namespace PerpTool
             {
                 RobotTemplate temp = BotTemplate[0];
                 ModuleTemplate mod;
-                if (selectedAmmo == null)
+                if (SelectedAmmo == null)
                 {
-                    mod = new ModuleTemplate(selectedModule.Definition, temp.chassisModules.Count + 1, 0, 0, selectedModule.Name);
+                    mod = new ModuleTemplate(SelectedModule.definition, temp.chassisModules.Count + 1, 0, 0, SelectedModule.definitionname);
                 }
                 else
                 {
-                    mod = new ModuleTemplate(selectedModule.Definition, temp.chassisModules.Count + 1, selectedAmmo.Definition, 10, selectedModule.Name, selectedAmmo.Name);
+                    mod = new ModuleTemplate(SelectedModule.definition, temp.chassisModules.Count + 1, SelectedAmmo.definition, 10, SelectedModule.definitionname, SelectedAmmo.definitionname);
                 }
                 temp.headModules.Add(mod);
             }
@@ -633,13 +643,13 @@ namespace PerpTool
             {
                 RobotTemplate temp = BotTemplate[0];
                 ModuleTemplate mod;
-                if (selectedAmmo == null)
+                if (SelectedAmmo == null)
                 {
-                    mod = new ModuleTemplate(selectedModule.Definition, temp.chassisModules.Count + 1, 0, 0, selectedModule.Name);
+                    mod = new ModuleTemplate(SelectedModule.definition, temp.chassisModules.Count + 1, 0, 0, SelectedModule.definitionname);
                 }
                 else
                 {
-                    mod = new ModuleTemplate(selectedModule.Definition, temp.chassisModules.Count + 1, selectedAmmo.Definition, 10, selectedModule.Name, selectedAmmo.Name);
+                    mod = new ModuleTemplate(SelectedModule.definition, temp.chassisModules.Count + 1, SelectedAmmo.definition, 10, SelectedModule.definitionname, SelectedAmmo.definitionname);
                 }
                 temp.chassisModules.Add(mod);
             }
@@ -651,13 +661,13 @@ namespace PerpTool
             {
                 RobotTemplate temp = BotTemplate[0];
                 ModuleTemplate mod;
-                if (selectedAmmo == null)
+                if (SelectedAmmo == null)
                 {
-                    mod = new ModuleTemplate(selectedModule.Definition, temp.legModules.Count + 1, 0, 0, selectedModule.Name);
+                    mod = new ModuleTemplate(SelectedModule.definition, temp.legModules.Count + 1, 0, 0, SelectedModule.definitionname);
                 }
                 else
                 {
-                    mod = new ModuleTemplate(selectedModule.Definition, temp.legModules.Count + 1, selectedAmmo.Definition, 10, selectedModule.Name, selectedAmmo.Name);
+                    mod = new ModuleTemplate(SelectedModule.definition, temp.legModules.Count + 1, SelectedAmmo.definition, 10, SelectedModule.definitionname, SelectedAmmo.definitionname);
                 }
                 temp.legModules.Add(mod);
             }
@@ -719,8 +729,8 @@ namespace PerpTool
             }
         }
 
-        private List<EntityItems> _itemdata;
-        public List<EntityItems> LootableBots
+        private List<EntityDefaults> _itemdata;
+        public List<EntityDefaults> LootableBots
         {
             get
             {
@@ -733,8 +743,8 @@ namespace PerpTool
             }
         }
 
-        private List<EntityItems> _lootables;
-        public List<EntityItems> LootableEntityDefaults
+        private List<EntityDefaults> _lootables;
+        public List<EntityDefaults> LootableEntityDefaults
         {
             get
             {
@@ -747,20 +757,42 @@ namespace PerpTool
             }
         }
 
-        public EntityItems currentNPCLootableBot;
-        private void ComboBox_DropDownClosed_LootableNPCs(object sender, EventArgs e)
+        private EntityDefaults _selectedLootableBot;
+        public EntityDefaults SelectedLootableBot
         {
-            EntityItems item = (EntityItems)npclootcombo.SelectedItem;
-            this.currentNPCLootableBot = item;
-            if (item == null) { return; }
-            this.loots = Loot.GetLootByDefinition(item.Definition);
+            get
+            {
+                return this._selectedLootableBot;
+            }
+            set
+            {
+                this._selectedLootableBot = value;
+                OnPropertyChanged("SelectedLootableBot");
+            }
         }
 
-        public EntityItems currentRowAddItem;
+        private void ComboBox_DropDownClosed_LootableNPCs(object sender, EventArgs e)
+        {
+            if (SelectedLootableBot == null) { return; }
+            this.loots = Loot.GetLootByDefinition(SelectedLootableBot.definition);
+        }
+
+        private EntityDefaults _currentRowAddItem;
+        public EntityDefaults currentRowAddItem
+        {
+            get
+            {
+                return this._currentRowAddItem;
+            }
+            set
+            {
+                this._currentRowAddItem = value;
+                OnPropertyChanged("currentRowAddItem");
+            }
+        }
         private void ComboBox_DropDownClosed_NPCLootableDefs(object sender, EventArgs e)
         {
-            EntityItems item = (EntityItems)npcloot.SelectedItem;
-            this.currentRowAddItem = item;
+            System.Console.WriteLine(currentRowAddItem);
         }
 
         private void NPC_Loot_Save_Button_Click(object sender, RoutedEventArgs e)
@@ -787,7 +819,7 @@ namespace PerpTool
                         //TODO
                     }
                 }
-                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + currentNPCLootableBot.Name + ".sql", sb.ToString());
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + SelectedLootableBot.definitionname + "_loot.sql", sb.ToString());
                 MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
             }
             catch (Exception ex)
@@ -801,7 +833,7 @@ namespace PerpTool
         {
             try
             {
-                LootItem loot = Loot.CreateNewLootForBot(this.currentNPCLootableBot, this.currentRowAddItem);
+                LootItem loot = Loot.CreateNewLootForBot(this.SelectedLootableBot, this.currentRowAddItem);
                 loot.recordAction = DBAction.INSERT;
                 this.loots.Add(loot);
             }
@@ -832,13 +864,25 @@ namespace PerpTool
             }
         }
 
-        public EntityItems currentBotComponentSelection;
+
+        private EntityDefaults _selectedBot;
+        public EntityDefaults SelectedBot
+        {
+            get
+            {
+                return this._selectedBot;
+            }
+            set
+            {
+                this._selectedBot = value;
+                OnPropertyChanged("SelectedBot");
+            }
+        }
+
         private void Bot_ComboBox_DropDownClosed(object sender, EventArgs e)
         {
-            EntityItems item = (EntityItems)bot_combo_dropdown.SelectedItem;
-            this.currentBotComponentSelection = item;
-            if (item == null) { return; }
-            this.BotBonusList = BotBonus.getByEntity(item.Definition);
+            if (SelectedBot == null) { return; }
+            this.BotBonusList = BotBonus.getByEntity(SelectedBot.definition);
         }
 
         private void Bot_Bonus_Save_Click(object sender, RoutedEventArgs e)
@@ -850,7 +894,7 @@ namespace PerpTool
                 {
                     sb.AppendLine(this.BotBonus.Save(bonus));
                 }
-                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + currentBotComponentSelection.Name + ".sql", sb.ToString());
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + SelectedBot.definitionname + ".sql", sb.ToString());
                 MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
             }
             catch (Exception ex)

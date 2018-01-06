@@ -1305,15 +1305,14 @@ namespace Perptool.db
             return list;
         }
 
-        public List<EntityItems> GetLootableEntities()
+        public List<EntityDefaults> GetLootableEntities()
         {
-            List<EntityItems> list = new List<EntityItems>();
-
+            List<EntityDefaults> list = new List<EntityDefaults>();
             SqlConnection conn = new SqlConnection(this.ConnString);
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("SELECT DISTINCT entitydefaults.definition, definitionname FROM dbo.entitydefaults JOIN npcloot ON npcloot.lootdefinition = entitydefaults.definition GROUP BY entitydefaults.definition, entitydefaults.definitionname;");
+                sqlCommand.Append("SELECT DISTINCT entitydefaults.* FROM dbo.entitydefaults JOIN npcloot ON npcloot.lootdefinition = entitydefaults.definition;");
                 command.CommandText = sqlCommand.ToString();
                 command.Connection = conn;
                 conn.Open();
@@ -1321,10 +1320,24 @@ namespace Perptool.db
                 {
                     while (reader.Read())
                     {
-                        EntityItems item = new EntityItems();
-                        item.Name = Convert.ToString(reader["definitionname"]);
-                        item.Definition = Convert.ToInt32(reader["definition"]);
-                        list.Add(item);
+                        EntityDefaults entity = new EntityDefaults(this.ConnString);
+                        entity.definition = Convert.ToInt32(reader["definition"]);
+                        entity.definitionname = Convert.ToString(reader["definitionname"]);
+                        entity.quantity = Convert.ToInt32(reader["quantity"]);
+                        entity.attributeflags = Convert.ToInt32(reader["attributeflags"]);
+                        entity.categoryflags = Convert.ToInt64(reader["categoryflags"]);
+                        entity.options = CreateFromOptions(Convert.ToString(reader["options"]));
+                        entity.note = Convert.ToString(reader["note"]);
+                        entity.enabled = Convert.ToInt32(reader["enabled"]);
+                        entity.volume = Convert.ToDecimal(reader["volume"]);
+                        entity.mass = Convert.ToDecimal(reader["mass"]);
+                        entity.hidden = Convert.ToString(reader["hidden"]);
+                        entity.health = Convert.ToDecimal(reader["health"]);
+                        entity.descriptiontoken = Convert.ToString(reader["descriptiontoken"]);
+                        entity.purchasable = Convert.ToInt32(reader["purchasable"]);
+                        if (reader["tiertype"] != DBNull.Value) { entity.tiertype = Convert.ToInt32(reader["tiertype"]); }
+                        if (reader["tierlevel"] != DBNull.Value) { entity.tierlevel = Convert.ToInt32(reader["tierlevel"]); }
+                        list.Add(entity);
                     }
                 }
             }
@@ -1398,12 +1411,6 @@ namespace Perptool.db
             item.Options = entity.options;
             item.Volume = entity.volume;
             return item;
-        }
-
-        public List<EntityDefaults> GetEntityItemsByCategory(CategoryFlags flag)
-        {
-            List<EntityDefaults> list = this.GetEntitiesByCategory(flag);
-            return list;
         }
 
 

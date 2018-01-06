@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:PerpTool"
         xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2" x:Class="PerpTool.MainWindow"
         mc:Ignorable="d"
-        Title="The OpenPerpetuum DB Editing Tool - AWESOME Edition" Height="610" Width="666" ResizeMode="CanResize">
+        Title="The OpenPerpetuum DB Editing Tool - AWESOME Edition" Height="Auto" Width="Auto" ResizeMode="CanResize">
 
     <Window.Resources>
         <Style x:Key="ColumnHeaderGripperStyle" TargetType="{x:Type Thumb}">
@@ -67,8 +67,8 @@
 
                         <Label Content="Category" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                         <Label Content="Entity Defs" Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                        <ComboBox Grid.Row="1" Grid.Column="1"  Grid.ColumnSpan="5"  x:Name="categorycombo" ItemsSource="{Binding CatFlags}" SelectedItem="{Binding SelectedCategoryFlag}" DropDownClosed="ComboBox_DropDownClosed_CatFlag"  />
-                        <ComboBox Grid.Row="2" Grid.Column="1"  Grid.ColumnSpan="5"  x:Name="combo" ItemsSource="{Binding EntitiesList}" DisplayMemberPath="definitionname" SelectedValuePath="definition" SelectedItem="{Binding SelectedEntity}"  />
+                        <ComboBox Grid.Row="1" Grid.Column="1"  Grid.ColumnSpan="7"  x:Name="categorycombo" ItemsSource="{Binding CatFlags}" SelectedItem="{Binding SelectedCategoryFlag}" DropDownClosed="ComboBox_DropDownClosed_CatFlag"  />
+                        <ComboBox Grid.Row="2" Grid.Column="1"  Grid.ColumnSpan="7"  x:Name="combo" ItemsSource="{Binding EntitiesList}" DisplayMemberPath="definitionname" SelectedValuePath="definition" SelectedItem="{Binding SelectedEntity}"  DropDownClosed="ComboBox_DropDownClosed_EntitySelect" />
 
                         <Label   Grid.Row="3" Grid.Column="0" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="definition"/>
                         <TextBox Grid.Row="4" Grid.Column="0" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.definition}" TextWrapping="Wrap"/>
@@ -84,46 +84,70 @@
                         <TextBox Grid.Row="4" Grid.Column="5" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.health}" TextWrapping="Wrap"/>
                         <Label   Grid.Row="3" Grid.Column="6" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="quantity"/>
                         <TextBox Grid.Row="4" Grid.Column="6" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.quantity}" TextWrapping="Wrap"/>
-                        <Label   Grid.Row="3" Grid.Column="7" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="quantity"/>
+                        <Label   Grid.Row="3" Grid.Column="7" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="tierlevel"/>
                         <TextBox Grid.Row="4" Grid.Column="7" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.tierlevel}" TextWrapping="Wrap"/>
-                        <Label   Grid.Row="3" Grid.Column="8" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="quantity"/>
+                        <Label   Grid.Row="3" Grid.Column="8" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="tiertype"/>
                         <TextBox Grid.Row="4" Grid.Column="8" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.tiertype}" TextWrapping="Wrap"/>
-                        <Label   Grid.Row="3" Grid.Column="9" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="quantity"/>
+                        <Label   Grid.Row="3" Grid.Column="9" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="attributeflags"/>
                         <TextBox Grid.Row="4" Grid.Column="9" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.attributeflags}" TextWrapping="Wrap"/>
-                        <Label   Grid.Row="3" Grid.Column="10" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="quantity"/>
+                        <Label   Grid.Row="3" Grid.Column="10" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="categoryflags"/>
                         <TextBox Grid.Row="4" Grid.Column="10" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.categoryflags}" TextWrapping="Wrap"/>
-                        <Label   Grid.Row="3" Grid.Column="11" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="quantity"/>
+                        <Label   Grid.Row="3" Grid.Column="11" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="enabled"/>
                         <TextBox Grid.Row="4" Grid.Column="11" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.enabled}" TextWrapping="Wrap"/>
-                        <Label   Grid.Row="3" Grid.Column="12" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="quantity"/>
+                        <Label   Grid.Row="3" Grid.Column="12" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="purchasable"/>
                         <TextBox Grid.Row="4" Grid.Column="12" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.purchasable}" TextWrapping="Wrap"/>
-                        <Label   Grid.Row="3" Grid.Column="13" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="quantity"/>
+                        <Label   Grid.Row="3" Grid.Column="13" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="hidden"/>
                         <TextBox Grid.Row="4" Grid.Column="13" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.hidden}" TextWrapping="Wrap"/>
 
 
 
-                        <Expander Grid.Column="0"  Grid.ColumnSpan="8" Header="Entity Options Field" Height="Auto" Grid.Row="5" Margin="0,0,10,0">
-                            <DataGrid Margin="5" Height="Auto" ItemsSource="{Binding selectedEntityOptions}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Visible" >
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Head" Width="*" Binding="{Binding Head}"/>
-                                    <DataGridTextColumn Header="Chassis" Width="*" Binding="{Binding Chassis}"/>
-                                    <DataGridTextColumn Header="Leg" Width="*" Binding="{Binding Leg}"/>
-                                    <DataGridTextColumn Header="Inventory" Width="*" Binding="{Binding Inventory}"/>
-                                    <DataGridTextColumn Header="Height" Width="*" Binding="{Binding Height}"/>
-                                    <DataGridTextColumn Header="moduleflag" Width="*" Binding="{Binding moduleflag}"/>
-                                    <DataGridTextColumn Header="ammoType" Width="*" Binding="{Binding ammoType}"/>
-                                    <DataGridTextColumn Header="ammoCapacity" Width="*" Binding="{Binding ammoCapacity}"/>
-                                </DataGrid.Columns>
-                            </DataGrid>
+                        <Expander Grid.Column="0"  Grid.ColumnSpan="7" Header="Entity Options Field" Height="Auto" Grid.Row="5" Margin="0,0,10,0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                            <Label   Grid.Row="0" Grid.Column="0" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Head"/>
+                            <TextBox Grid.Row="1" Grid.Column="0" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.Head}" TextWrapping="Wrap"/>
+                            <Label   Grid.Row="0" Grid.Column="1" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Chassis"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.Chassis}" TextWrapping="Wrap"/>
+                            <Label   Grid.Row="0" Grid.Column="2" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Leg"/>
+                            <TextBox Grid.Row="1" Grid.Column="2" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.Leg}" TextWrapping="Wrap"/>
+                            <Label   Grid.Row="0" Grid.Column="3" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Inventory"/>
+                            <TextBox Grid.Row="1" Grid.Column="3" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.Inventory}" TextWrapping="Wrap"/>
+                            <Label   Grid.Row="0" Grid.Column="4" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Height"/>
+                            <TextBox Grid.Row="1" Grid.Column="4" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.Height}" TextWrapping="Wrap"/>
+                            <Label   Grid.Row="0" Grid.Column="5" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Moduleflag"/>
+                            <TextBox Grid.Row="1" Grid.Column="5" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.moduleflag}" TextWrapping="Wrap"/>
+                            <Label   Grid.Row="0" Grid.Column="6" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="AmmoType"/>
+                            <TextBox Grid.Row="1" Grid.Column="6" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.ammoType}" TextWrapping="Wrap"/>
+                            <Label   Grid.Row="0" Grid.Column="7" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="AmmoCapacity"/>
+                            <TextBox Grid.Row="1" Grid.Column="7" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.ammoCapacity}" TextWrapping="Wrap"/>
+                            </Grid>
+
+
                         </Expander>
-                        <Expander Grid.Column="0"  Grid.ColumnSpan="8" Header="Entity Options SlotFlags Field" Height="Auto" Grid.Row="6" Margin="0,0,10,0">
-                            <DataGrid Margin="5" Height="Auto" ItemsSource="{Binding selectedEntityOptions[0].Slots}" AutoGenerateColumns="True" CanUserAddRows="True" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Auto" >
+                        <Expander Grid.Column="0"  Grid.ColumnSpan="10" Header="Entity Options SlotFlags Field" Height="Auto" Grid.Row="6" Margin="0,0,10,0">
+
+                            <DataGrid Margin="5" Height="Auto" ItemsSource="{Binding SelectedEntity.options.Slots}" AutoGenerateColumns="True" CanUserAddRows="True" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Auto" >
                                 <DataGrid.Columns>
 
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Expander>
 
-                        <Expander Grid.Column="0"  Grid.ColumnSpan="8" Header="Modifier Fields and Values" Height="Auto" Grid.Row="7" Margin="0,0,10,0">
+                        <Expander Grid.Column="0"  Grid.ColumnSpan="10" Header="Modifier Fields and Values" Height="Auto" Grid.Row="7" Margin="0,0,10,0">
                             <DataGrid Margin="5" Height="Auto" ItemsSource="{Binding FieldValuesList}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Visible" >
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Field" Width="250" Binding="{Binding FieldName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
@@ -136,7 +160,7 @@
                             </DataGrid>
                         </Expander>
 
-                        <Grid Grid.Column="0"  Grid.ColumnSpan="8" Grid.Row="8">
+                        <Grid Grid.Column="0"  Grid.ColumnSpan="10" Grid.Row="8">
                             <ComboBox x:Name="AggFieldCombo" HorizontalAlignment="Left" VerticalAlignment="Bottom"  Margin="10,0,0,10"  Width="278" Height="26" ItemsSource="{Binding AllAggregateFields}" DisplayMemberPath="name" SelectedValuePath="id" DropDownClosed="ComboBox_DropDownClosed_AggField"/>
                             <Button Content="Remove Field" Margin="293,0,0,41" Click="AggFieldRemove_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100" />
                             <Button Content="Add New Field" Margin="293,0,0,10" Click="AggFieldAdd_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100" />
@@ -153,7 +177,8 @@
             <TabItem Header="Bot Bonuses">
                 <ScrollViewer>
                     <StackPanel Background="#FFE5E5E5">
-                        <ComboBox x:Name="bot_combo_dropdown" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="600" ItemsSource="{Binding BotItems}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="Bot_ComboBox_DropDownClosed"/>
+
+                        <ComboBox x:Name="bot_combo_dropdown" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="600" ItemsSource="{Binding AllRobotComponents}" DisplayMemberPath="definitionname" SelectedValuePath="definition" SelectedItem="{Binding SelectedBot}" DropDownClosed="Bot_ComboBox_DropDownClosed"/>
                         <DataGrid Margin="10,10,10,10" ItemsSource="{Binding BotBonusList}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Visible" Height="186" >
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="FieldName" Width="*" Binding="{Binding aggFieldName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
@@ -234,7 +259,7 @@
             <TabItem Header="NPC Loot Tables">
                 <ScrollViewer>
                     <Grid Background="#FFE5E5E5">
-                        <ComboBox x:Name="npclootcombo" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="600" ItemsSource="{Binding LootableBots}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="ComboBox_DropDownClosed_LootableNPCs"/>
+                        <ComboBox x:Name="npclootcombo" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="600" ItemsSource="{Binding LootableBots}" DisplayMemberPath="definitionname" SelectedValuePath="definition" SelectedItem="{Binding SelectedLootableBot}" DropDownClosed="ComboBox_DropDownClosed_LootableNPCs"/>
                         <DataGrid Margin="10,61,10,31" ItemsSource="{Binding loots}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" >
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="LootDefinitionName" Width="*" Binding="{Binding LootDefinitionName}"/>
@@ -246,7 +271,7 @@
                             </DataGrid.Columns>
                         </DataGrid>
                         <Button Content="Save Changes" Margin="515,0,0,0" Click="NPC_Loot_Save_Button_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="90"/>
-                        <ComboBox x:Name="npcloot" HorizontalAlignment="Left" VerticalAlignment="Bottom"  Margin="138,0,0,0"  Width="350" Height="26" ItemsSource="{Binding LootableEntityDefaults}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="ComboBox_DropDownClosed_NPCLootableDefs"/>
+                        <ComboBox x:Name="npcloot" HorizontalAlignment="Left" VerticalAlignment="Bottom"  Margin="138,0,0,0"  Width="350" Height="26" ItemsSource="{Binding LootableEntityDefaults}" DisplayMemberPath="definitionname" SelectedValuePath="definition"  SelectedItem="{Binding currentRowAddItem}" DropDownClosed="ComboBox_DropDownClosed_NPCLootableDefs"/>
                         <Button Content="Add new row" Margin="10,359,0,0" Click="NPC_Loot_Add_Row_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100"/>
                     </Grid>
                 </ScrollViewer>
@@ -254,66 +279,98 @@
 
             <TabItem Header="NPC Templates">
                 <ScrollViewer>
-                    <StackPanel Background="#FFE5E5E5" >
-                        <ComboBox x:Name="npctemplatecombo" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="613" ItemsSource="{Binding NPCTemplates}" DisplayMemberPath="name" SelectedValuePath="id" DropDownClosed="ComboBox_DropDownClosed_NPCTemplates"/>
-                        <DataGrid Margin="10,10,10,10" ItemsSource="{Binding BotTemplate}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto" >
+                    <Grid Background="#FFE5E5E5" HorizontalAlignment="Left" VerticalAlignment="Top" Width="Auto" Height="Auto">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <ComboBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="6" x:Name="npctemplatecombo" ItemsSource="{Binding NPCTemplates}" DisplayMemberPath="name" SelectedValuePath="id" SelectedItem="{Binding currentBotTemplateSelection}" DropDownClosed="ComboBox_DropDownClosed_NPCTemplates"/>
+                        <DataGrid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="6" ItemsSource="{Binding BotTemplate}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto" >
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Name" Width="*" Binding="{Binding recordName}"/>
-                                <DataGridTextColumn Header="Bot" Width="*" Binding="{Binding robotName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                                <DataGridTextColumn Header="Head" Width="*" Binding="{Binding headName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                                <DataGridTextColumn Header="Chassis" Width="*" Binding="{Binding chassisName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                                <DataGridTextColumn Header="Legs" Width="*" Binding="{Binding legName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                                <DataGridTextColumn Header="Cargo" Width="*" Binding="{Binding containerName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                                <DataGridTextColumn Header="Note" Width="*" Binding="{Binding recordNote}"/>
+                                <DataGridTextColumn Header="Name" Width="Auto" Binding="{Binding recordName}"/>
+                                <DataGridTextColumn Header="Bot" Width="Auto" Binding="{Binding robotName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                <DataGridTextColumn Header="Head" Width="Auto" Binding="{Binding headName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                <DataGridTextColumn Header="Chassis" Width="Auto" Binding="{Binding chassisName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                <DataGridTextColumn Header="Legs" Width="Auto" Binding="{Binding legName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                <DataGridTextColumn Header="Cargo" Width="Auto" Binding="{Binding containerName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                <DataGridTextColumn Header="Note" Width="Auto" Binding="{Binding recordNote}"/>
                             </DataGrid.Columns>
                         </DataGrid>
-                        <DataGrid  x:Name="head" Margin="10,10,10,10" ItemsSource="{Binding BotTemplate[0].headModules}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto">
+                        <DataGrid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="6" x:Name="head"  ItemsSource="{Binding BotTemplate[0].headModules}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Definition" Width="*" Binding="{Binding definitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                                <DataGridTextColumn Header="Slot" Width="*" Binding="{Binding slot}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                                <DataGridTextColumn Header="AmmoDefinition" Width="*" Binding="{Binding ammoDefinitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                                <DataGridTextColumn Header="AmmoQuantity" Width="*" Binding="{Binding ammoQuantity}"/>
+                                <DataGridTextColumn Header="Definition" Width="Auto" Binding="{Binding definitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                <DataGridTextColumn Header="Slot" Width="Auto" Binding="{Binding slot}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                <DataGridTextColumn Header="AmmoDefinition" Width="Auto" Binding="{Binding ammoDefinitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                <DataGridTextColumn Header="AmmoQuantity" Width="Auto" Binding="{Binding ammoQuantity}"/>
                             </DataGrid.Columns>
                         </DataGrid>
-                        <DataGrid  x:Name="chassis"  Margin="10,10,10,10" ItemsSource="{Binding BotTemplate[0].chassisModules}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto">
+                        <DataGrid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="6" x:Name="chassis"  ItemsSource="{Binding BotTemplate[0].chassisModules}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Definition" Width="*" Binding="{Binding definitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                                <DataGridTextColumn Header="Slot" Width="*" Binding="{Binding slot}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                                <DataGridTextColumn Header="AmmoDefinition" Width="*" Binding="{Binding ammoDefinitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                                <DataGridTextColumn Header="AmmoQuantity" Width="*" Binding="{Binding ammoQuantity}"/>
+                                <DataGridTextColumn Header="Definition" Width="Auto" Binding="{Binding definitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                <DataGridTextColumn Header="Slot" Width="Auto" Binding="{Binding slot}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                <DataGridTextColumn Header="AmmoDefinition" Width="Auto" Binding="{Binding ammoDefinitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                <DataGridTextColumn Header="AmmoQuantity" Width="Auto" Binding="{Binding ammoQuantity}"/>
                             </DataGrid.Columns>
                         </DataGrid>
-                        <DataGrid  x:Name="leg" Margin="10,10,10,10" ItemsSource="{Binding BotTemplate[0].legModules}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto">
+                        <DataGrid Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="6" x:Name="leg"  ItemsSource="{Binding BotTemplate[0].legModules}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Definition" Width="*" Binding="{Binding definitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                                <DataGridTextColumn Header="Slot" Width="*" Binding="{Binding slot}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                                <DataGridTextColumn Header="AmmoDefinition" Width="*" Binding="{Binding ammoDefinitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                                <DataGridTextColumn Header="AmmoQuantity" Width="*" Binding="{Binding ammoQuantity}" />
+                                <DataGridTextColumn Header="Definition" Width="Auto" Binding="{Binding definitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                <DataGridTextColumn Header="Slot" Width="Auto" Binding="{Binding slot}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                <DataGridTextColumn Header="AmmoDefinition" Width="Auto" Binding="{Binding ammoDefinitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                <DataGridTextColumn Header="AmmoQuantity" Width="Auto" Binding="{Binding ammoQuantity}" />
                             </DataGrid.Columns>
                         </DataGrid>
-                        <DataGrid x:Name="items" Margin="10,10,10,10" ItemsSource="{Binding BotTemplate[0].items}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto">
+                        <DataGrid Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="6" x:Name="items" ItemsSource="{Binding BotTemplate[0].items}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Height="Auto">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Definition" Width="*" Binding="{Binding definitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                                <DataGridTextColumn Header="Quantity" Width="*" Binding="{Binding quantity}"/>
-                                <DataGridTextColumn Header="Repackaged" Width="*" Binding="{Binding repackaged}"/>
+                                <DataGridTextColumn Header="Definition" Width="Auto" Binding="{Binding definitionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                <DataGridTextColumn Header="Quantity" Width="Auto" Binding="{Binding quantity}"/>
+                                <DataGridTextColumn Header="Repackaged" Width="Auto" Binding="{Binding repackaged}"/>
                             </DataGrid.Columns>
                         </DataGrid>
 
-                        <Grid Margin="0,0,0.333,0">
-                            <Label Content="Module Selection"  Margin="5,105,519,-105"/>
-                            <ComboBox x:Name="moduledropdown" Margin="118,105,141,-95" Height="26" ItemsSource="{Binding ModuleList}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="ComboBox_DropDownClosed_ModuleDef"/>
-                            <Label Content="Ammo Selection"  Margin="5,131,519,-131" />
-                            <ComboBox x:Name="ammodropdown" Margin="118,136,141,-126" Height="26" ItemsSource="{Binding AmmoList}" DisplayMemberPath="Name" SelectedValuePath="Definition" DropDownClosed="ComboBox_DropDownClosed_AmmoDef"/>
-                            <Button Content="Add Module To Head" Margin="239,167,238,-157" Click="Add_To_Head_Click" Width="155"/>
-                            <Button Content="Add Module To Chassis" Margin="239,192,238,-182" Click="Add_To_Chassis_Click" Width="155"/>
-                            <Button Content="Add Module To Leg" Margin="238,217,238,-207" Click="Add_To_Leg_Click" Width="155"/>
-                            <Button Content="Remove Module To Head" Margin="17,167,460,-157" Click="Remove_To_Head_Click" Width="155"/>
-                            <Button Content="Remove Module To Chassis" Margin="17,192,460,-182" Click="Remove_To_Chassis_Click" Width="155"/>
-                            <Button Content="Remove Module To Leg" Margin="17,217,460,-207" Click="Remove_To_Leg_Click" Width="155"/>
-                            <Button Content="Save Changes" Margin="510,217,22,-207" Click="NPCTemplate_Save_Click" Width="100"/>
-                            <Button Content="New NPC" Margin="511,167,22,-157" Click="Button_Click_2"/>
-                        </Grid>
-                    </StackPanel>
+
+                        <Label Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="1" Content="Module Selection" />
+                        <ComboBox Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="1" x:Name="moduledropdown" ItemsSource="{Binding ModuleList}" SelectedItem="{Binding SelectedModule}" DisplayMemberPath="definitionname" SelectedValuePath="definition" />
+                        <Label Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="1" Content="Ammo Selection"   />
+                        <ComboBox Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="1" x:Name="ammodropdown"   ItemsSource="{Binding AmmoList}" SelectedItem="{Binding SelectedAmmo}" DisplayMemberPath="definitionname" SelectedValuePath="definition" />
+                        <Button Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="1" Width="Auto" Content="Add Module To Head"  Click="Add_To_Head_Click" />
+                        <Button Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="1" Width="Auto" Content="Add Module To Chassis"  Click="Add_To_Chassis_Click" />
+                        <Button Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="1" Width="Auto" Content="Add Module To Leg" Click="Add_To_Leg_Click"/>
+                        <Button Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="1" Width="Auto" Content="Remove Module To Head"  Click="Remove_To_Head_Click"/>
+                        <Button Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="1" Width="Auto" Content="Remove Module To Chassis"  Click="Remove_To_Chassis_Click" />
+                        <Button Grid.Row="10" Grid.Column="1" Grid.ColumnSpan="1" Width="Auto"  Content="Remove Module To Leg"  Click="Remove_To_Leg_Click" />
+                        <Button Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="1" Width="Auto" Content="Save Changes"  Click="NPCTemplate_Save_Click" />
+                        <Button Grid.Row="7" Grid.Column="2" Grid.ColumnSpan="1" Width="Auto" Content="New NPC" Click="Button_Click_2"/>
+                        
+                    </Grid>
                 </ScrollViewer>
             </TabItem>
 

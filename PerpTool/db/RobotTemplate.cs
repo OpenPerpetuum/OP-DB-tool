@@ -77,7 +77,7 @@ namespace Perptool.db
             robotTemplate.legID = Convert.ToInt32(lego);
 
             success = d.TryGetValue("container", out object cono) && success;
-            robotTemplate.legID = Convert.ToInt32(cono);
+            robotTemplate.containerID = Convert.ToInt32(cono);
 
             success = d.TryGetValue("headModules", out object hmod) && success;
             Dictionary<string, object> headmods = (Dictionary<string, object>)hmod;

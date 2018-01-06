@@ -414,13 +414,13 @@ namespace Perptool.db
         }
 
 
-        public LootItem CreateNewLootForBot(EntityItems npcBotDef, EntityItems item)
+        public LootItem CreateNewLootForBot(EntityDefaults npcBotDef, EntityDefaults item)
         {
             LootItem tmp = new LootItem();
-            tmp.NPCDefinition = npcBotDef.Definition;
+            tmp.NPCDefinition = npcBotDef.definition;
             tmp.NPCLootID = -1;
-            tmp.LootDefinitionName = item.Name;
-            tmp.LootDefinition = item.Definition;
+            tmp.LootDefinitionName = item.definitionname;
+            tmp.LootDefinition = item.definition;
             tmp.LootQuantity = 1;
             tmp.LootProbability = 0.5M;
             tmp.LootRepackaged = 1;
