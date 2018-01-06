@@ -68,6 +68,7 @@ namespace PerpTool
             this.selectedEntity = new ObservableCollection<EntityDefaults>();
             this.DataContext = this;
         }
+
         public IEnumerable<CategoryFlags> CatFlags { get; set; }
         private EntityItems currentSelection { get; set; }
         private AggregateModifiers AgModifiers { get; set; }
@@ -88,6 +89,7 @@ namespace PerpTool
         public List<EntityItems> NPCEntities { get; set; }
         public List<NPCPresenceData> AllNPCPresences { get; set; }
         public List<AggregateFields> AllAggregateFields { get; set; }
+        
 
 
         #region EntityDefaults
@@ -100,7 +102,6 @@ namespace PerpTool
             {
                 return this._privlist;
             }
-
             set
             {
                 this._privlist = value;
@@ -146,12 +147,14 @@ namespace PerpTool
             EntityItems = Entities.GetEntityItemsByCategory(flag);
 
         }
+
         private AggregateFields selectedAggField;
         private void ComboBox_DropDownClosed_AggField(object sender, EventArgs e)
         {
             this.selectedAggField = (AggregateFields)AggFieldCombo.SelectedItem;
             System.Console.WriteLine(this.selectedAggField);
         }
+
         private void AggFieldAdd_Click(object sender, EventArgs e)
         {
             if (this.selectedAggField == null || this.selectedEntity.Count != 1) { return; }
@@ -186,7 +189,6 @@ namespace PerpTool
                     StringBuilder sb = new StringBuilder();
                     sb.AppendLine(handleAggregateFieldValuesSave(FieldValuesList));
                     sb.AppendLine(entity.SaveNewRecord());
-                    Console.WriteLine(sb.ToString());
                     this.selectedEntity.Clear();
                     File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + entity.definitionname + ".sql", sb.ToString());
                     MessageBox.Show("Saved NEW Record!", "Info", 0, MessageBoxImage.Information);
@@ -209,7 +211,6 @@ namespace PerpTool
                     StringBuilder sb = new StringBuilder();
                     sb.AppendLine(handleAggregateFieldValuesSave(FieldValuesList));
                     sb.AppendLine(entity.Save());
-                    Console.WriteLine(sb.ToString());
                     File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + entity.definitionname + ".sql", sb.ToString());
                     MessageBox.Show("Saved Record!", "Info", 0, MessageBoxImage.Information);
                 }
@@ -257,15 +258,49 @@ namespace PerpTool
             return sb.ToString();
         }
 
+        private ObservableCollection<EntityOptions> _privOptions;
+        public ObservableCollection<EntityOptions> selectedEntityOptions
+        {
+            get
+            {
+                return _privOptions;
+            }
+            set
+            {
+                _privOptions = value;
+                OnPropertyChanged("selectedEntityOptions");
+            }
+        }
+
         private void ComboBox_DropDownClosed(object sender, EventArgs e)
         {
             EntityItems item = (EntityItems)combo.SelectedItem;
+            if (item == null) { return; }
+            FieldValuesList = AgValues.GetValuesForEntity(item.Definition);
             this.selectedEntity.Clear();
             this.selectedEntity.Add(Entities.GetById(item.Definition));
             this.currentSelection = item;
-            if (item == null) { return; }
-            FieldValuesList = AgValues.GetValuesForEntity(item.Definition);
+            this.selectedEntityOptions = new ObservableCollection<EntityOptions>();
+            this.selectedEntityOptions.Add(item.Options);
         }
+
+        public List<FieldValuesStuff> copyOfFields = new List<FieldValuesStuff>();
+        private void CopyFields_click(object sender, EventArgs e)
+        {
+            copyOfFields = new List<FieldValuesStuff>(this.FieldValuesList);
+        }
+
+        private void PasteFields_Click(object sender, EventArgs e)
+        {
+            foreach(FieldValuesStuff fields in this.copyOfFields)
+            {
+                EntityDefaults entity = this.selectedEntity[0];
+                fields.Definition = entity.definition;
+                fields.dBAction = DBAction.INSERT;
+                this.FieldValuesList.Add(fields);
+            }
+        }
+
         #endregion
 
         #region Zones

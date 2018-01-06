@@ -2,6 +2,7 @@
 using PerpTool.Types;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
@@ -18,7 +19,7 @@ namespace Perptool.db
     {
         public int Definition { get; set; }
         public string Name { get; set; }
-        public string Options { get; set; }
+        public EntityOptions Options { get; set; }
         public decimal Volume { get; set; }
         public decimal Mass { get; set; }
 
@@ -31,21 +32,417 @@ namespace Perptool.db
     }
 
 
+    public class SlotFlagWrapper : INotifyPropertyChanged
+    {
+        private bool _head;
+        private bool _chassis;
+        private bool _leg;
+        private bool _small;
+        private bool _medium;
+        private bool _large;
+        private bool _industrial;
+        private bool _ew_Eng;
+        private bool _turret;
+        private bool _missile;
+        private bool _melee;
+        private SlotFlags _flag;
+
+        public SlotFlagWrapper(int index, SlotFlags slotFlags)
+        {
+            this.Index = index;
+            this.SlotFlag = slotFlags;
+            this.setFlags();
+        }
+        public int Index { get; set; }
+        public SlotFlags SlotFlag
+        {
+            get { return this._flag; }
+            set
+            {
+                this._flag = value;
+                OnPropertyChanged("SlotFlag");
+            }
+        }
+        public bool Head
+        {
+            get { return this._head; }
+            set
+            {
+                this._head = value;
+                updateFlag(SlotFlags.head, value);
+                OnPropertyChanged("Head");
+            }
+        }
+        public bool Chassis
+        {
+            get { return this._chassis; }
+            set
+            {
+                this._chassis = value;
+                updateFlag(SlotFlags.chassis, value);
+                OnPropertyChanged("Chassis");
+            }
+        }
+        public bool Leg
+        {
+            get { return this._leg; }
+            set
+            {
+                this._leg = value;
+                updateFlag(SlotFlags.leg, value);
+                OnPropertyChanged("Leg");
+            }
+        }
+        public bool Small
+        {
+            get { return this._small; }
+            set
+            {
+                this._small = value;
+                updateFlag(SlotFlags.small, value);
+                OnPropertyChanged("Small");
+            }
+        }
+        public bool Medium
+        {
+            get { return this._medium; }
+            set
+            {
+                this._medium = value;
+
+                updateFlag(SlotFlags.medium, value);
+                OnPropertyChanged("Medium");
+            }
+        }
+        public bool Large
+        {
+            get { return this._large; }
+            set
+            {
+                this._large = value;
+                updateFlag(SlotFlags.large, value);
+                OnPropertyChanged("Large");
+            }
+        }
+        public bool Industrial
+        {
+            get { return this._industrial; }
+            set
+            {
+                this._industrial = value;
+                updateFlag(SlotFlags.industrial, value);
+                OnPropertyChanged("Industrial");
+            }
+        }
+        public bool EW_Eng
+        {
+            get { return this._ew_Eng; }
+            set
+            {
+                this._ew_Eng = value;
+                updateFlag(SlotFlags.ew_and_engineering, value);
+                OnPropertyChanged("EW_Eng");
+            }
+        }
+        public bool Turret
+        {
+            get { return this._turret; }
+            set
+            {
+                this._turret = value;
+                updateFlag(SlotFlags.turret, value);
+                OnPropertyChanged("Turret");
+            }
+        }
+        public bool Missile
+        {
+            get { return this._missile; }
+            set
+            {
+                this._missile = value;
+                updateFlag(SlotFlags.missile, value);
+                OnPropertyChanged("Missile");
+            }
+        }
+        public bool Melee
+        {
+            get { return this._melee; }
+            set
+            {
+                this._melee = value;
+                updateFlag(SlotFlags.melee, value);
+                OnPropertyChanged("Melee");
+            }
+        }
+
+        private void updateFlag(SlotFlags attribute, bool isAdd)
+        {
+            if (isAdd)
+            {
+                this.addFlag(attribute);
+            }
+            else
+            {
+                this.removeFlag(attribute);
+            }
+        }
+
+        private void addFlag(SlotFlags flag)
+        {
+            this.SlotFlag |= flag;
+        }
+
+        private void removeFlag(SlotFlags flag)
+        {
+            this.SlotFlag &= ~flag;
+        }
+
+        private void setFlags()
+        {
+            this.Head = SlotFlag.HasFlag(SlotFlags.head);
+            this.Chassis = SlotFlag.HasFlag(SlotFlags.chassis);
+            this.Leg = SlotFlag.HasFlag(SlotFlags.leg);
+            this.Small = SlotFlag.HasFlag(SlotFlags.small);
+            this.Medium = SlotFlag.HasFlag(SlotFlags.medium);
+            this.Large = SlotFlag.HasFlag(SlotFlags.large);
+            this.Industrial = SlotFlag.HasFlag(SlotFlags.industrial);
+            this.EW_Eng = SlotFlag.HasFlag(SlotFlags.ew_and_engineering);
+            this.Turret = SlotFlag.HasFlag(SlotFlags.turret);
+            this.Missile = SlotFlag.HasFlag(SlotFlags.missile);
+            this.Melee = SlotFlag.HasFlag(SlotFlags.melee);
+        }
+        public SlotFlags getFlags()
+        {
+            System.Console.WriteLine("Current Slot Flag is:");
+            System.Console.WriteLine(this.SlotFlag.ToString());
+            SlotFlag = 0;
+            this.updateFlag(SlotFlags.head, this.Head);
+            this.updateFlag(SlotFlags.chassis, this.Chassis);
+            this.updateFlag(SlotFlags.leg, this.Leg);
+            this.updateFlag(SlotFlags.small, this.Small);
+            this.updateFlag(SlotFlags.medium, this.Medium);
+            this.updateFlag(SlotFlags.large, this.Large);
+            this.updateFlag(SlotFlags.industrial, this.Industrial);
+            this.updateFlag(SlotFlags.ew_and_engineering, this.EW_Eng);
+            this.updateFlag(SlotFlags.turret, this.Turret);
+            this.updateFlag(SlotFlags.missile, this.Missile);
+            this.updateFlag(SlotFlags.melee, this.Melee);
+
+            System.Console.WriteLine("Changes Applied to Slot Flag is:");
+            System.Console.WriteLine(this.SlotFlag.ToString());
+            return SlotFlag;
+        }
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged(string name)
+        {
+
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+    }
+
     public class EntityOptions : INotifyPropertyChanged
     {
-        public int Head { get; set; }
-        public int Chassis { get; set; }
-        public int Leg { get; set; }
-        public int Inventory { get; set; }
-        public SlotFlags[] slotFlags { get; set; }
-        public decimal height { get; set; }
-        public int max_locked_targets { get; set; }
-        public decimal max_targeting_range { get; set; }
-        public decimal sensor_strength { get; set; }
-        public decimal cpu { get; set; }
-        public SlotFlags moduleFlag { get; set; }
-        public int ammoCapacity { get; set; }
-        public long ammoType { get; set; }
+        #region fields
+        private int pHead;
+        private int pChassis;
+        private int pLeg;
+        private int pInventory;
+        private SlotFlags[] pslotFlags;
+        private decimal pheight;
+        private int pmax_locked_targets;
+        private decimal pmax_targeting_range;
+        private decimal psensor_strength;
+        private decimal pcpu;
+        private SlotFlags pmoduleFlag;
+        private int pammoCapacity;
+        private long pammoType;
+
+        public SlotFlags[] getSlotArrary()
+        {
+            SlotFlags[] arr = new SlotFlags[Slots.Count];
+            for (int i = 0; i < Slots.Count; i++)
+            {
+                arr[i] = Slots[i].SlotFlag;
+            }
+            return arr;
+        }
+
+        private ObservableCollection<SlotFlagWrapper> _pslots;
+        public ObservableCollection<SlotFlagWrapper> Slots
+        {
+            get
+            {
+                return this._pslots;
+            }
+            set
+            {
+                this._pslots = value;
+                OnPropertyChanged("Slots");
+            }
+        }
+
+        public int Head
+        {
+            get
+            {
+                return this.pHead;
+            }
+            set
+            {
+                this.pHead = value;
+                OnPropertyChanged("Head");
+            }
+        }
+        public int Chassis
+        {
+            get
+            {
+                return this.pChassis;
+            }
+            set
+            {
+                this.pChassis = value;
+                OnPropertyChanged("Chassis");
+            }
+        }
+        public int Leg
+        {
+            get
+            {
+                return this.pLeg;
+            }
+            set
+            {
+                this.pLeg = value;
+                OnPropertyChanged("Leg");
+            }
+        }
+        public int Inventory
+        {
+            get
+            {
+                return this.pInventory;
+            }
+            set
+            {
+                this.pInventory = value;
+                OnPropertyChanged("Inventory");
+            }
+        }
+        public SlotFlags[] slotFlags
+        {
+            get
+            {
+                return this.pslotFlags;
+            }
+            set
+            {
+                this.pslotFlags = value;
+                this.Slots = new ObservableCollection<SlotFlagWrapper>();
+                for (int i = 0; i < this.pslotFlags.Length; i++)
+                {
+                    this.Slots.Add(new SlotFlagWrapper(i, pslotFlags[i]));
+                }
+                OnPropertyChanged("slotFlags");
+            }
+        }
+        public decimal height
+        {
+            get
+            {
+                return this.pheight;
+            }
+            set
+            {
+                this.pheight = value;
+                OnPropertyChanged("height");
+            }
+        }
+        public int max_locked_targets
+        {
+            get
+            {
+                return this.pmax_locked_targets;
+            }
+            set
+            {
+                this.pmax_locked_targets = value;
+                OnPropertyChanged("max_locked_targets");
+            }
+        }
+        public decimal max_targeting_range
+        {
+            get
+            {
+                return this.pmax_targeting_range;
+            }
+            set
+            {
+                this.pmax_targeting_range = value;
+                OnPropertyChanged("max_targeting_range");
+            }
+        }
+        public decimal sensor_strength
+        {
+            get
+            {
+                return this.psensor_strength;
+            }
+            set
+            {
+                this.psensor_strength = value;
+                OnPropertyChanged("sensor_strength");
+            }
+        }
+        public decimal cpu
+        {
+            get
+            {
+                return this.pcpu;
+            }
+            set
+            {
+                this.pcpu = value;
+                OnPropertyChanged("cpu");
+            }
+        }
+        public SlotFlags moduleFlag
+        {
+            get
+            {
+                return this.pmoduleFlag;
+            }
+            set
+            {
+                this.pmoduleFlag = value;
+                OnPropertyChanged("moduleFlag");
+            }
+        }
+        public int ammoCapacity
+        {
+            get
+            {
+                return this.pammoCapacity;
+            }
+            set
+            {
+                this.pammoCapacity = value;
+                OnPropertyChanged("ammoCapacity");
+            }
+        }
+        public long ammoType
+        {
+            get
+            {
+                return this.pammoType;
+            }
+            set
+            {
+                this.pammoType = value;
+                OnPropertyChanged("ammoType");
+            }
+        }
+        #endregion
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -73,9 +470,9 @@ namespace Perptool.db
             {
                 dictionary["container"] = this.Inventory;
             }
-            if (this.slotFlags != null && this.slotFlags.Length > 0)
+            if (this.slotFlags != null && this.Slots.Count > 0)
             {
-                dictionary["slotFlags"] = this.slotFlags;
+                dictionary["slotFlags"] = getSlotArrary();
             }
             if (this.moduleFlag > 0)
             {
@@ -591,7 +988,7 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE entitydefaults Set  definitionname = @defname,  quantity = @quantity,  attributeflags = @attributeflags,  categoryflags = @categoryflags,  options = @options,  note = @note,  enabled = @enabled,  volume = @volume,  mass = @mass,  hidden = @hidden,  health = @health,  descriptiontoken = @descriptiontoken,  purchasable = @purchasable,  tiertype = @tiertype,  tierlevel = @tierlevel where definition = @definition;");
+                sqlCommand.Append("UPDATE entitydefaults Set definitionname=@defname, quantity=@quantity, attributeflags=@attributeflags, categoryflags=@categoryflags, options=@options, note=@note, enabled=@enabled, volume=@volume, mass=@mass, hidden=@hidden, health=@health, descriptiontoken=@descriptiontoken, purchasable=@purchasable, tiertype=@tiertype, tierlevel=@tierlevel where definition=@definition;");
 
                 command.CommandText = sqlCommand.ToString();
 
@@ -702,7 +1099,7 @@ namespace Perptool.db
                     {
                         item.Definition = Convert.ToInt32(reader["definition"]);
                         item.Name = Convert.ToString(reader["definitionname"]);
-                        item.Options = Convert.ToString(reader["options"]);
+                        item.Options = CreateFromOptions(Convert.ToString(reader["options"]));
                         item.Volume = Convert.ToDecimal(reader["volume"]);
                         item.Mass = Convert.ToDecimal(reader["mass"]);
                     }
@@ -731,7 +1128,7 @@ namespace Perptool.db
                         EntityItems item = new EntityItems();
                         item.Definition = Convert.ToInt32(reader["definition"]);
                         item.Name = Convert.ToString(reader["definitionname"]);
-                        item.Options = Convert.ToString(reader["options"]);
+                        item.Options = CreateFromOptions(Convert.ToString(reader["options"]));
                         item.Volume = Convert.ToDecimal(reader["volume"]);
                         item.Mass = Convert.ToDecimal(reader["mass"]);
                         list.Add(item);
@@ -761,7 +1158,7 @@ namespace Perptool.db
                         EntityItems item = new EntityItems();
                         item.Definition = Convert.ToInt32(reader["definition"]);
                         item.Name = Convert.ToString(reader["definitionname"]);
-                        item.Options = Convert.ToString(reader["options"]);
+                        item.Options = CreateFromOptions(Convert.ToString(reader["options"]));
                         item.Volume = Convert.ToDecimal(reader["volume"]);
                         item.Mass = Convert.ToDecimal(reader["mass"]);
                         list.Add(item);
@@ -883,7 +1280,7 @@ namespace Perptool.db
                         EntityItems item = new EntityItems();
                         item.Name = Convert.ToString(reader["definitionname"]);
                         item.Definition = Convert.ToInt32(reader["definition"]);
-                        item.Options = Convert.ToString(reader["options"]);
+                        item.Options = CreateFromOptions(Convert.ToString(reader["options"]));
                         item.Volume = Convert.ToInt32(reader["volume"]);
                         item.Mass = Convert.ToInt32(reader["mass"]);
                         list.Add(item);
@@ -892,9 +1289,6 @@ namespace Perptool.db
             }
             return list;
         }
-
-
-
 
         public List<EntityItems> GetAllNPCLootableBots()
         {
@@ -905,7 +1299,6 @@ namespace Perptool.db
             {
                 StringBuilder sqlCommand = new StringBuilder();
                 sqlCommand.Append("SELECT DISTINCT dbo.entitydefaults.definitionname, dbo.entitydefaults.definition FROM dbo.entitydefaults JOIN dbo.npcloot on dbo.npcloot.definition = dbo.entitydefaults.definition GROUP BY entitydefaults.definition,  entitydefaults.definitionname;");
-                //sqlCommand.Append("");
                 command.CommandText = sqlCommand.ToString();
                 command.Connection = conn;
                 conn.Open();
@@ -995,7 +1388,7 @@ namespace Perptool.db
                             EntityItems item = new EntityItems();
                             item.Name = Convert.ToString(reader["definitionname"]);
                             item.Definition = Convert.ToInt32(reader["definition"]);
-                            item.Options = Convert.ToString(reader["options"]);
+                            item.Options = CreateFromOptions(Convert.ToString(reader["options"]));
                             item.Volume = Convert.ToInt32(reader["volume"]);
                             item.Mass = Convert.ToInt32(reader["mass"]);
                             list.Add(item);
@@ -1013,7 +1406,7 @@ namespace Perptool.db
             item.Definition = entity.definition;
             item.Mass = entity.mass;
             item.Name = entity.definitionname;
-            //item.Options = entity.options;
+            item.Options = entity.options;
             item.Volume = entity.volume;
             return item;
         }
