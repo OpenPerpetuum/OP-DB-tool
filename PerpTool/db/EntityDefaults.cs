@@ -54,23 +54,15 @@ namespace Perptool.db
             this.setFlags();
         }
         public int Index { get; set; }
-        public SlotFlags SlotFlag
-        {
-            get { return this._flag; }
-            set
-            {
-                this._flag = value;
-                OnPropertyChanged("SlotFlag");
-            }
-        }
+        public SlotFlags SlotFlag { get; set; }
         public bool Head
         {
             get { return this._head; }
             set
             {
+                OnPropertyChanged("Head");
                 this._head = value;
                 updateFlag(SlotFlags.head, value);
-                OnPropertyChanged("Head");
             }
         }
         public bool Chassis
@@ -78,9 +70,9 @@ namespace Perptool.db
             get { return this._chassis; }
             set
             {
+                OnPropertyChanged("Chassis");
                 this._chassis = value;
                 updateFlag(SlotFlags.chassis, value);
-                OnPropertyChanged("Chassis");
             }
         }
         public bool Leg
@@ -88,9 +80,9 @@ namespace Perptool.db
             get { return this._leg; }
             set
             {
+                OnPropertyChanged("Leg");
                 this._leg = value;
                 updateFlag(SlotFlags.leg, value);
-                OnPropertyChanged("Leg");
             }
         }
         public bool Small
@@ -98,9 +90,9 @@ namespace Perptool.db
             get { return this._small; }
             set
             {
+                OnPropertyChanged("Small");
                 this._small = value;
                 updateFlag(SlotFlags.small, value);
-                OnPropertyChanged("Small");
             }
         }
         public bool Medium
@@ -108,10 +100,9 @@ namespace Perptool.db
             get { return this._medium; }
             set
             {
-                this._medium = value;
-
-                updateFlag(SlotFlags.medium, value);
                 OnPropertyChanged("Medium");
+                this._medium = value;
+                updateFlag(SlotFlags.medium, value);
             }
         }
         public bool Large
@@ -119,9 +110,9 @@ namespace Perptool.db
             get { return this._large; }
             set
             {
+                OnPropertyChanged("Large");
                 this._large = value;
                 updateFlag(SlotFlags.large, value);
-                OnPropertyChanged("Large");
             }
         }
         public bool Industrial
@@ -129,9 +120,9 @@ namespace Perptool.db
             get { return this._industrial; }
             set
             {
+                OnPropertyChanged("Industrial");
                 this._industrial = value;
                 updateFlag(SlotFlags.industrial, value);
-                OnPropertyChanged("Industrial");
             }
         }
         public bool EW_Eng
@@ -139,9 +130,9 @@ namespace Perptool.db
             get { return this._ew_Eng; }
             set
             {
+                OnPropertyChanged("EW_Eng");
                 this._ew_Eng = value;
                 updateFlag(SlotFlags.ew_and_engineering, value);
-                OnPropertyChanged("EW_Eng");
             }
         }
         public bool Turret
@@ -149,9 +140,9 @@ namespace Perptool.db
             get { return this._turret; }
             set
             {
+                OnPropertyChanged("Turret");
                 this._turret = value;
                 updateFlag(SlotFlags.turret, value);
-                OnPropertyChanged("Turret");
             }
         }
         public bool Missile
@@ -159,9 +150,9 @@ namespace Perptool.db
             get { return this._missile; }
             set
             {
+                OnPropertyChanged("Missile");
                 this._missile = value;
                 updateFlag(SlotFlags.missile, value);
-                OnPropertyChanged("Missile");
             }
         }
         public bool Melee
@@ -169,9 +160,9 @@ namespace Perptool.db
             get { return this._melee; }
             set
             {
+                OnPropertyChanged("Melee");
                 this._melee = value;
                 updateFlag(SlotFlags.melee, value);
-                OnPropertyChanged("Melee");
             }
         }
 
@@ -211,10 +202,10 @@ namespace Perptool.db
             this.Missile = SlotFlag.HasFlag(SlotFlags.missile);
             this.Melee = SlotFlag.HasFlag(SlotFlags.melee);
         }
+
         public SlotFlags getFlags()
         {
-            System.Console.WriteLine("Current Slot Flag is:");
-            System.Console.WriteLine(this.SlotFlag.ToString());
+            System.Console.WriteLine(SlotFlag);
             SlotFlag = 0;
             this.updateFlag(SlotFlags.head, this.Head);
             this.updateFlag(SlotFlags.chassis, this.Chassis);
@@ -227,15 +218,13 @@ namespace Perptool.db
             this.updateFlag(SlotFlags.turret, this.Turret);
             this.updateFlag(SlotFlags.missile, this.Missile);
             this.updateFlag(SlotFlags.melee, this.Melee);
-
-            System.Console.WriteLine("Changes Applied to Slot Flag is:");
-            System.Console.WriteLine(this.SlotFlag.ToString());
+            System.Console.WriteLine(SlotFlag);
             return SlotFlag;
         }
+
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string name)
         {
-
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
     }
@@ -262,7 +251,7 @@ namespace Perptool.db
             SlotFlags[] arr = new SlotFlags[Slots.Count];
             for (int i = 0; i < Slots.Count; i++)
             {
-                arr[i] = Slots[i].SlotFlag;
+                arr[i] = Slots[i].getFlags();
             }
             return arr;
         }
@@ -333,7 +322,7 @@ namespace Perptool.db
         {
             get
             {
-                return this.pslotFlags;
+                return getSlotArrary();
             }
             set
             {
