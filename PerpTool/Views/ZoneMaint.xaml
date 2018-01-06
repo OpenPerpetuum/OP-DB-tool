@@ -1,0 +1,42 @@
+﻿<UserControl x:Class="PerpTool.Views.ZoneMaint"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:PerpTool.Views"
+             mc:Ignorable="d" d:DesignHeight="600" d:DesignWidth="800" Height="auto" Width="auto">
+    <Grid Background="#FFE5E5E5">
+        <GroupBox Header="Zone" Margin="10,10,10,0" Height="83" VerticalAlignment="Top">
+            <Grid>
+                <ComboBox HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="300" ItemsSource="{Binding ZoneList}" DisplayMemberPath="ConcatZoneIDName" SelectedValuePath="id" SelectedItem="{Binding SelectedZone}"/>
+                <CheckBox Content="Enabled" HorizontalAlignment="Left" Margin="341,14,0,0" VerticalAlignment="Top" IsChecked="{Binding SelectedZone.enabled }"/>
+                <CheckBox Content="Active" HorizontalAlignment="Left" Margin="425,14,0,0" VerticalAlignment="Top" IsChecked="{Binding SelectedZone.active }"/>
+                <CheckBox Content="Protected" HorizontalAlignment="Left" Margin="497,14,0,0" VerticalAlignment="Top" IsChecked="{Binding SelectedZone.pprotected }"/>
+                <CheckBox Content="Terraformable" HorizontalAlignment="Left" Margin="591,14,0,0" VerticalAlignment="Top" IsChecked="{Binding SelectedZone.terraformable}"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox Header="Zone Settings" Margin="10,98,10,62">
+            <Grid>
+                <Label Content="Note" HorizontalAlignment="Left" Margin="31,102,0,0" VerticalAlignment="Top"/>
+                <TextBox HorizontalAlignment="Left" Height="23" Margin="74,102,0,0" TextWrapping="Wrap" Text="{Binding SelectedZone.note}" VerticalAlignment="Top" Width="280"/>
+                <TextBox HorizontalAlignment="Left" Height="23" Margin="74,71,0,0" TextWrapping="Wrap" Text="{Binding SelectedZone.description}" VerticalAlignment="Top" Width="280"/>
+                <TextBox HorizontalAlignment="Left" Height="23" Margin="74,40,0,0" TextWrapping="Wrap" Text="{Binding SelectedZone.name}" VerticalAlignment="Top" Width="280"/>
+                <Label Content="Desc." HorizontalAlignment="Left" Margin="31,71,0,0" VerticalAlignment="Top"/>
+                <Label Content="Name" HorizontalAlignment="Left" Margin="27,40,0,0" VerticalAlignment="Top"/>
+                <TextBox HorizontalAlignment="Left" Height="23" Margin="488,40,0,0" TextWrapping="Wrap" Text="{Binding SelectedZone.width, StringFormat=\{0:D\}}" VerticalAlignment="Top" Width="80"/>
+                <TextBox HorizontalAlignment="Left" Height="23" Margin="488,71,0,0" TextWrapping="Wrap" Text="{Binding SelectedZone.height, StringFormat=\{0:D\}}" VerticalAlignment="Top" Width="80"/>
+                <Label Content="Width" HorizontalAlignment="Left" Margin="441,40,0,0" VerticalAlignment="Top"/>
+                <Label Content="Height" HorizontalAlignment="Left" Margin="437,71,0,0" VerticalAlignment="Top"/>
+                <TextBox HorizontalAlignment="Left" Height="23" Margin="488,102,0,0" TextWrapping="Wrap" Text="{Binding SelectedZone.maxdockingbase, StringFormat=\{0:D\}}" VerticalAlignment="Top" Width="80"/>
+                <Label Content="MaxDockingBase" HorizontalAlignment="Left" Margin="382,102,0,0" VerticalAlignment="Top"/>
+                <ComboBox HorizontalAlignment="Left" Margin="74,133,0,0" VerticalAlignment="Top" Width="280" ItemsSource="{Binding SpawnList}" DisplayMemberPath="ConcatSpawnIDName" SelectedValuePath="id" SelectedValue="{Binding SelectedZone.spawnid}"/>
+                <Label Content="SpawnId" HorizontalAlignment="Left" Margin="12,132,0,0" VerticalAlignment="Top"/>
+                <Label Content="Zone Id" HorizontalAlignment="Left" Margin="18,10,0,0" VerticalAlignment="Top"/>
+                <TextBox HorizontalAlignment="Left" Height="23" Margin="74,10,0,0" TextWrapping="Wrap" Text="{Binding SelectedZone.id}" VerticalAlignment="Top" Width="60"/>
+                <ComboBox HorizontalAlignment="Left" Margin="488,132,0,0" VerticalAlignment="Top" Width="120" ItemsSource="{Binding ZoneTypeList}" DisplayMemberPath="description" SelectedValuePath="value" SelectedValue="{Binding SelectedZone.zonetype}"/>
+                <Label Content="Zone Type" HorizontalAlignment="Left" Margin="418,132,0,0" VerticalAlignment="Top"/>
+            </Grid>
+        </GroupBox>
+        <Button Name="ZoneSaveBtn" Content="Save" Margin="0,0,34,21" HorizontalAlignment="Right" Width="75" Height="27" VerticalAlignment="Bottom" />
+    </Grid>
+</UserControl>

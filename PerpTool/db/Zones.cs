@@ -145,11 +145,6 @@ namespace Perptool.db
         private int privateactive;
 
         /// <summary>
-        /// private dataset
-        /// </summary>
-        private DataSet privateDSzones;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref='zonesTbl' /> class.
         /// </summary>
         /// <param name='connectionString'>pass the connection string to the database</param>

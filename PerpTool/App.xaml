@@ -2,8 +2,51 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:PerpTool"
-             StartupUri="MainWindow.xaml">
+             xmlns:dragablz="clr-namespace:Dragablz;assembly=Dragablz"
+             xmlns:common="clr-namespace:PerpTool.Common"
+             Startup="Application_Startup">
+             <!--StartupUri="MainWindow.xaml">-->
     <Application.Resources>
-         
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- MahApps.Metro resource dictionaries. Make sure that all file names are Case Sensitive! -->
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Colors.xaml" />
+                <!-- Accent and AppTheme setting -->
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/Blue.xaml" />
+                <!--Change to "BaseLight" for a light theme-->
+                <!--Change to "BaseDark" for a dark theme-->
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseLight.xaml" />
+                <!-- tabs!-->
+                <ResourceDictionary Source="pack://application:,,,/Dragablz;component/Themes/Generic.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <Style TargetType="{x:Type dragablz:TabablzControl}" BasedOn="{StaticResource {x:Type dragablz:TabablzControl}}">
+                <Setter Property="ItemContainerStyle" Value="{StaticResource TrapezoidDragableTabItemStyle}" />
+                <Setter Property="AdjacentHeaderItemOffset" Value="-10" />
+                <Setter Property="ShowDefaultAddButton" Value="False" />
+                <Setter Property="ShowDefaultCloseButton" Value="True" />
+                <Setter Property="HeaderItemTemplate">
+                    <Setter.Value>
+                        <DataTemplate DataType="{x:Type common:TabContent}">
+                            <TextBlock Text="{Binding Header}" />
+                        </DataTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="ContentTemplate">
+                    <Setter.Value>
+                        <DataTemplate DataType="{x:Type common:TabContent}">
+                            <ContentPresenter Margin="4" Content="{Binding Content}"/>
+                        </DataTemplate>
+                    </Setter.Value>
+                </Setter>
+                <!-- i dont think I have a better solution here?-->
+                <!-- see mainwindowviewmodel -->
+                <Setter Property="SelectedItem" Value="{Binding ActiveTab}"/>
+
+            </Style>
+
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

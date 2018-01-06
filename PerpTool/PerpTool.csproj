@@ -34,6 +34,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Dragablz, Version=0.0.3.197, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Dragablz.0.0.3.197\lib\net45\Dragablz.dll</HintPath>
+    </Reference>
+    <Reference Include="MahApps.Metro, Version=1.5.0.23, Culture=neutral, PublicKeyToken=f4fb5a3c4d1e5b4f, processorArchitecture=MSIL">
+      <HintPath>..\packages\MahApps.Metro.1.5.0\lib\net45\MahApps.Metro.dll</HintPath>
+    </Reference>
     <Reference Include="Perpetuum.ByteArrayExtensions, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Debug\Perpetuum.ByteArrayExtensions.dll</HintPath>
@@ -49,6 +55,9 @@
     <Reference Include="PresentationFramework.Aero2" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\MahApps.Metro.1.5.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -67,17 +76,33 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Common\MainWindowViewModel.cs" />
+    <Compile Include="Common\RelayCommand.cs" />
+    <Compile Include="Common\TabContent.cs" />
+    <Compile Include="MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Types\AttributeFlags.cs" />
     <Compile Include="Types\CategoryFlags.cs" />
     <Compile Include="Types\SlotFlags.cs" />
     <Compile Include="Usercontrols\RobotTemplateSlot.xaml.cs">
       <DependentUpon>RobotTemplateSlot.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\BotBonuses.xaml.cs">
+      <DependentUpon>BotBonuses.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ZoneMaint.xaml.cs">
+      <DependentUpon>ZoneMaint.xaml</DependentUpon>
+    </Compile>
     <Page Include="Dialogs\CreateRobotTemplate.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="MainWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MainWindowOld.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -101,11 +126,19 @@
     <Compile Include="Dialogs\CreateRobotTemplate.xaml.cs">
       <DependentUpon>CreateRobotTemplate.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
+    <Compile Include="MainWindowOld.xaml.cs">
+      <DependentUpon>MainWindowOld.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Usercontrols\RobotTemplateSlot.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\BotBonuses.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ZoneMaint.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -128,6 +161,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -135,6 +169,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Perpetuum.ExportedTypes\Perpetuum.ExportedTypes.csproj">
+      <Project>{4EC57492-1370-4749-9894-B302F7CA6F81}</Project>
+      <Name>Perpetuum.ExportedTypes</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

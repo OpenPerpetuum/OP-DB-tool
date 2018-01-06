@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--Project was exported from assembly: C:\PerpetuumServer\Perpetuum.ExportedTypes.dll-->
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{4EC57492-1370-4749-9894-B302F7CA6F81}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AssemblyName>Perpetuum.ExportedTypes</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <ApplicationVersion>1.0.0.0</ApplicationVersion>
+    <FileAlignment>512</FileAlignment>
+    <RootNamespace>Perpetuum.ExportedTypes</RootNamespace>
+    <TargetFrameworkProfile />
+    <SccProjectName>Svn</SccProjectName>
+    <SccLocalPath>Svn</SccLocalPath>
+    <SccAuxPath>Svn</SccAuxPath>
+    <SccProvider>SubversionScc</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AggregateField.cs" />
+    <Compile Include="AggregateFormula.cs" />
+    <Compile Include="ArtifactType.cs" />
+    <Compile Include="AttributeFlags.cs" />
+    <Compile Include="BeamType.cs" />
+    <Compile Include="CategoryFlags.cs" />
+    <Compile Include="DefinitionNames.cs" />
+    <Compile Include="EffectCategory.cs" />
+    <Compile Include="EffectType.cs" />
+    <Compile Include="EntityAttributeFlags.cs" />
+    <Compile Include="ExtensionNames.cs" />
+    <Compile Include="SlotFlags.cs" />
+    <Compile Include="TechTreeGroup.cs" />
+    <Compile Include="TechTreePointType.cs" />
+    <Compile Include="TierType.cs" />
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="ZoneTypes.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
