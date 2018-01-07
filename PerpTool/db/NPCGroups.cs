@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PerpTool.db;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -24,22 +25,25 @@ namespace Perptool.db
 
     public class NPCFlockData : INotifyPropertyChanged
     {
-        private string _defname;
-        public string NPCDefinitionName {
-            get
-            {
-                return this._defname;
-            }
-            set
-            {
-                this._defname = value;
-                OnPropertyChanged("NPCDefinitionName");
-            }
-        }
-        public int id { get; set; }
-        public string name { get; set; }
-        public int presenceid { get; set; }
-        public int flockmembercount { get; set; }
+        private int _id;
+        private string _name;
+        private int _presenceid;
+        private int _flockmembercount;
+        private int _definition;
+        private int _spawnoriginX;
+        private int _spawnoriginY;
+        private int _spawnrangeMin;
+        private int _spawnrangeMax;
+        private int _respawnseconds;
+        private int _totalspawncount;
+        private int _homerange;
+        private string _note;
+        private decimal _respawnmultiplierlow;
+        private int _enabled;
+        private int _iscallforhelp;
+        private int _behaviorType;
+
+        public DBAction dBAction;
         private int _def;
         public int definition
         {
@@ -53,19 +57,36 @@ namespace Perptool.db
                 OnPropertyChanged("definition");
             }
         }
-        public int spawnoriginX { get; set; }
-        public int spawnoriginY { get; set; }
-        public int spawnrangeMin { get; set; }
-        public int spawnrangeMax { get; set; }
-        public int respawnseconds { get; set; }
-        public int totalspawncount { get; set; }
-        public int homerange { get; set; }
-        public string note { get; set; }
-        public decimal respawnmultiplierlow { get; set; }
-        public int enabled { get; set; }
-        public int iscallforhelp { get; set; }
-        public int behaviorType { get; set; }
-        
+        private string _defname;
+        public string NPCDefinitionName
+        {
+            get
+            {
+                return this._defname;
+            }
+            set
+            {
+                this._defname = value;
+                OnPropertyChanged("NPCDefinitionName");
+            }
+        }
+        public int id { get { return this._id; } set { this._id = value; OnPropertyChanged("id"); } }
+        public string name { get { return this._name; } set { this._name = value; OnPropertyChanged("name"); } }
+        public int presenceid { get { return this._presenceid; } set { this._presenceid = value; OnPropertyChanged("presenceid"); } }
+        public int flockmembercount { get { return this._flockmembercount; } set { this._flockmembercount = value; OnPropertyChanged("flockmembercount"); } }
+        public int spawnoriginX { get { return this._spawnoriginX; } set { this._spawnoriginX = value; OnPropertyChanged("spawnoriginX"); } }
+        public int spawnoriginY { get { return this._spawnoriginY; } set { this._spawnoriginY = value; OnPropertyChanged("spawnoriginY"); } }
+        public int spawnrangeMin { get { return this._spawnrangeMin; } set { this._spawnrangeMin = value; OnPropertyChanged("spawnrangeMin"); } }
+        public int spawnrangeMax { get { return this._spawnrangeMax; } set { this._spawnrangeMax = value; OnPropertyChanged("spawnrangeMax"); } }
+        public int respawnseconds { get { return this._respawnseconds; } set { this._respawnseconds = value; OnPropertyChanged("respawnseconds"); } }
+        public int totalspawncount { get { return this._totalspawncount; } set { this._totalspawncount = value; OnPropertyChanged("totalspawncount"); } }
+        public int homerange { get { return this._homerange; } set { this._homerange = value; OnPropertyChanged("homerange"); } }
+        public string note { get { return this._note; } set { this._note = value; OnPropertyChanged("note"); } }
+        public decimal respawnmultiplierlow { get { return this._respawnmultiplierlow; } set { this._respawnmultiplierlow = value; OnPropertyChanged("respawnmultiplierlow"); } }
+        public int enabled { get { return this._enabled; } set { this._enabled = value; OnPropertyChanged("enabled"); } }
+        public int iscallforhelp { get { return this._iscallforhelp; } set { this._iscallforhelp = value; OnPropertyChanged("iscallforhelp"); } }
+        public int behaviorType { get { return this._behaviorType; } set { this._behaviorType = value; OnPropertyChanged("behaviorType"); } }
+
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -335,6 +356,52 @@ namespace Perptool.db
             this.behaviorType = 0;
         }
 
+        public List<NPCFlockData> GetAllFlocks()
+        {
+            List<NPCFlockData> list = new List<NPCFlockData>();
+            using (SqlConnection conn = new SqlConnection(this.ConnString))
+            {
+                using (SqlCommand command = new SqlCommand())
+                {
+                    StringBuilder sqlCommand = new StringBuilder();
+                    sqlCommand.Append(@"SELECT entitydefaults.definitionname, npcflock.* FROM npcflock 
+                    JOIN entitydefaults on entitydefaults.definition=npcflock.definition");
+                    command.CommandText = sqlCommand.ToString();
+                    command.Connection = conn;
+                    conn.Open();
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            NPCFlockData flock = new NPCFlockData();
+                            flock.behaviorType = Convert.ToInt32(reader["behaviorType"]);
+                            flock.definition = Convert.ToInt32(reader["definition"]);
+                            flock.enabled = Convert.ToInt32(reader["enabled"]);
+                            flock.flockmembercount = Convert.ToInt32(reader["flockmembercount"]);
+                            flock.homerange = Convert.ToInt32(reader["homerange"]);
+                            flock.id = Convert.ToInt32(reader["id"]);
+                            flock.iscallforhelp = Convert.ToInt32(reader["iscallforhelp"]);
+                            flock.name = Convert.ToString(reader["name"]);
+                            flock.note = Convert.ToString(reader["note"]);
+                            flock.presenceid = Convert.ToInt32(reader["presenceid"]);
+                            flock.respawnmultiplierlow = Convert.ToInt32(reader["respawnmultiplierlow"]);
+                            flock.respawnseconds = Convert.ToInt32(reader["respawnseconds"]);
+                            flock.spawnoriginX = Convert.ToInt32(reader["spawnoriginX"]);
+                            flock.spawnoriginY = Convert.ToInt32(reader["spawnoriginY"]);
+                            flock.spawnrangeMax = Convert.ToInt32(reader["spawnrangeMax"]);
+                            flock.spawnrangeMin = Convert.ToInt32(reader["spawnrangeMin"]);
+                            flock.totalspawncount = Convert.ToInt32(reader["totalspawncount"]);
+                            flock.NPCDefinitionName = Convert.ToString(reader["definitionname"]);
+                            flock.dBAction = DBAction.UPDATE;
+                            list.Add(flock);
+                        }
+
+                    }
+                }
+            }
+            return list;
+        }
+
         public List<NPCFlockData> getByPresenceID(int presID)
         {
             List<NPCFlockData> list = new List<NPCFlockData>();
@@ -374,6 +441,7 @@ namespace Perptool.db
                             flock.totalspawncount = Convert.ToInt32(reader["totalspawncount"]);
 
                             flock.NPCDefinitionName = Convert.ToString(reader["definitionname"]);
+                            flock.dBAction = DBAction.UPDATE;
                             list.Add(flock);
                         }
 
@@ -391,12 +459,64 @@ namespace Perptool.db
             {
                 StringBuilder sqlCommand = new StringBuilder();
                 sqlCommand.Append(@"UPDATE [dbo].[npcflock] SET [name] = @name
-                ,[presenceid] = @presenceid,[flockmembercount] = @flockmembercount,[definition] = @definition,[spawnoriginX] = @spawnoriginX,[spawnoriginY] = @spawnoriginY
-               ,[spawnrangeMin] = @spawnrangeMin,[spawnrangeMax] = @spawnrangeMax,[respawnseconds] = @respawnseconds,[totalspawncount] = @totalspawncount,[homerange] = @homerange
-               ,[note] = @note,[respawnmultiplierlow] = @respawnmultiplierlow,[enabled] = @enabled,[iscallforhelp] = @iscallforhelp,[behaviorType] = @behaviorType WHERE id=@id;");
+                ,[presenceid] = @presenceid, [flockmembercount] = @flockmembercount, [definition] = @definition, [spawnoriginX] = @spawnoriginX, [spawnoriginY] = @spawnoriginY
+               ,[spawnrangeMin] = @spawnrangeMin, [spawnrangeMax] = @spawnrangeMax,[respawnseconds] = @respawnseconds, [totalspawncount] = @totalspawncount, [homerange] = @homerange
+               ,[note] = @note, [respawnmultiplierlow] = @respawnmultiplierlow, [enabled] = @enabled, [iscallforhelp] = @iscallforhelp, [behaviorType] = @behaviorType WHERE id=@id;");
                 command.CommandText = sqlCommand.ToString();
 
                 command.Parameters.AddWithValue("@id", item.id);
+                command.Parameters.AddWithValue("@name", item.name);
+                command.Parameters.AddWithValue("@presenceid", item.presenceid);
+                command.Parameters.AddWithValue("@flockmembercount", item.flockmembercount);
+                command.Parameters.AddWithValue("@definition", item.definition);
+                command.Parameters.AddWithValue("@spawnoriginX", item.spawnoriginX);
+                command.Parameters.AddWithValue("@spawnoriginY", item.spawnoriginY);
+                command.Parameters.AddWithValue("@spawnrangeMin", item.spawnrangeMin);
+                command.Parameters.AddWithValue("@spawnrangeMax", item.spawnrangeMax);
+                command.Parameters.AddWithValue("@respawnseconds", item.respawnseconds);
+                command.Parameters.AddWithValue("@respawnmultiplierlow", item.respawnmultiplierlow);
+                command.Parameters.AddWithValue("@totalspawncount", item.totalspawncount);
+                command.Parameters.AddWithValue("@homerange", item.homerange);
+                command.Parameters.AddWithValue("@note", item.note);
+                command.Parameters.AddWithValue("@enabled", item.enabled);
+                command.Parameters.AddWithValue("@iscallforhelp", item.iscallforhelp);
+                command.Parameters.AddWithValue("@behaviorType", item.behaviorType);
+
+                SqlConnection conn = new SqlConnection(this.ConnString);
+                conn.Open();
+                command.Connection = conn;
+                command.ExecuteNonQuery();
+                conn.Close();
+
+                query = command.CommandText;
+                foreach (SqlParameter p in command.Parameters)
+                {
+                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    {
+                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
+                    }
+                    else
+                    {
+                        query = query.Replace(p.ParameterName, p.Value.ToString());
+                    }
+                }
+            }
+            return query;
+        }
+
+
+        public string Insert(NPCFlockData item)
+        {
+            string query = "";
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append(@"INSERT INTO[dbo].[npcflock]([name],[presenceid],[flockmembercount],[definition],[spawnoriginX],[spawnoriginY],[spawnrangeMin],[spawnrangeMax],[respawnseconds]
+                ,[totalspawncount],[homerange],[note],[respawnmultiplierlow],[enabled],[iscallforhelp],[behaviorType]) VALUES
+                (@name, @presenceid, @flockmembercount, @definition, @spawnoriginX, @spawnoriginY, @spawnrangeMin, @spawnrangeMax, @respawnseconds, @totalspawncount,
+                 @homerange, @note, @respawnmultiplierlow, @enabled, @iscallforhelp, @behaviorType);");
+                command.CommandText = sqlCommand.ToString();
+
                 command.Parameters.AddWithValue("@name", item.name);
                 command.Parameters.AddWithValue("@presenceid", item.presenceid);
                 command.Parameters.AddWithValue("@flockmembercount", item.flockmembercount);
@@ -856,6 +976,60 @@ namespace Perptool.db
                 command.CommandText = sqlCommand.ToString();
 
                 command.Parameters.AddWithValue("@id", item.id);
+                command.Parameters.AddWithValue("@name", item.name);
+                command.Parameters.AddWithValue("@note", item.note);
+                command.Parameters.AddWithValue("@topx", item.topx);
+                command.Parameters.AddWithValue("@topy", item.topy);
+                command.Parameters.AddWithValue("@bottomx", item.bottomx);
+                command.Parameters.AddWithValue("@bottomy", item.bottomy);
+                command.Parameters.AddWithValue("@spawnid", item.getNullableInt(item.spawnid));
+                command.Parameters.AddWithValue("@enabled", item.enabled);
+                command.Parameters.AddWithValue("@roamingrespawnseconds", item.roamingrespawnseconds);
+                command.Parameters.AddWithValue("@roaming", item.roaming);
+                command.Parameters.AddWithValue("@presencetype", item.presencetype);
+                command.Parameters.AddWithValue("@maxrandomflock", item.getNullableInt(item.maxrandomflock));
+                command.Parameters.AddWithValue("@randomcenterx", item.getNullableInt(item.randomcenterx));
+                command.Parameters.AddWithValue("@randomcentery", item.getNullableInt(item.randomcentery));
+                command.Parameters.AddWithValue("@randomradius", item.getNullableInt(item.randomradius));
+                command.Parameters.AddWithValue("@dynamiclifetime", item.getNullableInt(item.dynamiclifetime));
+                command.Parameters.AddWithValue("@isbodypull", item.isbodypull);
+                command.Parameters.AddWithValue("@isrespawnallowed", item.isrespawnallowed);
+                command.Parameters.AddWithValue("@safebodypull", item.safebodypull);
+
+                SqlConnection conn = new SqlConnection(this.ConnString);
+                conn.Open();
+                command.Connection = conn;
+                command.ExecuteNonQuery();
+                conn.Close();
+
+                query = command.CommandText;
+                foreach (SqlParameter p in command.Parameters)
+                {
+                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    {
+                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
+                    }
+                    else
+                    {
+                        query = query.Replace(p.ParameterName, p.Value.ToString());
+                    }
+                }
+            }
+            return query;
+        }
+
+        public string Insert(NPCPresenceData item)
+        {
+            string query = "";
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append(@"INSERT INTO [dbo].[npcpresence] ([name],[topx],[topy],[bottomx],[bottomy],[note],[spawnid],[enabled],[roaming],[roamingrespawnseconds]
+                ,[presencetype],[maxrandomflock],[randomcenterx],[randomcentery],[randomradius],[dynamiclifetime],[isbodypull],[isrespawnallowed],[safebodypull])
+                VALUES (@name,@topx,@topy,@bottomx,@bottomy,@note,@spawnid,@enabled,@roaming,@roamingrespawnseconds,@presencetype,@maxrandomflock,@randomcenterx
+			    ,@randomcentery,@randomradius,@dynamiclifetime,@isbodypull,@isrespawnallowed,@safebodypull);");
+                command.CommandText = sqlCommand.ToString();
+
                 command.Parameters.AddWithValue("@name", item.name);
                 command.Parameters.AddWithValue("@note", item.note);
                 command.Parameters.AddWithValue("@topx", item.topx);

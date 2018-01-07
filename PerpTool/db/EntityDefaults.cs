@@ -322,16 +322,11 @@ namespace Perptool.db
         {
             get
             {
-                return getSlotArrary();
+                return pslotFlags;
             }
             set
             {
                 this.pslotFlags = value;
-                this.Slots = new ObservableCollection<SlotFlagWrapper>();
-                for (int i = 0; i < this.pslotFlags.Length; i++)
-                {
-                    this.Slots.Add(new SlotFlagWrapper(i, pslotFlags[i]));
-                }
                 OnPropertyChanged("slotFlags");
             }
         }
@@ -459,7 +454,7 @@ namespace Perptool.db
             {
                 dictionary["container"] = this.Inventory;
             }
-            if (this.slotFlags != null && this.Slots.Count > 0)
+            if (this.slotFlags != null && this.Slots!=null && this.Slots.Count > 0)
             {
                 dictionary["slotFlags"] = getSlotArrary();
             }

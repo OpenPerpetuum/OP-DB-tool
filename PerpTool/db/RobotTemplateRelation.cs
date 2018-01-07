@@ -13,22 +13,49 @@ namespace Perptool.db
 
     public class BotTemplateRelation : INotifyPropertyChanged
     {
-        public int definition { get; set; }
-        public string definitionname { get; set; }
-        public int templateid { get; set; }
-        public string templatename { get; set; }
-        public int itemscoresum { get; set; }
-        public int raceid { get; set; }
-        public int missionlevel { get; set; }
-        public int missionleveloverride { get; set; }
-        public int killep { get; set; }
-        public string note { get; set; }
+        private int _definition;
+        private string _definitionname;
+        private int _templateid;
+        private string _templatename;
+        private int _itemscoresum;
+        private int _raceid;
+        private int _missionlevel;
+        private int _missionleveloverride;
+        private int _killep;
+        private string _note;
+
+        public int definition { get { return _definition; } set { _definition = value; OnPropertyChanged("definition"); } }
+        public string definitionname { get { return _definitionname; } set { _definitionname = value; OnPropertyChanged("definitionname"); } }
+        public int templateid { get { return _templateid; } set { _templateid = value; OnPropertyChanged("templateid"); } }
+        public string templatename { get { return _templatename; } set { _templatename = value; OnPropertyChanged("templatename"); } }
+        public int itemscoresum { get { return _itemscoresum; } set { _itemscoresum = value; OnPropertyChanged("itemscoresum"); } }
+        public int raceid { get { return _raceid; } set { _raceid = value; OnPropertyChanged("raceid"); } }
+        public int missionlevel { get { return _missionlevel; } set { _missionlevel = value; OnPropertyChanged("missionlevel"); } }
+        public int missionleveloverride { get { return _missionleveloverride; } set { _missionleveloverride = value; OnPropertyChanged("missionleveloverride"); } }
+        public int killep { get { return _killep; } set { _killep = value; OnPropertyChanged("killep"); } }
+        public string note { get { return _note; } set { _note = value; OnPropertyChanged("note"); } }
+        public DBAction dBAction;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected void OnPropertyChanged(string name)
         {
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+        public bool isEmpty()
+        {
+            bool e = this.definition == 0;
+            e = this.definitionname == null && e;
+            e = this.templateid == 0 && e;
+            e = this.templatename == null && e;
+            e = this.itemscoresum == 0 && e;
+            e = this.raceid == 0 && e;
+            e = this.missionlevel == 0 && e;
+            e = this.missionleveloverride == 0 && e;
+            e = this.killep == 0 && e;
+            e = this.note == null && e;
+            return e;
         }
     }
 
@@ -181,6 +208,48 @@ namespace Perptool.db
                 StringBuilder sqlCommand = new StringBuilder();
                 sqlCommand.Append(@"UPDATE [dbo].[robottemplaterelation] SET [templateid] = @templateid,[itemscoresum] = @itemscoresum,[raceid] = @raceid,
                 [missionlevel] = @missionlevel,[missionleveloverride] = @levelOverride,[killep] = @killep ,[note] = @note WHERE [definition] = @definition;");
+
+                command.CommandText = sqlCommand.ToString();
+
+                command.Parameters.AddWithValue("@definition", item.definition);
+                command.Parameters.AddWithValue("@templateid", item.templateid);
+                command.Parameters.AddWithValue("@itemscoresum", item.itemscoresum);
+                command.Parameters.AddWithValue("@raceid", item.raceid);
+                command.Parameters.AddWithValue("@missionlevel", Utilities.getNullableInt(item.missionlevel));
+                command.Parameters.AddWithValue("@levelOverride", Utilities.getNullableInt(item.missionleveloverride));
+                command.Parameters.AddWithValue("@killep", Utilities.getNullableInt(item.killep));
+                command.Parameters.AddWithValue("@note", item.note);
+
+                SqlConnection conn = new SqlConnection(this.ConnString);
+                conn.Open();
+                command.Connection = conn;
+                command.ExecuteNonQuery();
+                conn.Close();
+
+                query = command.CommandText;
+                foreach (SqlParameter p in command.Parameters)
+                {
+                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    {
+                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
+                    }
+                    else
+                    {
+                        query = query.Replace(p.ParameterName, p.Value.ToString());
+                    }
+                }
+            }
+            return query;
+        }
+
+        public string Insert(BotTemplateRelation item)
+        {
+            string query = "";
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append(@"INSERT INTO [dbo].[robottemplaterelation] ([definition],[templateid],[itemscoresum],[raceid],[missionlevel],[missionleveloverride],[killep],[note])
+                VALUES (@definition,@templateid,@itemscoresum,@raceid,@missionlevel,@levelOverride,@killep,@note);");
 
                 command.CommandText = sqlCommand.ToString();
 

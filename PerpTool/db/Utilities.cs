@@ -26,8 +26,13 @@ namespace PerpTool.db
             }
             return v;
         }
-
+        public static string timestamp()
+        {
+            return DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss");
+        }
     }
+
+    
 
     public enum DBAction
     {
