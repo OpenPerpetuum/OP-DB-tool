@@ -34,6 +34,15 @@ namespace Perptool.db
 
     public class SlotFlagWrapper : INotifyPropertyChanged
     {
+
+        public SlotFlagWrapper(int index, SlotFlags slotFlags)
+        {
+            this.Index = index;
+            this.SlotFlag = slotFlags;
+            this.setFlags();
+        }
+
+        #region fields
         private bool _head;
         private bool _chassis;
         private bool _leg;
@@ -47,12 +56,7 @@ namespace Perptool.db
         private bool _melee;
         private SlotFlags _flag;
 
-        public SlotFlagWrapper(int index, SlotFlags slotFlags)
-        {
-            this.Index = index;
-            this.SlotFlag = slotFlags;
-            this.setFlags();
-        }
+        
         public int Index { get; set; }
         public SlotFlags SlotFlag { get; set; }
         public bool Head
@@ -60,9 +64,9 @@ namespace Perptool.db
             get { return this._head; }
             set
             {
-                OnPropertyChanged("Head");
+                
                 this._head = value;
-                updateFlag(SlotFlags.head, value);
+                OnPropertyChanged("Head");
             }
         }
         public bool Chassis
@@ -70,9 +74,9 @@ namespace Perptool.db
             get { return this._chassis; }
             set
             {
-                OnPropertyChanged("Chassis");
+               
                 this._chassis = value;
-                updateFlag(SlotFlags.chassis, value);
+                OnPropertyChanged("Chassis");
             }
         }
         public bool Leg
@@ -80,9 +84,9 @@ namespace Perptool.db
             get { return this._leg; }
             set
             {
-                OnPropertyChanged("Leg");
+                
                 this._leg = value;
-                updateFlag(SlotFlags.leg, value);
+                OnPropertyChanged("Leg");
             }
         }
         public bool Small
@@ -90,9 +94,9 @@ namespace Perptool.db
             get { return this._small; }
             set
             {
-                OnPropertyChanged("Small");
+                
                 this._small = value;
-                updateFlag(SlotFlags.small, value);
+                OnPropertyChanged("Small");
             }
         }
         public bool Medium
@@ -100,9 +104,9 @@ namespace Perptool.db
             get { return this._medium; }
             set
             {
-                OnPropertyChanged("Medium");
+                
                 this._medium = value;
-                updateFlag(SlotFlags.medium, value);
+                OnPropertyChanged("Medium");
             }
         }
         public bool Large
@@ -110,9 +114,9 @@ namespace Perptool.db
             get { return this._large; }
             set
             {
-                OnPropertyChanged("Large");
+                
                 this._large = value;
-                updateFlag(SlotFlags.large, value);
+                OnPropertyChanged("Large");
             }
         }
         public bool Industrial
@@ -120,9 +124,9 @@ namespace Perptool.db
             get { return this._industrial; }
             set
             {
-                OnPropertyChanged("Industrial");
+                
                 this._industrial = value;
-                updateFlag(SlotFlags.industrial, value);
+                OnPropertyChanged("Industrial");
             }
         }
         public bool EW_Eng
@@ -130,9 +134,9 @@ namespace Perptool.db
             get { return this._ew_Eng; }
             set
             {
-                OnPropertyChanged("EW_Eng");
+                
                 this._ew_Eng = value;
-                updateFlag(SlotFlags.ew_and_engineering, value);
+                OnPropertyChanged("EW_Eng");
             }
         }
         public bool Turret
@@ -140,9 +144,9 @@ namespace Perptool.db
             get { return this._turret; }
             set
             {
-                OnPropertyChanged("Turret");
+                
                 this._turret = value;
-                updateFlag(SlotFlags.turret, value);
+                OnPropertyChanged("Turret");
             }
         }
         public bool Missile
@@ -150,9 +154,9 @@ namespace Perptool.db
             get { return this._missile; }
             set
             {
-                OnPropertyChanged("Missile");
+                
                 this._missile = value;
-                updateFlag(SlotFlags.missile, value);
+                OnPropertyChanged("Missile");
             }
         }
         public bool Melee
@@ -160,12 +164,12 @@ namespace Perptool.db
             get { return this._melee; }
             set
             {
-                OnPropertyChanged("Melee");
+                
                 this._melee = value;
-                updateFlag(SlotFlags.melee, value);
+                OnPropertyChanged("Melee");
             }
         }
-
+        #endregion
         private void updateFlag(SlotFlags attribute, bool isAdd)
         {
             if (isAdd)
@@ -238,13 +242,11 @@ namespace Perptool.db
         private int pInventory;
         private SlotFlags[] pslotFlags;
         private decimal pheight;
-        private int pmax_locked_targets;
-        private decimal pmax_targeting_range;
-        private decimal psensor_strength;
-        private decimal pcpu;
         private SlotFlags pmoduleFlag;
         private int pammoCapacity;
         private long pammoType;
+
+        public string originalOptions;
 
         public SlotFlags[] getSlotArrary()
         {
@@ -342,54 +344,6 @@ namespace Perptool.db
                 OnPropertyChanged("height");
             }
         }
-        public int max_locked_targets
-        {
-            get
-            {
-                return this.pmax_locked_targets;
-            }
-            set
-            {
-                this.pmax_locked_targets = value;
-                OnPropertyChanged("max_locked_targets");
-            }
-        }
-        public decimal max_targeting_range
-        {
-            get
-            {
-                return this.pmax_targeting_range;
-            }
-            set
-            {
-                this.pmax_targeting_range = value;
-                OnPropertyChanged("max_targeting_range");
-            }
-        }
-        public decimal sensor_strength
-        {
-            get
-            {
-                return this.psensor_strength;
-            }
-            set
-            {
-                this.psensor_strength = value;
-                OnPropertyChanged("sensor_strength");
-            }
-        }
-        public decimal cpu
-        {
-            get
-            {
-                return this.pcpu;
-            }
-            set
-            {
-                this.pcpu = value;
-                OnPropertyChanged("cpu");
-            }
-        }
         public SlotFlags moduleFlag
         {
             get
@@ -454,17 +408,20 @@ namespace Perptool.db
             {
                 dictionary["container"] = this.Inventory;
             }
-            if (this.slotFlags != null && this.Slots!=null && this.Slots.Count > 0)
+            if (this.height > 0)
             {
-                dictionary["slotFlags"] = getSlotArrary();
+                dictionary["height"] = this.height;
+            }
+            if (this.slotFlags != null )
+            {
+                System.Console.WriteLine(this.slotFlags);
+                System.Console.WriteLine(this.Slots);
+                System.Console.WriteLine(this.getSlotArrary());
+                dictionary["slotFlags"] = this.getSlotArrary();
             }
             if (this.moduleFlag > 0)
             {
                 dictionary["moduleFlag"] = this.moduleFlag;
-            }
-            if (this.ammoCapacity > 0)
-            {
-                dictionary["ammoCapacity"] = this.ammoCapacity;
             }
             if (this.ammoCapacity > 0)
             {
@@ -480,12 +437,32 @@ namespace Perptool.db
         public string ToGenXY()
         {
             Dictionary<string, object> d = this.ToDictionary();
+            string xy = "";
             if (d.Count > 0)
             {
                 return GenxyConverter.Serialize(d);
             }
-            return "";
+            return reconcileOptionsString(xy, this.originalOptions);
+        }
 
+        private string reconcileOptionsString(string xy, string orig)
+        {
+            if (xy == orig)
+            {
+                return xy;
+            }
+            else if (orig != null && orig != "")
+            {
+                if (xy != null && xy != "")
+                {
+                    return xy;
+                }
+                else
+                {
+                    return orig;
+                }
+            }
+            return orig;
         }
     }
 
@@ -496,6 +473,10 @@ namespace Perptool.db
     public class EntityDefaults : INotifyPropertyChanged
     {
         #region privates
+
+        private string OriginalOptions; //Sanity check/override when options string parse or serialize fails
+        //TODO fix EntityOptions Parse and Save!
+
         /// <summary>
         /// private field
         /// </summary>
@@ -1209,7 +1190,7 @@ namespace Perptool.db
                 command.CommandText = sqlCommand.ToString();
 
                 command.Parameters.AddWithValue("@definition", item.Definition);
-                command.Parameters.AddWithValue("@options", item.Options);
+                command.Parameters.AddWithValue("@options", item.Options.ToGenXY());
                 command.Parameters.AddWithValue("@volume", item.Volume);
                 command.Parameters.AddWithValue("@mass", item.Mass);
 
@@ -1565,8 +1546,10 @@ namespace Perptool.db
 
         private EntityOptions CreateFromOptions(string descGenXY)
         {
+            this.OriginalOptions = descGenXY;
             Dictionary<string, object> dict = GenxyConverter.Deserialize(descGenXY);
             EntityOptions tmp = GetEntityOptionsFromXY(dict);
+            tmp.originalOptions = descGenXY;
             return tmp;
         }
 
@@ -1575,40 +1558,52 @@ namespace Perptool.db
         {
 
             EntityOptions EntityOpts = new EntityOptions();
-            bool success = d.TryGetValue("head", out object head);
-            EntityOpts.Head = (Convert.ToInt32(head));
 
-            success = d.TryGetValue("chassis", out object chassis) && success;
-            EntityOpts.Chassis = Convert.ToInt32(chassis);
-
-            success = d.TryGetValue("leg", out object leg) && success;
-            EntityOpts.Leg = Convert.ToInt32(leg);
-
-            success = d.TryGetValue("inventory", out object inv) && success;
-            EntityOpts.Inventory = Convert.ToInt32(inv);
-
+            if (d.TryGetValue("head", out object head))
+            {
+                EntityOpts.Head = Convert.ToInt32(head);
+            }
+            if (d.TryGetValue("chassis", out object chassis))
+            {
+                EntityOpts.Chassis = Convert.ToInt32(chassis);
+            }
+            if (d.TryGetValue("leg", out object leg))
+            {
+                EntityOpts.Leg = Convert.ToInt32(leg);
+            }
+            if (d.TryGetValue("inventory", out object inventory))
+            {
+                EntityOpts.Inventory = Convert.ToInt32(inventory);
+            }
             if (d.TryGetValue("slotFlags", out object slotflags))
             {
                 EntityOpts.slotFlags = (SlotFlags[])slotflags;
+                EntityOpts.Slots = new ObservableCollection<SlotFlagWrapper>();
+                for (int i=0; i<EntityOpts.slotFlags.Length; i++)
+                {
+                    EntityOpts.Slots.Add(new SlotFlagWrapper(i, EntityOpts.slotFlags[i]));
+                }
             }
-
             if (d.TryGetValue("moduleFlag", out object moduleflag))
             {
                 EntityOpts.moduleFlag = (SlotFlags)moduleflag;
             }
-
             if (d.TryGetValue("ammoCapacity", out object ammocap))
             {
                 EntityOpts.ammoCapacity = (int)ammocap;
             }
-
             if (d.TryGetValue("ammoType", out object ammotype))
             {
                 EntityOpts.ammoType = (long)ammotype;
             }
-
+            if (d.TryGetValue("height", out object height))
+            {
+                EntityOpts.height = Convert.ToDecimal(height);
+            }
             return EntityOpts;
         }
+
+        
 
         /// <summary>
         /// fires when properties are set.

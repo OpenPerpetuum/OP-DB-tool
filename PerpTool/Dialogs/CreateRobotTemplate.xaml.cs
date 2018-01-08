@@ -1,8 +1,10 @@
 ﻿using Perptool.db;
+using PerpTool.db;
 using PerpTool.Types;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -472,19 +474,19 @@ namespace PerpTool.Dialogs
             BotTemplate.headID = this.SelectedHead.definition;
             BotTemplate.legID = this.SelectedLeg.definition;
 
-
             RTemplate.description = BotTemplate.ToGenXY();
             try
             {
-                RTemplate.SaveNewBotTemplate();
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine(RTemplate.SaveNewBotTemplate());
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + RTemplate.name + Utilities.timestamp() + ".sql", sb.ToString());
+                MessageBox.Show("New RobotTemplate Saved!!", "Info", 0, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error Saving!" + ex.Message, "Error", 0, MessageBoxImage.Error);
                 return;
             }
-
-            MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
 
             this.DialogResult = true;
             this.Hide();

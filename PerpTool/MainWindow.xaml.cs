@@ -245,8 +245,9 @@ namespace PerpTool
                 {
                     EntityDefaults entity = this.SelectedEntity;
                     StringBuilder sb = new StringBuilder();
-                    sb.AppendLine(handleAggregateFieldValuesSave(FieldValuesList));
                     sb.AppendLine(entity.Save());
+                    sb.AppendLine(handleAggregateFieldValuesSave(FieldValuesList));
+                    
                     File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + entity.definitionname + Utilities.timestamp()+".sql", sb.ToString());
                     MessageBox.Show("Saved Entity and FieldValues!", "Info", 0, MessageBoxImage.Information);
                 }
@@ -270,11 +271,12 @@ namespace PerpTool
                 {
                     if (item.FieldValue != AgValues.value)
                     {
-                        sb.AppendLine(AgValues.Save());
+                        AgValues.value = item.FieldValue;
+                        sb.AppendLine(AgValues.Save(item));
                     }
                     if (item.FieldFormula != AgFields.formula)
                     {
-                        sb.AppendLine(AgFields.Save());
+                        sb.AppendLine(AgFields.Save(item));
                     }   
                 }
                 else if (item.dBAction == DBAction.INSERT)
@@ -283,7 +285,7 @@ namespace PerpTool
                     item.dBAction = DBAction.UPDATE;
                     if (item.FieldFormula != AgFields.formula)
                     {
-                        sb.AppendLine(AgFields.Save());
+                        sb.AppendLine(AgFields.Save(item));
                     }   //New AggValues use old AggFields -- this remains an update iff changed
                 }
                 else
@@ -1138,7 +1140,6 @@ namespace PerpTool
             try
             {
                 StringBuilder sb = new StringBuilder();
-                sb.AppendLine(flockSaver());
                 sb.AppendLine(NPCPresenceTable.Insert(SelectedNPCPresence));
                 File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + SelectedNPCPresence.name + "_NPCPresence_flocksINSERT"+Utilities.timestamp()+".sql", sb.ToString());
                 MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);

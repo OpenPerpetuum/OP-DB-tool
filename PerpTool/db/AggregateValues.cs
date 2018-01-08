@@ -11,18 +11,146 @@ using System.Text;
 namespace Perptool.db
 {
 
-    public class FieldValuesStuff
+    public class FieldValuesStuff : INotifyPropertyChanged
     {
-        public int FieldId { get; set; }
-        public int ValueId { get; set; }
-        public int Definition { get; set; }
-        public string FieldName { get; set; }
-        public decimal FieldValue { get; set; }
-        public string FieldUnits { get; set; }
-        public decimal FieldOffset { get; set; }
-        public decimal FieldMultiplier { get; set; }
-        public int FieldFormula { get; set; }
-        public DBAction dBAction { get; set; }
+        private int _FieldId;
+        private int _ValueId;
+        private int _Definition;
+        private string _FieldName;
+        private decimal _FieldValue;
+        private string _FieldUnits;
+        private decimal _FieldOffset;
+        private decimal _FieldMultiplier;
+        private int _FieldFormula;
+        private DBAction _dBAction;
+
+
+        public int FieldId
+        {
+            get
+            {
+                return this._FieldId;
+            }
+            set
+            {
+                this._FieldId = value;
+                OnPropertyChanged("FieldId");
+            }
+        }
+        public int ValueId
+        {
+            get
+            {
+                return this._ValueId;
+            }
+            set
+            {
+                this._ValueId = value;
+                OnPropertyChanged("ValueId");
+            }
+        }
+        public int Definition
+        {
+            get
+            {
+                return this._Definition;
+            }
+            set
+            {
+                this._Definition = value;
+                OnPropertyChanged("Definition");
+            }
+        }
+        public string FieldName
+        {
+            get
+            {
+                return this._FieldName;
+            }
+            set
+            {
+                this._FieldName = value;
+                OnPropertyChanged("FieldName");
+            }
+        }
+        public decimal FieldValue
+        {
+            get
+            {
+                return this._FieldValue;
+            }
+            set
+            {
+                this._FieldValue = value;
+                OnPropertyChanged("FieldValue");
+            }
+        }
+        public string FieldUnits
+        {
+            get
+            {
+                return this._FieldUnits;
+            }
+            set
+            {
+                this._FieldUnits = value;
+                OnPropertyChanged("FieldUnits");
+            }
+        }
+        public decimal FieldOffset
+        {
+            get
+            {
+                return this._FieldOffset;
+            }
+            set
+            {
+                this._FieldOffset = value;
+                OnPropertyChanged("FieldOffset");
+            }
+        }
+        public decimal FieldMultiplier
+        {
+            get
+            {
+                return this._FieldMultiplier;
+            }
+            set
+            {
+                this._FieldMultiplier = value;
+                OnPropertyChanged("FieldMultiplier");
+            }
+        }
+        public int FieldFormula
+        {
+            get
+            {
+                return this._FieldFormula;
+            }
+            set
+            {
+                this._FieldFormula = value;
+                OnPropertyChanged("FieldFormula");
+            }
+        }
+        public DBAction dBAction
+        {
+            get
+            {
+                return this._dBAction;
+            }
+            set
+            {
+                this._dBAction = value;
+                OnPropertyChanged("dBAction");
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged(string name)
+        {
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
     }
 
 
@@ -157,7 +285,7 @@ namespace Perptool.db
         /// saves existing record
         /// And returns query as string for recording SQL updates to file
         /// </summary>
-        public string Save()
+        public string Save(FieldValuesStuff data)
         {
             string query = "";
             using (SqlCommand command = new SqlCommand())
@@ -165,10 +293,10 @@ namespace Perptool.db
                 StringBuilder sqlCommand = new StringBuilder();
                 sqlCommand.Append("UPDATE aggregatevalues SET definition=@definition, field=@field, value=@value WHERE id = @id;");
                 command.CommandText = sqlCommand.ToString();
-                command.Parameters.AddWithValue("@id", this.id);
-                command.Parameters.AddWithValue("@definition", this.definition);
-                command.Parameters.AddWithValue("@field", this.field);
-                command.Parameters.AddWithValue("@value", this.value);
+                command.Parameters.AddWithValue("@id", data.ValueId);
+                command.Parameters.AddWithValue("@definition", data.Definition);
+                command.Parameters.AddWithValue("@field", data.FieldId);
+                command.Parameters.AddWithValue("@value", data.FieldValue);
 
                 SqlConnection conn = new SqlConnection(this.ConnString);
                 conn.Open();

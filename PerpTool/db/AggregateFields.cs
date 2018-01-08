@@ -414,20 +414,21 @@ namespace Perptool.db
         /// <summary>
         /// saves existing record
         /// </summary>
-        public string Save()
+        public string Save(FieldValuesStuff data)
         {
+            this.GetById(data.FieldId);
             string query = "";
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
                 sqlCommand.Append("UPDATE aggregatefields SET [name]=@SQLname, [formula]=@formula, [measurementunit]=@measurementunit, [measurementmultiplier]=@measurementmultiplier, [measurementoffset]=@measurementoffset, [category]=@category, [digits]=@digits, [moreisbetter]=@moreisbetter, [usedinconfig]=@usedinconfig, [note]=@note WHERE id = @id;");
                 command.CommandText = sqlCommand.ToString();
-                command.Parameters.AddWithValue("@id", this.id);
-                command.Parameters.AddWithValue("@SQLname", this.name);
-                command.Parameters.AddWithValue("@formula", this.formula);
-                command.Parameters.AddWithValue("@measurementunit", this.measurementunit);
-                command.Parameters.AddWithValue("@measurementmultiplier", this.measurementmultiplier);
-                command.Parameters.AddWithValue("@measurementoffset", this.measurementoffset);
+                command.Parameters.AddWithValue("@id", data.FieldId);
+                command.Parameters.AddWithValue("@SQLname", data.FieldName);
+                command.Parameters.AddWithValue("@formula", data.FieldFormula);
+                command.Parameters.AddWithValue("@measurementunit", data.FieldUnits);
+                command.Parameters.AddWithValue("@measurementmultiplier", data.FieldMultiplier);
+                command.Parameters.AddWithValue("@measurementoffset", data.FieldOffset);
                 command.Parameters.AddWithValue("@category", this.category);
                 command.Parameters.AddWithValue("@digits", this.digits);
                 command.Parameters.AddWithValue("@moreisbetter", Utilities.getNullableInt(this.moreisbetter));
