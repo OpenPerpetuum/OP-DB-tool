@@ -384,9 +384,9 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("INSERT INTO [dbo].[aggregatevalues] ([definition],[field],[value]) VALUES (@definition, @field, @value);");
+                sqlCommand.Append("INSERT INTO [dbo].[aggregatevalues] ([definition],[field],[value]) VALUES (@definitionID, @field, @value);");
                 command.CommandText = sqlCommand.ToString();
-                command.Parameters.AddWithValue("@definition", data.Definition);
+                command.Parameters.AddWithValue("@definitionID", data.Definition);
                 command.Parameters.AddWithValue("@field", data.FieldId);
                 command.Parameters.AddWithValue("@value", data.FieldValue);
 
@@ -398,13 +398,16 @@ namespace Perptool.db
                 query = command.CommandText;
                 foreach (SqlParameter p in command.Parameters)
                 {
-                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    if (p.ParameterName != "@definitionID")
                     {
-                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
-                    }
-                    else
-                    {
-                        query = query.Replace(p.ParameterName, p.Value.ToString());
+                        if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                        {
+                            query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
+                        }
+                        else
+                        {
+                            query = query.Replace(p.ParameterName, p.Value.ToString());
+                        }
                     }
                 }
             }

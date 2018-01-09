@@ -94,6 +94,41 @@ namespace Perptool.db
         {
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
+
+        public static string GetDeclStatement()
+        {
+            return "DECLARE @flockID int;";
+        }
+
+        public string GetLookupStatement()
+        {
+            return "SET @flockID = (SELECT TOP 1 id from npcflock WHERE [name] = '" + this.name + "' ORDER BY id DESC);";
+        }
+
+        public NPCFlockData copy()
+        {
+            NPCFlockData d = new NPCFlockData();
+            d.id = this.id;
+            d.behaviorType = this.behaviorType;
+            d.dBAction = this.dBAction;
+            d.definition = this.definition;
+            d.enabled = this.enabled;
+            d.flockmembercount = this.flockmembercount;
+            d.homerange = this.homerange;
+            d.iscallforhelp = this.iscallforhelp;
+            d.name = this.name;
+            d.note = this.note;
+            d.NPCDefinitionName = this.NPCDefinitionName;
+            d.presenceid = this.presenceid;
+            d.respawnmultiplierlow = this.respawnmultiplierlow;
+            d.respawnseconds = this.respawnseconds;
+            d.spawnoriginX = this.spawnoriginX;
+            d.spawnoriginY = this.spawnoriginY;
+            d.spawnrangeMax = this.spawnrangeMax;
+            d.spawnrangeMin = this.spawnrangeMin;
+            d.totalspawncount = this.totalspawncount;
+            return d;
+        }
     }
 
     class NPCFlock : INotifyPropertyChanged
@@ -513,12 +548,12 @@ namespace Perptool.db
                 StringBuilder sqlCommand = new StringBuilder();
                 sqlCommand.Append(@"INSERT INTO[dbo].[npcflock]([name],[presenceid],[flockmembercount],[definition],[spawnoriginX],[spawnoriginY],[spawnrangeMin],[spawnrangeMax],[respawnseconds]
                 ,[totalspawncount],[homerange],[note],[respawnmultiplierlow],[enabled],[iscallforhelp],[behaviorType]) VALUES
-                (@name, @presenceid, @flockmembercount, @definition, @spawnoriginX, @spawnoriginY, @spawnrangeMin, @spawnrangeMax, @respawnseconds, @totalspawncount,
+                (@name, @presenceID, @flockmembercount, @definition, @spawnoriginX, @spawnoriginY, @spawnrangeMin, @spawnrangeMax, @respawnseconds, @totalspawncount,
                  @homerange, @note, @respawnmultiplierlow, @enabled, @iscallforhelp, @behaviorType);");
                 command.CommandText = sqlCommand.ToString();
 
                 command.Parameters.AddWithValue("@name", item.name);
-                command.Parameters.AddWithValue("@presenceid", item.presenceid);
+                command.Parameters.AddWithValue("@presenceID", item.presenceid);
                 command.Parameters.AddWithValue("@flockmembercount", item.flockmembercount);
                 command.Parameters.AddWithValue("@definition", item.definition);
                 command.Parameters.AddWithValue("@spawnoriginX", item.spawnoriginX);
@@ -543,21 +578,67 @@ namespace Perptool.db
                 query = command.CommandText;
                 foreach (SqlParameter p in command.Parameters)
                 {
-                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    if (p.ParameterName != "@presenceID")
                     {
-                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
-                    }
-                    else
-                    {
-                        query = query.Replace(p.ParameterName, p.Value.ToString());
+                        if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                        {
+                            query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
+                        }
+                        else
+                        {
+                            query = query.Replace(p.ParameterName, p.Value.ToString());
+                        }
                     }
                 }
             }
             return query;
         }
 
+        public string Delete(NPCFlockData data)
+        {
+            string query = "";
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append(@"" + data.GetLookupStatement() + "\nDELETE FROM [dbo].[npcflock] WHERE @flockID=id;");
+                command.CommandText = sqlCommand.ToString();
+                SqlConnection conn = new SqlConnection(this.ConnString);
+                command.Parameters.AddWithValue("@flockID", data.id);
+                conn.Open();
+                command.Connection = conn;
+                command.ExecuteNonQuery();
+                conn.Close();
+
+                query = command.CommandText;
+                foreach (SqlParameter p in command.Parameters)
+                {
+                    if (p.ParameterName != "@flockID")
+                    {
+                        if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                        {
+                            query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
+                        }
+                        else
+                        {
+                            query = query.Replace(p.ParameterName, p.Value.ToString());
+                        }
+                    }
+                }
+            }
+            return query;
+
+        }
 
 
+        public static string GetDeclStatement()
+        {
+            return "DECLARE @flockID int;";
+        }
+
+        public string GetLookupStatement()
+        {
+            return "SET @flockID = (SELECT TOP 1 id from npcflock WHERE [name] = '" + this.name + "' ORDER BY id DESC);";
+        }
 
         private int handleNullableInt(object readValue)
         {
@@ -605,6 +686,16 @@ namespace Perptool.db
                 return (object)DBNull.Value;
             }
             return v;
+        }
+
+        public static string GetDeclStatement()
+        {
+            return "DECLARE @presenceID int;";
+        }
+
+        public string GetLookupStatement()
+        {
+            return "SET @presenceID = (SELECT TOP 1 id from npcpresence WHERE [name] = '" + this.name + "' ORDER BY id DESC);";
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -972,10 +1063,10 @@ namespace Perptool.db
                 SET [name] = @name,[topx] = @topx,[topy] = @topy,[bottomx] = @bottomx,[bottomy] = @bottomy,[note] = @note,[spawnid] = @spawnid,[enabled] = @enabled,[roaming] = @roaming
                 ,[roamingrespawnseconds] = @roamingrespawnseconds,[presencetype] = @presencetype,[maxrandomflock] = @maxrandomflock,[randomcenterx] = @randomcenterx,[randomcentery] = @randomcentery
                 ,[randomradius] = @randomradius,[dynamiclifetime] = @dynamiclifetime ,[isbodypull] = @isbodypull,[isrespawnallowed] = @isrespawnallowed,[safebodypull] = @safebodypull
-                WHERE id=@id;");
+                WHERE id=@presenceID;");
                 command.CommandText = sqlCommand.ToString();
 
-                command.Parameters.AddWithValue("@id", item.id);
+                command.Parameters.AddWithValue("@presenceID", item.id);
                 command.Parameters.AddWithValue("@name", item.name);
                 command.Parameters.AddWithValue("@note", item.note);
                 command.Parameters.AddWithValue("@topx", item.topx);
@@ -1005,13 +1096,16 @@ namespace Perptool.db
                 query = command.CommandText;
                 foreach (SqlParameter p in command.Parameters)
                 {
-                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    if (p.ParameterName != "@presenceID")
                     {
-                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
-                    }
-                    else
-                    {
-                        query = query.Replace(p.ParameterName, p.Value.ToString());
+                        if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                        {
+                            query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
+                        }
+                        else
+                        {
+                            query = query.Replace(p.ParameterName, p.Value.ToString());
+                        }
                     }
                 }
             }
@@ -1079,6 +1173,16 @@ namespace Perptool.db
                 return -1;
             }
             return Convert.ToInt32(readValue);
+        }
+
+        public static string GetDeclStatement()
+        {
+            return "DECLARE @presenceID int";
+        }
+
+        public string GetLookupStatement()
+        {
+            return "SET @presenceID = (SELECT TOP 1 id from npcpresence WHERE [name] = '" + this.name + "' ORDER BY id DESC)";
         }
 
         protected void OnPropertyChanged(string name)

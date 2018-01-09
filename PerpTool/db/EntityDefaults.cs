@@ -953,11 +953,13 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE entitydefaults Set definitionname=@defname, quantity=@quantity, attributeflags=@attributeflags, categoryflags=@categoryflags, options=@options, note=@note, enabled=@enabled, volume=@volume, mass=@mass, hidden=@hidden, health=@health, descriptiontoken=@descriptiontoken, purchasable=@purchasable, tiertype=@tiertype, tierlevel=@tierlevel where definition=@definition;");
+                sqlCommand.Append(@"UPDATE entitydefaults Set definitionname=@defname, quantity=@quantity, attributeflags=@attributeflags, categoryflags=@categoryflags, options=@options, 
+                note=@note, enabled=@enabled, volume=@volume, mass=@mass, hidden=@hidden, health=@health, descriptiontoken=@descriptiontoken, purchasable=@purchasable, tiertype=@tiertype, 
+                tierlevel=@tierlevel where definition=@definitionID;");
 
                 command.CommandText = sqlCommand.ToString();
 
-                command.Parameters.AddWithValue("@definition", this.definition);
+                command.Parameters.AddWithValue("@definitionID", this.definition);
                 command.Parameters.AddWithValue("@defname", this.definitionname);
                 command.Parameters.AddWithValue("@quantity", this.quantity);
                 command.Parameters.AddWithValue("@attributeflags", this.attributeflags);
@@ -991,7 +993,8 @@ namespace Perptool.db
                 query = command.CommandText;
                 foreach (SqlParameter p in command.Parameters)
                 {
-                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    if(p.ParameterName== "@definitionID") { continue; }
+                    else if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
                     {
                         query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
                     }
@@ -1603,7 +1606,16 @@ namespace Perptool.db
             return EntityOpts;
         }
 
-        
+
+        public static string GetDeclStatement()
+        {
+            return "DECLARE @definitionID int;";
+        }
+
+        public string GetLookupStatement()
+        {
+            return "SET @definitionID = (SELECT TOP 1 definition from entitydefaults WHERE [definitionname] = '" + this.definitionname + "' ORDER BY definition DESC);";
+        }
 
         /// <summary>
         /// fires when properties are set.

@@ -472,6 +472,30 @@ namespace Perptool.db
             return temps;
         }
 
+        public string GetLookupStatement()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("DECLARE @templateID int");
+            sb.AppendLine("SET @templateID = (SELECT TOP 1 id from robottemplates WHERE [name] = '" + this.name + "' ORDER BY id DESC)");
+            return sb.ToString();
+        }
+
+        public static string GetLookupStatement(RobotTemplate template)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("DECLARE @templateID int");
+            sb.AppendLine("SET @templateID = (SELECT TOP 1 id from robottemplates WHERE [name] = '" + template.recordName + "' ORDER BY id DESC)");
+            return sb.ToString();
+        }
+
+        public static string GetLookupStatement(BotTemplateDropdownItem template)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("DECLARE @templateID int");
+            sb.AppendLine("SET @templateID = (SELECT TOP 1 id from robottemplates WHERE [name] = '" + template.name + "' ORDER BY id DESC)");
+            return sb.ToString();
+        }
+
         protected void OnPropertyChanged(string name)
         {
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));

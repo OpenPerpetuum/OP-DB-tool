@@ -245,9 +245,10 @@ namespace PerpTool
                 {
                     EntityDefaults entity = this.SelectedEntity;
                     StringBuilder sb = new StringBuilder();
+                    sb.AppendLine(EntityDefaults.GetDeclStatement());
+                    sb.AppendLine(entity.GetLookupStatement());
                     sb.AppendLine(entity.Save());
                     sb.AppendLine(handleAggregateFieldValuesSave(FieldValuesList));
-                    
                     File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + entity.definitionname + Utilities.timestamp()+".sql", sb.ToString());
                     MessageBox.Show("Saved Entity and FieldValues!", "Info", 0, MessageBoxImage.Information);
                 }
@@ -816,6 +817,8 @@ namespace PerpTool
             try
             {
                 StringBuilder sb = new StringBuilder();
+                sb.AppendLine(EntityDefaults.GetDeclStatement());
+                sb.AppendLine(SelectedLootableBot.GetLookupStatement());
                 foreach (LootItem item in this.loots)
                 {
                     if (item.recordAction == DBAction.UPDATE)
@@ -962,7 +965,7 @@ namespace PerpTool
             {
                 NPCTemplateRelation.definition = SelectedBotForRelation.definition;
                 NPCTemplateRelation.definitionname = SelectedBotForRelation.definitionname;
-                NPCTemplateRelation.note = "EMPTY/NEW TEMPLATE--PLEASE EDIT AND SAVE AS NEW!";
+                NPCTemplateRelation.note = "NEW TEMPLATE EDIT ME AND SAVE AS NEW!";
                 NPCTemplateRelation.dBAction = DBAction.INSERT;
             }
         }
@@ -1003,6 +1006,9 @@ namespace PerpTool
                 }
                 else if (NPCTemplateRelation.dBAction == DBAction.INSERT)
                 {
+                    sb.AppendLine(RobotTemplatesTable.GetLookupStatement(SelectedNPCTemplateForRelation));
+                    sb.AppendLine(EntityDefaults.GetDeclStatement());
+                    sb.AppendLine(SelectedBotForRelation.GetLookupStatement());
                     sb.AppendLine(NPCTemplateRelations.Insert(NPCTemplateRelation));
                     message = "Saved New TemplateRelation!";
                 }
@@ -1124,10 +1130,18 @@ namespace PerpTool
             try
             {
                 StringBuilder sb = new StringBuilder();
-                sb.AppendLine(flockSaver());
+                sb.AppendLine(NPCPresenceData.GetDeclStatement());
+                sb.AppendLine(SelectedNPCPresence.GetLookupStatement());
                 sb.AppendLine(NPCPresenceTable.Save(SelectedNPCPresence));
-                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + SelectedNPCPresence.name + "_NPCPresence_flocksUPDATE"+Utilities.timestamp()+".sql", sb.ToString());
+                sb.AppendLine(flockSaver());
+                string filename = SelectedNPCPresence.name + "_NPCPresence_flocksUPDATE";
+                if (this.removeFlocks.Count > 0)
+                {
+                    filename +="_DELETE_";
+                }
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + filename+Utilities.timestamp()+".sql", sb.ToString());
                 MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
+                this.removeFlocks.Clear();
             }
             catch (Exception ex)
             {
@@ -1148,11 +1162,14 @@ namespace PerpTool
             {
                 MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
             }
+
+            
         }
 
         private string flockSaver()
         {
             StringBuilder sb = new StringBuilder();
+            sb.AppendLine(NPCFlockData.GetDeclStatement());
             foreach (NPCFlockData flock in this.NPCFlockList)
             {
                 if (flock.dBAction == DBAction.UPDATE)
@@ -1162,15 +1179,14 @@ namespace PerpTool
                 else if (flock.dBAction == DBAction.INSERT)
                 {
                     sb.AppendLine(NPCFlockTable.Insert(flock));
+                    flock.dBAction = DBAction.UPDATE;
                 }
             }
             foreach (NPCFlockData flock in this.removeFlocks)
             {
                 if (flock.dBAction == DBAction.DELETE)
                 {
-                    throw new NotImplementedException("Delete is not implemented! Just Disable! =(");
-                    //TODO
-                    //sb.AppendLine(NPCFlockTable.Delete(flock));
+                   sb.AppendLine(NPCFlockTable.Delete(flock));
                 }
             }
             return sb.ToString();
@@ -1182,8 +1198,11 @@ namespace PerpTool
             if (this.NPCFlockList.Count > 0)
             {
                 NPCFlockData flock = this.NPCFlockList.Last<NPCFlockData>();
-                flock.dBAction = DBAction.DELETE;
-                removeFlocks.Add(flock);
+                if (flock.dBAction == DBAction.UPDATE)
+                {
+                    flock.dBAction = DBAction.DELETE;
+                    removeFlocks.Add(flock);
+                }
                 this.NPCFlockList.RemoveAt(this.NPCFlockList.Count - 1);
             }
         }
@@ -1191,10 +1210,14 @@ namespace PerpTool
 
         private void NPCPresence_AddFlock(object sender, RoutedEventArgs e)
         {
-            this.SelectedFlock.dBAction = DBAction.INSERT;
-            this.SelectedFlock.presenceid = this.SelectedNPCPresence.id;
-            this.NPCFlockList.Add(this.SelectedFlock);
+            NPCFlockData data = this.SelectedFlock.copy();
+            data.dBAction = DBAction.INSERT;
+            data.presenceid = this.SelectedNPCPresence.id;
+            data.name = "RENAME ME__UNIQUE__ REQD";
+            data.note = "NEW FLOCK, WRITE NOTE!";
+            this.NPCFlockList.Add(data);
         }
+
         #endregion
 
         private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)

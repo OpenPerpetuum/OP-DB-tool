@@ -256,42 +256,6 @@ namespace Perptool.db
             }
         }
 
-        /// <summary>
-        /// saves a new record
-        /// </summary>
-        public void SaveNewRecord()
-        {
-            using (SqlCommand command = new SqlCommand())
-            {
-                StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("Insert into npcloot ");
-                sqlCommand.Append("(id, definition, lootdefinition, quantity, probability, repackaged, dontdamage, minquantity) ");
-                sqlCommand.Append(" Values ");
-                sqlCommand.Append("(@id, @definition, @lootdefinition, @quantity, @probability, @repackaged, @dontdamage, @minquantity) ;");
-
-                command.CommandText = sqlCommand.ToString();
-
-                command.Parameters.AddWithValue("@id", this.id);
-                command.Parameters.AddWithValue("@definition", this.definition);
-                command.Parameters.AddWithValue("@lootdefinition", this.lootdefinition);
-                command.Parameters.AddWithValue("@quantity", this.quantity);
-                command.Parameters.AddWithValue("@probability", this.probability);
-                command.Parameters.AddWithValue("@repackaged", this.repackaged);
-                command.Parameters.AddWithValue("@dontdamage", this.dontdamage);
-                command.Parameters.AddWithValue("@minquantity", this.minquantity);
-
-
-                SqlConnection conn = new SqlConnection(this.ConnString);
-                conn.Open();
-                command.Connection = conn;
-                Object Id = command.ExecuteScalar();
-                if (Id != DBNull.Value)
-                {
-                    this.id = Convert.ToInt32(Id);
-                }
-                conn.Close();
-            }
-        }
 
         /// <summary>
         /// saves existing record
@@ -302,11 +266,11 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE npcloot SET [definition]=@definition, [lootdefinition]=@lootdefinition, [quantity]=@quantity, [probability]=@probability, [repackaged]=@repackaged, [dontdamage]=@dontdamage, [minquantity]=@minquantity WHERE [id]=@id;");
+                sqlCommand.Append("UPDATE npcloot SET [definition]=@definitionID, [lootdefinition]=@lootdefinition, [quantity]=@quantity, [probability]=@probability, [repackaged]=@repackaged, [dontdamage]=@dontdamage, [minquantity]=@minquantity WHERE [id]=@id;");
                 command.CommandText = sqlCommand.ToString();
 
                 command.Parameters.AddWithValue("@id", this.id);
-                command.Parameters.AddWithValue("@definition", this.definition);
+                command.Parameters.AddWithValue("@definitionID", this.definition);
                 command.Parameters.AddWithValue("@lootdefinition", this.lootdefinition);
                 command.Parameters.AddWithValue("@quantity", this.quantity);
                 command.Parameters.AddWithValue("@probability", this.probability);
@@ -323,7 +287,11 @@ namespace Perptool.db
                 query = command.CommandText;
                 foreach (SqlParameter p in command.Parameters)
                 {
-                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    if (p.ParameterName == "@definitionID")
+                    {
+                        continue;
+                    }
+                    else if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
                     {
                         query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
                     }
@@ -342,10 +310,10 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("INSERT INTO [dbo].[npcloot] ([definition],[lootdefinition],[quantity],[probability],[repackaged],[dontdamage],[minquantity]) VALUES(@definition, @lootdefinition, @quantity, @probability, @repackaged,@dontdamage, @minquantity);");
+                sqlCommand.Append("INSERT INTO [dbo].[npcloot] ([definition],[lootdefinition],[quantity],[probability],[repackaged],[dontdamage],[minquantity]) VALUES(@definitionID, @lootdefinition, @quantity, @probability, @repackaged,@dontdamage, @minquantity);");
                 command.CommandText = sqlCommand.ToString();
 
-                command.Parameters.AddWithValue("@definition", this.definition);
+                command.Parameters.AddWithValue("@definitionID", this.definition);
                 command.Parameters.AddWithValue("@lootdefinition", this.lootdefinition);
                 command.Parameters.AddWithValue("@quantity", this.quantity);
                 command.Parameters.AddWithValue("@probability", this.probability);
@@ -362,7 +330,11 @@ namespace Perptool.db
                 query = command.CommandText;
                 foreach (SqlParameter p in command.Parameters)
                 {
-                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    if (p.ParameterName == "@definitionID")
+                    {
+                        continue;
+                    }
+                    else if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
                     {
                         query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
                     }
