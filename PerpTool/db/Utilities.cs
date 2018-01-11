@@ -28,7 +28,7 @@ namespace PerpTool.db
         }
         public static string timestamp()
         {
-            return DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss");
+            return DateTime.Now.ToString("__yyyy_MM_dd_HH_mm_ss");
         }
     }
 

@@ -241,7 +241,7 @@ namespace Perptool.db
         private int pLeg;
         private int pInventory;
         private SlotFlags[] pslotFlags;
-        private decimal pheight;
+        private float pheight;
         private SlotFlags pmoduleFlag;
         private int pammoCapacity;
         private long pammoType;
@@ -332,7 +332,7 @@ namespace Perptool.db
                 OnPropertyChanged("slotFlags");
             }
         }
-        public decimal height
+        public float height
         {
             get
             {
@@ -414,9 +414,6 @@ namespace Perptool.db
             }
             if (this.slotFlags != null )
             {
-                System.Console.WriteLine(this.slotFlags);
-                System.Console.WriteLine(this.Slots);
-                System.Console.WriteLine(this.getSlotArrary());
                 dictionary["slotFlags"] = this.getSlotArrary();
             }
             if (this.moduleFlag > 0)
@@ -440,7 +437,7 @@ namespace Perptool.db
             string xy = "";
             if (d.Count > 0)
             {
-                return GenxyConverter.Serialize(d);
+                xy = GenxyConverter.Serialize(d);
             }
             return reconcileOptionsString(xy, this.originalOptions);
         }
@@ -1148,7 +1145,7 @@ namespace Perptool.db
                 command.CommandText = sqlCommand.ToString();
 
                 command.Parameters.AddWithValue("@definition", item.Definition);
-                command.Parameters.AddWithValue("@options", item.Options);
+                command.Parameters.AddWithValue("@options", item.Options.ToGenXY());
                 command.Parameters.AddWithValue("@volume", item.Volume);
                 command.Parameters.AddWithValue("@mass", item.Mass);
 
@@ -1601,7 +1598,7 @@ namespace Perptool.db
             }
             if (d.TryGetValue("height", out object height))
             {
-                EntityOpts.height = Convert.ToDecimal(height);
+                EntityOpts.height = Convert.ToSingle(height);
             }
             return EntityOpts;
         }
