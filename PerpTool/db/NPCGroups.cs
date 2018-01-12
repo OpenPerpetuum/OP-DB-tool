@@ -494,16 +494,16 @@ namespace Perptool.db
             {
                 StringBuilder sqlCommand = new StringBuilder();
                 sqlCommand.Append(@"UPDATE [dbo].[npcflock] SET [name] = @name
-                ,[presenceid] = @presenceid, [flockmembercount] = @flockmembercount, [definition] = @definition, [spawnoriginX] = @spawnoriginX, [spawnoriginY] = @spawnoriginY
+                ,[presenceid] = @presenceID, [flockmembercount] = @flockmembercount, [definition] = @definitionID, [spawnoriginX] = @spawnoriginX, [spawnoriginY] = @spawnoriginY
                ,[spawnrangeMin] = @spawnrangeMin, [spawnrangeMax] = @spawnrangeMax,[respawnseconds] = @respawnseconds, [totalspawncount] = @totalspawncount, [homerange] = @homerange
                ,[note] = @note, [respawnmultiplierlow] = @respawnmultiplierlow, [enabled] = @enabled, [iscallforhelp] = @iscallforhelp, [behaviorType] = @behaviorType WHERE id=@id;");
                 command.CommandText = sqlCommand.ToString();
 
                 command.Parameters.AddWithValue("@id", item.id);
                 command.Parameters.AddWithValue("@name", item.name);
-                command.Parameters.AddWithValue("@presenceid", item.presenceid);
+                command.Parameters.AddWithValue("@presenceID", item.presenceid);
                 command.Parameters.AddWithValue("@flockmembercount", item.flockmembercount);
-                command.Parameters.AddWithValue("@definition", item.definition);
+                command.Parameters.AddWithValue("@definitionID", item.definition);
                 command.Parameters.AddWithValue("@spawnoriginX", item.spawnoriginX);
                 command.Parameters.AddWithValue("@spawnoriginY", item.spawnoriginY);
                 command.Parameters.AddWithValue("@spawnrangeMin", item.spawnrangeMin);
@@ -526,13 +526,16 @@ namespace Perptool.db
                 query = command.CommandText;
                 foreach (SqlParameter p in command.Parameters)
                 {
-                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    if (p.ParameterName != "@presenceID" && p.ParameterName != "@definitionID")
                     {
-                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
-                    }
-                    else
-                    {
-                        query = query.Replace(p.ParameterName, p.Value.ToString());
+                        if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                        {
+                            query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
+                        }
+                        else
+                        {
+                            query = query.Replace(p.ParameterName, p.Value.ToString());
+                        }
                     }
                 }
             }
@@ -548,14 +551,14 @@ namespace Perptool.db
                 StringBuilder sqlCommand = new StringBuilder();
                 sqlCommand.Append(@"INSERT INTO[dbo].[npcflock]([name],[presenceid],[flockmembercount],[definition],[spawnoriginX],[spawnoriginY],[spawnrangeMin],[spawnrangeMax],[respawnseconds]
                 ,[totalspawncount],[homerange],[note],[respawnmultiplierlow],[enabled],[iscallforhelp],[behaviorType]) VALUES
-                (@name, @presenceID, @flockmembercount, @definition, @spawnoriginX, @spawnoriginY, @spawnrangeMin, @spawnrangeMax, @respawnseconds, @totalspawncount,
+                (@name, @presenceID, @flockmembercount, @definitionID, @spawnoriginX, @spawnoriginY, @spawnrangeMin, @spawnrangeMax, @respawnseconds, @totalspawncount,
                  @homerange, @note, @respawnmultiplierlow, @enabled, @iscallforhelp, @behaviorType);");
                 command.CommandText = sqlCommand.ToString();
 
                 command.Parameters.AddWithValue("@name", item.name);
                 command.Parameters.AddWithValue("@presenceID", item.presenceid);
                 command.Parameters.AddWithValue("@flockmembercount", item.flockmembercount);
-                command.Parameters.AddWithValue("@definition", item.definition);
+                command.Parameters.AddWithValue("@definitionID", item.definition);
                 command.Parameters.AddWithValue("@spawnoriginX", item.spawnoriginX);
                 command.Parameters.AddWithValue("@spawnoriginY", item.spawnoriginY);
                 command.Parameters.AddWithValue("@spawnrangeMin", item.spawnrangeMin);
@@ -578,7 +581,7 @@ namespace Perptool.db
                 query = command.CommandText;
                 foreach (SqlParameter p in command.Parameters)
                 {
-                    if (p.ParameterName != "@presenceID")
+                    if (p.ParameterName != "@presenceID" && p.ParameterName != "@definitionID")
                     {
                         if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
                         {
