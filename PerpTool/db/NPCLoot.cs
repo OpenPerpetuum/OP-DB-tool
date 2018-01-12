@@ -23,7 +23,28 @@ namespace Perptool.db
         public int LootMinQuantity { get; set; }
         public int LootRepackaged { get; set; }
         public int LootDontDamage { get; set; }
-        public DBAction recordAction { get; set; }
+        public DBAction dBAction { get; set; }
+
+        public static string GetLootDeclStatment()
+        {
+            return "DECLARE @lootdefinitionID int;";
+        }
+
+        public static string GetDeclStatement()
+        {
+            return "DECLARE @npclootID int;";
+        }
+
+        public string GetLootDefinitionLookupStatement()
+        {
+            return "SET @lootdefinitionID = (SELECT TOP 1 definition from entitydefaults WHERE [definitionname] = '" + this.LootDefinitionName + "' ORDER BY definition DESC);";
+        }
+
+        public string GetLookupStatement()
+        {
+            return "SET @npclootID = (SELECT TOP 1 id from npcloot WHERE definition = @definitionID AND lootdefinition = @lootdefinitionID  ORDER BY definition, lootdefinition DESC);";
+        }
+
     }
 
     public class NPCLoot : INotifyPropertyChanged
@@ -266,12 +287,12 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE npcloot SET [definition]=@definitionID, [lootdefinition]=@lootdefinition, [quantity]=@quantity, [probability]=@probability, [repackaged]=@repackaged, [dontdamage]=@dontdamage, [minquantity]=@minquantity WHERE [id]=@id;");
+                sqlCommand.Append("UPDATE npcloot SET [definition]=@definitionID, [lootdefinition]=@lootdefinitionID, [quantity]=@quantity, [probability]=@probability, [repackaged]=@repackaged, [dontdamage]=@dontdamage, [minquantity]=@minquantity WHERE [id]=@npclootID;");
                 command.CommandText = sqlCommand.ToString();
 
-                command.Parameters.AddWithValue("@id", this.id);
+                command.Parameters.AddWithValue("@npclootID", this.id);
                 command.Parameters.AddWithValue("@definitionID", this.definition);
-                command.Parameters.AddWithValue("@lootdefinition", this.lootdefinition);
+                command.Parameters.AddWithValue("@lootdefinitionID", this.lootdefinition);
                 command.Parameters.AddWithValue("@quantity", this.quantity);
                 command.Parameters.AddWithValue("@probability", this.probability);
                 command.Parameters.AddWithValue("@repackaged", this.repackaged);
@@ -287,7 +308,7 @@ namespace Perptool.db
                 query = command.CommandText;
                 foreach (SqlParameter p in command.Parameters)
                 {
-                    if (p.ParameterName == "@definitionID")
+                    if (p.ParameterName == "@definitionID" || p.ParameterName == "@lootdefinitionID" || p.ParameterName== "@npclootID")
                     {
                         continue;
                     }
@@ -310,11 +331,11 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("INSERT INTO [dbo].[npcloot] ([definition],[lootdefinition],[quantity],[probability],[repackaged],[dontdamage],[minquantity]) VALUES(@definitionID, @lootdefinition, @quantity, @probability, @repackaged,@dontdamage, @minquantity);");
+                sqlCommand.Append("INSERT INTO [dbo].[npcloot] ([definition],[lootdefinition],[quantity],[probability],[repackaged],[dontdamage],[minquantity]) VALUES(@definitionID, @lootdefinitionID, @quantity, @probability, @repackaged,@dontdamage, @minquantity);");
                 command.CommandText = sqlCommand.ToString();
 
                 command.Parameters.AddWithValue("@definitionID", this.definition);
-                command.Parameters.AddWithValue("@lootdefinition", this.lootdefinition);
+                command.Parameters.AddWithValue("@lootdefinitionID", this.lootdefinition);
                 command.Parameters.AddWithValue("@quantity", this.quantity);
                 command.Parameters.AddWithValue("@probability", this.probability);
                 command.Parameters.AddWithValue("@repackaged", this.repackaged);
@@ -330,7 +351,44 @@ namespace Perptool.db
                 query = command.CommandText;
                 foreach (SqlParameter p in command.Parameters)
                 {
-                    if (p.ParameterName == "@definitionID")
+                    if (p.ParameterName == "@definitionID" || p.ParameterName == "@lootdefinitionID")
+                    {
+                        continue;
+                    }
+                    else if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    {
+                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
+                    }
+                    else
+                    {
+                        query = query.Replace(p.ParameterName, p.Value.ToString());
+                    }
+                }
+            }
+            return query;
+        }
+
+        public string Delete()
+        {
+            string query = "";
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append("DELETE FROM [dbo].[npcloot] WHERE id=@npclootID;");
+                command.CommandText = sqlCommand.ToString();
+
+                command.Parameters.AddWithValue("@npclootID", this.definition);
+
+                SqlConnection conn = new SqlConnection(this.ConnString);
+                conn.Open();
+                command.Connection = conn;
+                command.ExecuteNonQuery();
+                conn.Close();
+
+                query = command.CommandText;
+                foreach (SqlParameter p in command.Parameters)
+                {
+                    if (p.ParameterName == "@npclootID")
                     {
                         continue;
                     }
@@ -400,7 +458,6 @@ namespace Perptool.db
             tmp.LootMinQuantity = 0;
             return tmp;
         }
-
 
         /// <summary>
         /// fires when properties are set.

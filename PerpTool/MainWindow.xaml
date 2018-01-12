@@ -118,22 +118,22 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                            <Label   Grid.Row="0" Grid.Column="0" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Head"/>
-                            <TextBox Grid.Row="1" Grid.Column="0" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.Head}" TextWrapping="Wrap"/>
-                            <Label   Grid.Row="0" Grid.Column="1" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Chassis"/>
-                            <TextBox Grid.Row="1" Grid.Column="1" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.Chassis}" TextWrapping="Wrap"/>
-                            <Label   Grid.Row="0" Grid.Column="2" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Leg"/>
-                            <TextBox Grid.Row="1" Grid.Column="2" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.Leg}" TextWrapping="Wrap"/>
-                            <Label   Grid.Row="0" Grid.Column="3" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Inventory"/>
-                            <TextBox Grid.Row="1" Grid.Column="3" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.Inventory}" TextWrapping="Wrap"/>
-                            <Label   Grid.Row="0" Grid.Column="4" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Height"/>
-                            <TextBox Grid.Row="1" Grid.Column="4" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.height}" TextWrapping="Wrap"/>
-                            <Label   Grid.Row="0" Grid.Column="5" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Moduleflag"/>
-                            <TextBox Grid.Row="1" Grid.Column="5" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.moduleFlag}" TextWrapping="Wrap"/>
-                            <Label   Grid.Row="0" Grid.Column="6" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="AmmoType"/>
-                            <TextBox Grid.Row="1" Grid.Column="6" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.ammoType}" TextWrapping="Wrap"/>
-                            <Label   Grid.Row="0" Grid.Column="7" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="AmmoCapacity"/>
-                            <TextBox Grid.Row="1" Grid.Column="7" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.ammoCapacity}" TextWrapping="Wrap"/>
+                                <Label   Grid.Row="0" Grid.Column="0" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Head"/>
+                                <TextBox Grid.Row="1" Grid.Column="0" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.Head}" TextWrapping="Wrap"/>
+                                <Label   Grid.Row="0" Grid.Column="1" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Chassis"/>
+                                <TextBox Grid.Row="1" Grid.Column="1" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.Chassis}" TextWrapping="Wrap"/>
+                                <Label   Grid.Row="0" Grid.Column="2" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Leg"/>
+                                <TextBox Grid.Row="1" Grid.Column="2" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.Leg}" TextWrapping="Wrap"/>
+                                <Label   Grid.Row="0" Grid.Column="3" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Inventory"/>
+                                <TextBox Grid.Row="1" Grid.Column="3" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.Inventory}" TextWrapping="Wrap"/>
+                                <Label   Grid.Row="0" Grid.Column="4" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Height"/>
+                                <TextBox Grid.Row="1" Grid.Column="4" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.height}" TextWrapping="Wrap"/>
+                                <Label   Grid.Row="0" Grid.Column="5" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Moduleflag"/>
+                                <TextBox Grid.Row="1" Grid.Column="5" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.moduleFlag}" TextWrapping="Wrap"/>
+                                <Label   Grid.Row="0" Grid.Column="6" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="AmmoType"/>
+                                <TextBox Grid.Row="1" Grid.Column="6" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.ammoType}" TextWrapping="Wrap"/>
+                                <Label   Grid.Row="0" Grid.Column="7" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="AmmoCapacity"/>
+                                <TextBox Grid.Row="1" Grid.Column="7" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.options.ammoCapacity}" TextWrapping="Wrap"/>
                             </Grid>
 
 
@@ -150,12 +150,12 @@
                         <Expander Grid.Column="0"  Grid.ColumnSpan="10" Header="Modifier Fields and Values" Height="Auto" Grid.Row="7" Margin="5" >
                             <DataGrid Margin="5" Height="Auto" ItemsSource="{Binding FieldValuesList}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Visible" >
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Field" Width="250" Binding="{Binding FieldName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                                    <DataGridTextColumn Header="Value" Width="55" Binding="{Binding FieldValue}"/>
-                                    <DataGridTextColumn Header="Units" Width="55" Binding="{Binding FieldUnits}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                                    <DataGridTextColumn Header="Offset" Width="60" Binding="{Binding FieldOffset}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                                    <DataGridTextColumn Header="Multipler" Width="60" Binding="{Binding FieldMultiplier}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                                    <DataGridTextColumn Header="Formula" Width="55" Binding="{Binding FieldFormula}"/>
+                                    <DataGridTextColumn Header="Field" Width="Auto" Binding="{Binding FieldName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                    <DataGridTextColumn Header="Value" Width="Auto" Binding="{Binding FieldValue}"/>
+                                    <DataGridTextColumn Header="Units" Width="Auto" Binding="{Binding FieldUnits}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                    <DataGridTextColumn Header="Offset" Width="Auto" Binding="{Binding FieldOffset}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                    <DataGridTextColumn Header="Multipler" Width="Auto" Binding="{Binding FieldMultiplier}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                    <DataGridTextColumn Header="Formula" Width="Auto" Binding="{Binding FieldFormula}"/>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Expander>
@@ -262,17 +262,18 @@
                         <ComboBox x:Name="npclootcombo" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="600" ItemsSource="{Binding LootableBots}" DisplayMemberPath="definitionname" SelectedValuePath="definition" SelectedItem="{Binding SelectedLootableBot}" DropDownClosed="ComboBox_DropDownClosed_LootableNPCs"/>
                         <DataGrid Margin="10,61,10,31" ItemsSource="{Binding loots}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" >
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="LootDefinitionName" Width="*" Binding="{Binding LootDefinitionName}"/>
-                                <DataGridTextColumn Header="Probability" Width="70" Binding="{Binding LootProbability}"/>
-                                <DataGridTextColumn Header="Quantity" Width="70" Binding="{Binding LootQuantity}"/>
-                                <DataGridTextColumn Header="Repackaged" Width="85" Binding="{Binding LootRepackaged}"/>
-                                <DataGridTextColumn Header="DontDamage" Width="85" Binding="{Binding LootDontDamage}"/>
-                                <DataGridTextColumn Header="MinQuantity" Width="85" Binding="{Binding LootMinQuantity}"/>
+                                <DataGridTextColumn Header="LootDefinitionName" Width="Auto" Binding="{Binding LootDefinitionName}"/>
+                                <DataGridTextColumn Header="Probability" Width="Auto" Binding="{Binding LootProbability}"/>
+                                <DataGridTextColumn Header="Quantity" Width="Auto" Binding="{Binding LootQuantity}"/>
+                                <DataGridTextColumn Header="Repackaged" Width="Auto" Binding="{Binding LootRepackaged}"/>
+                                <DataGridTextColumn Header="DontDamage" Width="Auto" Binding="{Binding LootDontDamage}"/>
+                                <DataGridTextColumn Header="MinQuantity" Width="Auto" Binding="{Binding LootMinQuantity}"/>
                             </DataGrid.Columns>
                         </DataGrid>
-                        <Button Content="Save Changes" Margin="515,0,0,0" Click="NPC_Loot_Save_Button_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="90"/>
-                        <ComboBox x:Name="npcloot" HorizontalAlignment="Left" VerticalAlignment="Bottom"  Margin="138,0,0,0"  Width="350" Height="26" ItemsSource="{Binding LootableEntityDefaults}" DisplayMemberPath="definitionname" SelectedValuePath="definition"  SelectedItem="{Binding currentRowAddItem}" DropDownClosed="ComboBox_DropDownClosed_NPCLootableDefs"/>
-                        <Button Content="Add new row" Margin="10,359,0,0" Click="NPC_Loot_Add_Row_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100"/>
+                        <Button Content="Save Changes" Margin="617,0,0,0" Click="NPC_Loot_Save_Button_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="90"/>
+                        <ComboBox x:Name="npcloot" HorizontalAlignment="Left" VerticalAlignment="Bottom"  Margin="216,0,0,0"  Width="299" Height="26" ItemsSource="{Binding LootableEntityDefaults}" DisplayMemberPath="definitionname" SelectedValuePath="definition"  SelectedItem="{Binding currentRowAddItem}" DropDownClosed="ComboBox_DropDownClosed_NPCLootableDefs"/>
+                        <Button Content="Add new row" Margin="111,0,0,0" Click="NPC_Loot_Add_Row_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100"/>
+                        <Button Content="Remove Row" Margin="10,0,0,0" Click="NPC_Loot_Remove_Button_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="90"/>
                     </Grid>
                 </ScrollViewer>
             </TabItem>
@@ -369,7 +370,7 @@
                         <Button Grid.Row="10" Grid.Column="1" Grid.ColumnSpan="1" Width="Auto"  Margin="5" Content="Remove Module To Leg"  Click="Remove_To_Leg_Click" />
                         <Button Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="1" Width="Auto" Margin="5" Content="Save Changes"  Click="NPCTemplate_Save_Click" />
                         <Button Grid.Row="7" Grid.Column="2" Grid.ColumnSpan="1" Width="Auto" Margin="5"  Content="New NPC" Click="Button_Click_2"/>
-                        
+
                     </Grid>
                 </ScrollViewer>
             </TabItem>
@@ -425,7 +426,7 @@
                         <Button Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" Content="Change Template of Relation" Click="ChangeTemplateClick"/>
                         <Button Grid.Row="4" Grid.Column="6" Margin="5" Content="SAVE" Click="NPCTemplateRelation_Save_Click"/>
 
-                        
+
                     </Grid>
                 </ScrollViewer>
             </TabItem>
