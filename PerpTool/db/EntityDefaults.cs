@@ -1614,6 +1614,10 @@ namespace Perptool.db
             return "SET @definitionID = (SELECT TOP 1 definition from entitydefaults WHERE [definitionname] = '" + this.definitionname + "' ORDER BY definition DESC);";
         }
 
+        public static string GetLookupStatement(string defname)
+        {
+            return "SET @definitionID = (SELECT TOP 1 definition from entitydefaults WHERE [definitionname] = '" + defname + "' ORDER BY definition DESC);";
+        }
         /// <summary>
         /// fires when properties are set.
         /// </summary>

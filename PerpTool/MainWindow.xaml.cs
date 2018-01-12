@@ -1162,16 +1162,16 @@ namespace PerpTool
             {
                 MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
             }
-
-            
         }
 
         private string flockSaver()
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(NPCFlockData.GetDeclStatement());
+            sb.AppendLine(EntityDefaults.GetDeclStatement());
             foreach (NPCFlockData flock in this.NPCFlockList)
             {
+                sb.AppendLine(EntityDefaults.GetLookupStatement(flock.NPCDefinitionName));
                 if (flock.dBAction == DBAction.UPDATE)
                 {
                     sb.AppendLine(NPCFlockTable.Save(flock));
