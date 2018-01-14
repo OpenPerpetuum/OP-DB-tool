@@ -7,6 +7,9 @@ using Perptool.db;
 using System.ComponentModel;
 using System.IO;
 using System.Collections.ObjectModel;
+using PerpTool.Types;
+using System.Linq;
+using PerpTool.db;
 
 namespace PerpTool
 {
@@ -43,27 +46,32 @@ namespace PerpTool
             NPCTemplateRelations = new RobotTemplateRelation(Connstr);
             NPCPresenceTable = new NPCPresence(Connstr);
             NPCFlockTable = new NPCFlock(Connstr);
+            ExtensionsTable = new Extensions(Connstr);
 
             EntityItems = Entities.GetEntitiesWithFields();
             ZoneList = ZoneTbl.GetAllZones();
             SpawnList = Spawn.GetAllSpawns();
-            LootableBots = Entities.GetAllNPCLootableBots();
+            LootableBots = Entities.GetEntitiesByCategory(CategoryFlags.cf_npc);
             LootableEntityDefaults = Entities.GetLootableEntities();
-            BotItems = Entities.GetAllDistinctBotItems();
+            AllRobotComponents = Entities.GetEntitiesByCategory(CategoryFlags.cf_robot_components);
             NPCTemplates = NPCBotTemplates.getAll();
             AllNPCPresences = NPCPresenceTable.getAll();
+            AllNPCFlocks = NPCFlockTable.GetAllFlocks();
+            AllExtensions = ExtensionsTable.GetAll();
 
-            this.AmmoList = Entities.GetAllAmmo();
-            this.ModuleList = Entities.GetAllModules();
-            this.NPCEntities = Entities.GetAllNPCEntities();
-            this.NPCTemplateRelationList = new ObservableCollection<BotTemplateRelation>();
-            this.SelectedNPCPresence = new ObservableCollection<NPCPresenceData>();
+
+            this.CatFlags = this.GetAllCategoryFlags();
+            this.AllAggregateFields = AgFields.GetAllFields();
+            this.AmmoList = Entities.GetEntitiesByCategory(CategoryFlags.cf_ammo);
+            this.ModuleList = Entities.GetEntitiesByCategory(CategoryFlags.cf_robot_equipment);
+            this.NPCEntities = Entities.GetEntitiesByCategory(CategoryFlags.cf_npc);
+            this.SelectedNPCPresence = new NPCPresenceData();
             this.NPCFlockList = new ObservableCollection<NPCFlockData>();
             this.BotTemplate = new ObservableCollection<RobotTemplate>();
-            this.selectedEntity = new ObservableCollection<EntityItems>();
             this.DataContext = this;
         }
 
+        public IEnumerable<CategoryFlags> CatFlags { get; set; }
         private EntityItems currentSelection { get; set; }
         private AggregateModifiers AgModifiers { get; set; }
         private AggregateFields AgFields { get; set; }
@@ -76,35 +84,52 @@ namespace PerpTool
         private RobotTemplateRelation NPCTemplateRelations { get; set; }
         private NPCPresence NPCPresenceTable { get; set; }
         private NPCFlock NPCFlockTable { get; set; }
+        private Extensions ExtensionsTable { get; set; }
 
-        public List<EntityItems> AmmoList { get; set; }
-        public List<EntityItems> ModuleList { get; set; }
-        public List<EntityItems> BotItems { get; set; }
-        public List<EntityItems> EntityItems { get; set; }
-        public List<EntityItems> NPCEntities { get; set; }
+        public List<EntityDefaults> AmmoList { get; set; }
+        public List<EntityDefaults> ModuleList { get; set; }
+        public List<EntityDefaults> AllRobotComponents { get; set; }
+        public List<EntityDefaults> NPCEntities { get; set; }
         public List<NPCPresenceData> AllNPCPresences { get; set; }
+        public List<AggregateFields> AllAggregateFields { get; set; }
+        public List<NPCFlockData> AllNPCFlocks { get; set; }
+        public List<Extensions> AllExtensions { get; set; }
 
 
 
         #region EntityDefaults
 
-        //TODO hack, using observable collection for one item BAD
-        private ObservableCollection<EntityItems> _selectedEntity;
-        public ObservableCollection<EntityItems> selectedEntity
+        // New methods to filter by CF
+        private List<EntityItems> _privlist;
+        public List<EntityItems> EntityItems
         {
             get
             {
-                return _selectedEntity;
+                return this._privlist;
             }
             set
             {
-                _selectedEntity = value;
-                OnPropertyChanged("selectedEntity");
+                this._privlist = value;
+                this.OnPropertyChanged("EntityItems");
             }
         }
 
-        private List<FieldValuesStuff> _valstuffs;
-        public List<FieldValuesStuff> FieldValuesList
+        private EntityDefaults _privateSelectedEntity;
+        public EntityDefaults SelectedEntity
+        {
+            get
+            {
+                return this._privateSelectedEntity;
+            }
+            set
+            {
+                this._privateSelectedEntity = value;
+                OnPropertyChanged("SelectedEntity");
+            }
+        }
+
+        private ObservableCollection<FieldValuesStuff> _valstuffs;
+        public ObservableCollection<FieldValuesStuff> FieldValuesList
         {
             get
             {
@@ -117,40 +142,97 @@ namespace PerpTool
             }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        public IEnumerable<CategoryFlags> GetAllCategoryFlags()
+        {
+            return Enum.GetValues(typeof(CategoryFlags)).Cast<CategoryFlags>();
+        }
+
+        private CategoryFlags _privateCategoryFlag;
+        public CategoryFlags SelectedCategoryFlag
+        {
+            get
+            {
+                return this._privateCategoryFlag;
+            }
+            set
+            {
+                this._privateCategoryFlag = value;
+                OnPropertyChanged("SelectedCategoryFlag");
+            }
+        }
+
+        private List<EntityDefaults> _EntitiesList;
+        public List<EntityDefaults> EntitiesList
+        {
+            get
+            {
+                return this._EntitiesList;
+            }
+            set
+            {
+                this._EntitiesList = value;
+                OnPropertyChanged("EntitiesList");
+            }
+        }
+        private void ComboBox_DropDownClosed_CatFlag(object sender, EventArgs e)
+        {
+            //Still needs to perform query to grab entities by catflag at selection-confirm
+            //Could be pre-populated... its a lot though
+            this.EntitiesList = Entities.GetEntitiesByCategory(SelectedCategoryFlag);
+        }
+
+        private void ComboBox_DropDownClosed_EntitySelect(object sender, EventArgs e)
+        {
+            EntityDefaults entity = (EntityDefaults)combo.SelectedItem;
+            if (entity == null || entity != this.SelectedEntity) { return; }
+            this.FieldValuesList = new ObservableCollection<FieldValuesStuff>();
+            this.FieldValuesList = AgValues.GetValuesForEntity(this.SelectedEntity.definition);
+        }
+
+        private AggregateFields selectedAggField;
+        private void ComboBox_DropDownClosed_AggField(object sender, EventArgs e)
+        {
+            this.selectedAggField = (AggregateFields)AggFieldCombo.SelectedItem;
+            System.Console.WriteLine(this.selectedAggField);
+        }
+
+        private void AggFieldAdd_Click(object sender, EventArgs e)
+        {
+            if (this.selectedAggField == null || this.SelectedEntity == null) { return; }
+            FieldValuesStuff f = new FieldValuesStuff();
+            f.dBAction = DBAction.INSERT;
+            f.Definition = this.SelectedEntity.definition;
+            f.FieldFormula = this.selectedAggField.formula;
+            f.FieldId = this.selectedAggField.id;
+            f.FieldMultiplier = this.selectedAggField.measurementmultiplier;
+            f.FieldName = this.selectedAggField.name;
+            f.FieldOffset = this.selectedAggField.measurementoffset;
+            f.FieldUnits = this.selectedAggField.measurementunit;
+            f.FieldValue = 0;
+            f.ValueId = -1;
+            this.FieldValuesList.Add(f);
+        }
+        public List<FieldValuesStuff> fieldValuesToDelete = new List<FieldValuesStuff>();
+        private void AggFieldRemove_Click(object sender, EventArgs e)
+        {
+            if (this.FieldValuesList.Count <= 0) { return; }
+            this.fieldValuesToDelete.Add(this.FieldValuesList.Last<FieldValuesStuff>());
+            this.FieldValuesList.RemoveAt(this.FieldValuesList.Count - 1);
+        }
+
+        //Save/Insert
+        private void EntityDefault_Save_New_Click(object sender, EventArgs e)
         {
             try
             {
-                StringBuilder sb = new StringBuilder();
-                foreach (FieldValuesStuff item in FieldValuesList)
+                if (this.SelectedEntity != null)
                 {
-                    AgValues.GetById(item.ValueId);
-                    if (AgValues.value != item.FieldValue)
-                    {
-                        AgValues.value = item.FieldValue;
-                        sb.AppendLine(AgValues.Save());
-                    }
-
-                    AgFields.GetById(item.FieldId);
-                    if (AgFields.formula != item.FieldFormula)
-                    {
-                        AgFields.formula = item.FieldFormula;
-                        sb.AppendLine(AgFields.Save());
-                    }
-
+                    EntityDefaults entity = this.SelectedEntity;
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine(entity.SaveNewRecord());
+                    File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + entity.definitionname + "INSERT" + Utilities.timestamp() + ".sql", sb.ToString());
+                    MessageBox.Show("Saved NEW EntityDefault Record!", "Info", 0, MessageBoxImage.Information);
                 }
-
-                if (selectedEntity.Count == 1) //TODO hack -- impl object that is observable by gui framework
-                {
-                    foreach (EntityItems eItem in this.selectedEntity)
-                    {
-                        sb.AppendLine(Entities.SaveWithEntityItemChange(eItem));
-                    }
-                }
-
-                Console.WriteLine(sb.ToString());
-                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + currentSelection.Name + ".sql", sb.ToString());
-                MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
@@ -158,15 +240,142 @@ namespace PerpTool
             }
         }
 
-        private void ComboBox_DropDownClosed(object sender, EventArgs e)
+        //Save/update
+        private void Button_Click(object sender, RoutedEventArgs e)
         {
-            EntityItems item = (EntityItems)combo.SelectedItem;
-            this.selectedEntity.Clear();
-            this.selectedEntity.Add(item);
-            this.currentSelection = item;
-            if (item == null) { return; }
-            FieldValuesList = AgValues.GetValuesForEntity(item.Definition);
+            try
+            {
+                if (this.SelectedEntity != null)
+                {
+                    EntityDefaults entity = this.SelectedEntity;
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine(EntityDefaults.GetDeclStatement());
+                    sb.AppendLine(entity.GetLookupStatement());
+                    sb.AppendLine(entity.Save());
+                    sb.AppendLine(handleAggregateFieldValuesSave(FieldValuesList));
+                    File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + entity.definitionname + Utilities.timestamp() + ".sql", sb.ToString());
+                    MessageBox.Show("Saved Entity and FieldValues!", "Info", 0, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
+            }
         }
+
+
+        private string handleAggregateFieldValuesSave(ObservableCollection<FieldValuesStuff> list)
+        {
+            //TODO sql parameterization for outputs needed
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(FieldValuesStuff.GetDeclStatement());
+            sb.AppendLine(AggregateFields.GetDeclStatement());
+            foreach (FieldValuesStuff item in list)
+            {
+                AgFields.GetById(item.FieldId);
+                AgValues.GetById(item.ValueId);
+                StringBuilder sb2 = new StringBuilder();
+                sb2.AppendLine(AgFields.GetLookupStatement());
+                sb2.AppendLine(item.GetLookupStatement());
+                bool changed = item.FieldValue != AgValues.value || item.FieldFormula != AgFields.formula;
+
+                if (item.dBAction == DBAction.UPDATE)
+                {
+                    if (changed)
+                    {
+                        sb.AppendLine(sb2.ToString());
+                    }
+                    if (item.FieldValue != AgValues.value)
+                    {
+                        AgValues.value = item.FieldValue;
+                        sb.AppendLine(AgValues.Save(item));
+                    }
+                    if (item.FieldFormula != AgFields.formula)
+                    {
+                        sb.AppendLine(sb2.ToString());
+                        sb.AppendLine(AgFields.Save(item));
+                    }
+                }
+                else if (item.dBAction == DBAction.INSERT)
+                {
+                    sb.AppendLine(sb2.ToString());
+                    sb.AppendLine(AgValues.Insert(item));
+                    item.dBAction = DBAction.UPDATE;
+                    if (item.FieldFormula != AgFields.formula)
+                    {
+                        sb.AppendLine(AgFields.Save(item));
+                    }   //New AggValues use old AggFields -- this remains an update iff changed
+                }
+                else
+                {
+                    throw new NotImplementedException("DELETE Not impl'd geez");
+                }
+                //TODO implement DELETE!!!
+            }
+            return sb.ToString();
+        }
+
+        private ObservableCollection<EntityOptions> _privOptions;
+        public ObservableCollection<EntityOptions> selectedEntityOptions
+        {
+            get
+            {
+                return _privOptions;
+            }
+            set
+            {
+                _privOptions = value;
+                OnPropertyChanged("selectedEntityOptions");
+            }
+        }
+
+        public List<FieldValuesStuff> copyOfFields = new List<FieldValuesStuff>();
+        private void CopyFields_click(object sender, EventArgs e)
+        {
+            copyOfFields = new List<FieldValuesStuff>(this.FieldValuesList);
+        }
+
+        private void PasteFields_Click(object sender, EventArgs e)
+        {
+            foreach (FieldValuesStuff fields in this.copyOfFields)
+            {
+                EntityDefaults entity = this.SelectedEntity;
+                fields.Definition = entity.definition;
+                fields.dBAction = DBAction.INSERT;
+                this.FieldValuesList.Add(fields);
+            }
+        }
+
+        private bool checkNullForSlots()
+        {
+            return this.SelectedEntity == null || this.SelectedEntity.options == null || this.SelectedEntity.options.Slots == null;
+        }
+
+        private void AddSlot_Click(object sender, EventArgs e)
+        {
+            if (!checkNullForSlots())
+            {
+                this.SelectedEntity.options.Slots.Add(new SlotFlagWrapper(this.SelectedEntity.options.Slots.Count, SlotFlags.chassis));
+            }
+            else
+            {
+                MessageBox.Show("Hey Jerk, you can't add a slot to that!", "Wrong Category", 0, MessageBoxImage.Warning);
+            }
+        }
+
+        private void RemoveSlot_Click(object sender, EventArgs e)
+        {
+            if (!checkNullForSlots() && this.SelectedEntity.options.Slots.Count>0)
+            {
+                this.SelectedEntity.options.Slots.RemoveAt(this.SelectedEntity.options.Slots.Count - 1);
+            }
+            else
+            {
+                MessageBox.Show("Hey Jerk, you can't remove a slot from that!", "Wrong Category or No more slots!", 0, MessageBoxImage.Warning);
+            }
+        }
+
+
         #endregion
 
         #region Zones
@@ -370,7 +579,19 @@ namespace PerpTool
             }
         }
 
-        public BotTemplateDropdownItem currentBotTemplateSelection;
+        private BotTemplateDropdownItem _currentBotTemplateSelection;
+        public BotTemplateDropdownItem currentBotTemplateSelection
+        {
+            get
+            {
+                return this._currentBotTemplateSelection;
+            }
+            set
+            {
+                this._currentBotTemplateSelection = value;
+                OnPropertyChanged("currentBotTemplateSelection");
+            }
+        }
         private void ComboBox_DropDownClosed_NPCTemplates(object sender, EventArgs e)
         {
             BotTemplateDropdownItem item = (BotTemplateDropdownItem)npctemplatecombo.SelectedItem;
@@ -424,7 +645,7 @@ namespace PerpTool
                 {
                     sb.AppendLine(NPCBotTemplates.SaveBotTemplate(temp));
                 }
-                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + this.currentBotTemplateSelection.name + ".sql", sb.ToString());
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + this.currentBotTemplateSelection.name + Utilities.timestamp() + ".sql", sb.ToString());
                 MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
             }
             catch (Exception ex)
@@ -434,18 +655,32 @@ namespace PerpTool
 
         }
 
-        public EntityItems selectedModule;
-        private void ComboBox_DropDownClosed_ModuleDef(object sender, EventArgs e)
+        private EntityDefaults _selectedModule;
+        public EntityDefaults SelectedModule
         {
-            EntityItems item = (EntityItems)moduledropdown.SelectedItem;
-            this.selectedModule = item;
+            get
+            {
+                return this._selectedModule;
+            }
+            set
+            {
+                this._selectedModule = value;
+                OnPropertyChanged("SelectedModule");
+            }
         }
 
-        public EntityItems selectedAmmo;
-        private void ComboBox_DropDownClosed_AmmoDef(object sender, EventArgs e)
+        private EntityDefaults _selectedAmmo;
+        public EntityDefaults SelectedAmmo
         {
-            EntityItems item = (EntityItems)ammodropdown.SelectedItem;
-            this.selectedAmmo = item;
+            get
+            {
+                return this._selectedAmmo;
+            }
+            set
+            {
+                this._selectedAmmo = value;
+                OnPropertyChanged("SelectedAmmo");
+            }
         }
 
         private void Add_To_Head_Click(object sender, RoutedEventArgs e)
@@ -454,13 +689,13 @@ namespace PerpTool
             {
                 RobotTemplate temp = BotTemplate[0];
                 ModuleTemplate mod;
-                if (selectedAmmo == null)
+                if (SelectedAmmo == null)
                 {
-                    mod = new ModuleTemplate(selectedModule.Definition, temp.chassisModules.Count + 1, 0, 0, selectedModule.Name);
+                    mod = new ModuleTemplate(SelectedModule.definition, temp.chassisModules.Count + 1, 0, 0, SelectedModule.definitionname);
                 }
                 else
                 {
-                    mod = new ModuleTemplate(selectedModule.Definition, temp.chassisModules.Count + 1, selectedAmmo.Definition, 10, selectedModule.Name, selectedAmmo.Name);
+                    mod = new ModuleTemplate(SelectedModule.definition, temp.chassisModules.Count + 1, SelectedAmmo.definition, 10, SelectedModule.definitionname, SelectedAmmo.definitionname);
                 }
                 temp.headModules.Add(mod);
             }
@@ -472,13 +707,13 @@ namespace PerpTool
             {
                 RobotTemplate temp = BotTemplate[0];
                 ModuleTemplate mod;
-                if (selectedAmmo == null)
+                if (SelectedAmmo == null)
                 {
-                    mod = new ModuleTemplate(selectedModule.Definition, temp.chassisModules.Count + 1, 0, 0, selectedModule.Name);
+                    mod = new ModuleTemplate(SelectedModule.definition, temp.chassisModules.Count + 1, 0, 0, SelectedModule.definitionname);
                 }
                 else
                 {
-                    mod = new ModuleTemplate(selectedModule.Definition, temp.chassisModules.Count + 1, selectedAmmo.Definition, 10, selectedModule.Name, selectedAmmo.Name);
+                    mod = new ModuleTemplate(SelectedModule.definition, temp.chassisModules.Count + 1, SelectedAmmo.definition, 10, SelectedModule.definitionname, SelectedAmmo.definitionname);
                 }
                 temp.chassisModules.Add(mod);
             }
@@ -490,13 +725,13 @@ namespace PerpTool
             {
                 RobotTemplate temp = BotTemplate[0];
                 ModuleTemplate mod;
-                if (selectedAmmo == null)
+                if (SelectedAmmo == null)
                 {
-                    mod = new ModuleTemplate(selectedModule.Definition, temp.legModules.Count + 1, 0, 0, selectedModule.Name);
+                    mod = new ModuleTemplate(SelectedModule.definition, temp.legModules.Count + 1, 0, 0, SelectedModule.definitionname);
                 }
                 else
                 {
-                    mod = new ModuleTemplate(selectedModule.Definition, temp.legModules.Count + 1, selectedAmmo.Definition, 10, selectedModule.Name, selectedAmmo.Name);
+                    mod = new ModuleTemplate(SelectedModule.definition, temp.legModules.Count + 1, SelectedAmmo.definition, 10, SelectedModule.definitionname, SelectedAmmo.definitionname);
                 }
                 temp.legModules.Add(mod);
             }
@@ -558,8 +793,8 @@ namespace PerpTool
             }
         }
 
-        private List<EntityItems> _itemdata;
-        public List<EntityItems> LootableBots
+        private List<EntityDefaults> _itemdata;
+        public List<EntityDefaults> LootableBots
         {
             get
             {
@@ -572,8 +807,8 @@ namespace PerpTool
             }
         }
 
-        private List<EntityItems> _lootables;
-        public List<EntityItems> LootableEntityDefaults
+        private List<EntityDefaults> _lootables;
+        public List<EntityDefaults> LootableEntityDefaults
         {
             get
             {
@@ -586,20 +821,42 @@ namespace PerpTool
             }
         }
 
-        public EntityItems currentNPCLootableBot;
-        private void ComboBox_DropDownClosed_LootableNPCs(object sender, EventArgs e)
+        private EntityDefaults _selectedLootableBot;
+        public EntityDefaults SelectedLootableBot
         {
-            EntityItems item = (EntityItems)npclootcombo.SelectedItem;
-            this.currentNPCLootableBot = item;
-            if (item == null) { return; }
-            this.loots = Loot.GetLootByDefinition(item.Definition);
+            get
+            {
+                return this._selectedLootableBot;
+            }
+            set
+            {
+                this._selectedLootableBot = value;
+                OnPropertyChanged("SelectedLootableBot");
+            }
         }
 
-        public EntityItems currentRowAddItem;
+        private void ComboBox_DropDownClosed_LootableNPCs(object sender, EventArgs e)
+        {
+            if (SelectedLootableBot == null) { return; }
+            this.loots = Loot.GetLootByDefinition(SelectedLootableBot.definition);
+        }
+
+        private EntityDefaults _currentRowAddItem;
+        public EntityDefaults currentRowAddItem
+        {
+            get
+            {
+                return this._currentRowAddItem;
+            }
+            set
+            {
+                this._currentRowAddItem = value;
+                OnPropertyChanged("currentRowAddItem");
+            }
+        }
         private void ComboBox_DropDownClosed_NPCLootableDefs(object sender, EventArgs e)
         {
-            EntityItems item = (EntityItems)npcloot.SelectedItem;
-            this.currentRowAddItem = item;
+            System.Console.WriteLine(currentRowAddItem);
         }
 
         private void NPC_Loot_Save_Button_Click(object sender, RoutedEventArgs e)
@@ -607,26 +864,38 @@ namespace PerpTool
             try
             {
                 StringBuilder sb = new StringBuilder();
+                sb.AppendLine(EntityDefaults.GetDeclStatement());
+                sb.AppendLine(SelectedLootableBot.GetLookupStatement());
+                sb.AppendLine(LootItem.GetLootDeclStatment());
+                sb.AppendLine(LootItem.GetDeclStatement());
                 foreach (LootItem item in this.loots)
                 {
-                    if (item.recordAction == DBAction.UPDATE)
+                    if (item.dBAction == DBAction.UPDATE)
                     {
                         Loot.updateSelf(item);
-                        sb.Append(Loot.Save());
-                        sb.AppendLine();
+                        sb.AppendLine(item.GetLootDefinitionLookupStatement());
+                        sb.AppendLine(item.GetLookupStatement());
+                        sb.AppendLine(Loot.Save());
                     }
-                    else if (item.recordAction == DBAction.INSERT)
+                    else if (item.dBAction == DBAction.INSERT)
                     {
                         Loot.updateSelf(item);
-                        sb.Append(Loot.Insert());
-                        sb.AppendLine();
-                    }
-                    else if (item.recordAction == DBAction.DELETE)
-                    {
-                        //TODO
+                        sb.AppendLine(item.GetLootDefinitionLookupStatement());
+                        sb.AppendLine(Loot.Insert());
                     }
                 }
-                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + currentNPCLootableBot.Name + ".sql", sb.ToString());
+
+                foreach (LootItem item in removeLoot)
+                {
+                    if (item.dBAction == DBAction.DELETE)
+                    {
+                        sb.AppendLine(item.GetLootDefinitionLookupStatement());
+                        sb.AppendLine(item.GetLookupStatement());
+                        Loot.updateSelf(item);
+                        sb.AppendLine(Loot.Delete());
+                    }
+                }
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + SelectedLootableBot.definitionname + "_loot" + Utilities.timestamp() + ".sql", sb.ToString());
                 MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
             }
             catch (Exception ex)
@@ -636,19 +905,48 @@ namespace PerpTool
 
         }
 
+        public List<LootItem> copyLoots = new List<LootItem>();
+        private void Copy_Loots(object sender, EventArgs e)
+        {
+            copyLoots = new List<LootItem>(this.loots);
+        }
+
+        private void Paste_Loots(object sender, EventArgs e)
+        {
+            foreach (LootItem item in this.copyLoots)
+            {
+                item.dBAction = DBAction.INSERT;
+                this.loots.Add(item);
+            }
+        }
+
+        public List<LootItem> removeLoot = new List<LootItem>();
+        private void NPC_Loot_Remove_Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.loots.Count > 0)
+            {
+                LootItem loots = this.loots.Last<LootItem>();
+                if (loots.dBAction != DBAction.INSERT)
+                {
+                    loots.dBAction = DBAction.DELETE;
+                    removeLoot.Add(loots);
+                }
+                this.loots.RemoveAt(this.loots.Count - 1);
+            }
+        }
+
         private void NPC_Loot_Add_Row_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                LootItem loot = Loot.CreateNewLootForBot(this.currentNPCLootableBot, this.currentRowAddItem);
-                loot.recordAction = DBAction.INSERT;
+                LootItem loot = Loot.CreateNewLootForBot(this.SelectedLootableBot, this.currentRowAddItem);
+                loot.dBAction = DBAction.INSERT;
                 this.loots.Add(loot);
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
             }
-
         }
 
         #endregion
@@ -671,13 +969,54 @@ namespace PerpTool
             }
         }
 
-        public EntityItems currentBotComponentSelection;
+
+        private EntityDefaults _selectedBot;
+        public EntityDefaults SelectedBot
+        {
+            get
+            {
+                return this._selectedBot;
+            }
+            set
+            {
+                this._selectedBot = value;
+                OnPropertyChanged("SelectedBot");
+            }
+        }
+
+        private Extensions _SelectedExtension;
+        public Extensions SelectedExtension
+        {
+            get
+            {
+                return this._SelectedExtension;
+            }
+            set
+            {
+                this._SelectedExtension = value;
+                OnPropertyChanged("SelectedExtension");
+            }
+        }
+
+        private AggregateFields _SelectedAggregateField;
+        public AggregateFields SelectedAggregateField
+        {
+            get
+            {
+                return this._SelectedAggregateField;
+
+            }
+            set
+            {
+                this._SelectedAggregateField = value;
+                OnPropertyChanged("SelectedAggregateField");
+            }
+        }
+
         private void Bot_ComboBox_DropDownClosed(object sender, EventArgs e)
         {
-            EntityItems item = (EntityItems)bot_combo_dropdown.SelectedItem;
-            this.currentBotComponentSelection = item;
-            if (item == null) { return; }
-            this.BotBonusList = BotBonus.getByEntity(item.Definition);
+            if (SelectedBot == null) { return; }
+            this.BotBonusList = BotBonus.getByEntity(SelectedBot.definition);
         }
 
         private void Bot_Bonus_Save_Click(object sender, RoutedEventArgs e)
@@ -685,11 +1024,33 @@ namespace PerpTool
             try
             {
                 StringBuilder sb = new StringBuilder();
+                sb.AppendLine(EntityDefaults.GetDeclStatement());
+                sb.AppendLine(Extensions.GetDeclStatement());
+                sb.AppendLine(AggregateFields.GetDeclStatement());
+                sb.AppendLine(BotBonusObj.GetDeclStatement());
                 foreach (BotBonusObj bonus in this.BotBonusList)
                 {
-                    sb.AppendLine(this.BotBonus.Save(bonus));
+                    if (bonus.dBAction == DBAction.UPDATE)
+                    {
+                        sb.AppendLine(bonus.GetBonusStatement());
+                        sb.AppendLine(this.BotBonus.Save(bonus));
+                    }
+                    else if (bonus.dBAction == DBAction.INSERT)
+                    {
+                        sb.AppendLine(bonus.GetBonusStatement());
+                        sb.AppendLine(this.BotBonus.Insert(bonus));
+                    }
                 }
-                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + currentBotComponentSelection.Name + ".sql", sb.ToString());
+
+                foreach(BotBonusObj bonus in this.removeBonuses)
+                {
+                    if (bonus.dBAction == DBAction.DELETE)
+                    {
+                        sb.AppendLine(bonus.GetBonusStatement());
+                        sb.AppendLine(this.BotBonus.Delete(bonus));
+                    }
+                }
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + SelectedBot.definitionname+"_bonuses" + Utilities.timestamp() + ".sql", sb.ToString());
                 MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
             }
             catch (Exception ex)
@@ -699,12 +1060,79 @@ namespace PerpTool
 
         }
 
+        public List<BotBonusObj> bonusCopy = new List<BotBonusObj>();
+        private void Copy_Bonuses(object sender, EventArgs e)
+        {
+            bonusCopy = new List<BotBonusObj>(this.BotBonusList);
+        }
+
+        private void Paste_Bonuses(object sender, EventArgs e)
+        {
+            foreach (BotBonusObj item in this.bonusCopy)
+            {
+                item.dBAction = DBAction.INSERT;
+                this.BotBonusList.Add(item);
+            }
+        }
+
+        public List<BotBonusObj> removeBonuses = new List<BotBonusObj>();
+        private void Bot_Bonus_Remove_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.BotBonusList.Count > 0)
+            {
+                BotBonusObj bonus = this.BotBonusList.Last<BotBonusObj>();
+                if (bonus.dBAction != DBAction.INSERT)
+                {
+                    bonus.dBAction = DBAction.DELETE;
+                    removeBonuses.Add(bonus);
+                }
+                this.BotBonusList.RemoveAt(this.BotBonusList.Count - 1);
+            }
+        }
+
+        private void Bot_Bonus_Add_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                BotBonusObj bonus = new BotBonusObj();
+                bonus.aggFieldName = this.SelectedAggregateField.name;
+                bonus.bonus = 0;
+                bonus.dBAction = DBAction.INSERT;
+                bonus.definition = this.SelectedBot.definition;
+                bonus.definitionName = this.SelectedBot.definitionname;
+                bonus.effectenhancer = 0;
+                bonus.extension = this.SelectedExtension.extensionid;
+                bonus.extensionName = this.SelectedExtension.extensionname;
+                bonus.id = 0;
+                bonus.targetpropertyID = this.SelectedAggregateField.id;
+                this.BotBonusList.Add(bonus);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Doh! Make sure you Select a Skill and a Field from the drop-downs!!!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
+            }
+        }
+
         #endregion
 
         #region NPCTemplateRelation
-        //TODO hack, using observable collection for one item BAD
-        private ObservableCollection<BotTemplateRelation> _selectedTempRelation;
-        public ObservableCollection<BotTemplateRelation> NPCTemplateRelationList
+        private EntityDefaults _selectedBotForRelation;
+        public EntityDefaults SelectedBotForRelation
+        {
+            get
+            {
+                return this._selectedBotForRelation;
+            }
+            set
+            {
+                _selectedBotForRelation = value;
+                OnPropertyChanged("SelectedBotForRelation");
+            }
+        }
+
+
+        private BotTemplateRelation _selectedTempRelation;
+        public BotTemplateRelation NPCTemplateRelation
         {
             get
             {
@@ -713,37 +1141,43 @@ namespace PerpTool
             set
             {
                 _selectedTempRelation = value;
-                OnPropertyChanged("NPCTemplateRelationList");
+                OnPropertyChanged("NPCTemplateRelation");
             }
         }
 
-        public EntityItems selectedNPCTemplateRelation;
         private void ComboBox_DropDownClosed_NPCTemplateRelations(object sender, EventArgs e)
         {
-            EntityItems item = (EntityItems)npctemplaterelation.SelectedItem;
-            this.selectedNPCTemplateRelation = item;
-            if (item == null) { return; }
-            this.NPCTemplateRelationList.Clear();
-            NPCTemplateRelationList.Add(this.NPCTemplateRelations.GetById(item.Definition));
+            if (SelectedBotForRelation == null) { return; }
+            NPCTemplateRelation = this.NPCTemplateRelations.GetById(SelectedBotForRelation.definition);
+            NPCTemplateRelation.dBAction = DBAction.UPDATE;
+            if (NPCTemplateRelation.isEmpty())
+            {
+                NPCTemplateRelation.definition = SelectedBotForRelation.definition;
+                NPCTemplateRelation.definitionname = SelectedBotForRelation.definitionname;
+                NPCTemplateRelation.note = "NEW TEMPLATE EDIT ME AND SAVE AS NEW!";
+                NPCTemplateRelation.dBAction = DBAction.INSERT;
+            }
         }
-
-        public BotTemplateDropdownItem currentBotTemplateSelection_forRelation;
-        private void ComboBox_DropDownClosed_NPCTemplateRelationEdit(object sender, EventArgs e)
+        private BotTemplateDropdownItem _botTemplateForRelation;
+        public BotTemplateDropdownItem SelectedNPCTemplateForRelation
         {
-            BotTemplateDropdownItem item = (BotTemplateDropdownItem)npctemplaterelation_change.SelectedItem;
-            this.currentBotTemplateSelection_forRelation = item;
-            if (item == null) { return; }
+            get
+            {
+                return this._botTemplateForRelation;
+            }
+            set
+            {
+                this._botTemplateForRelation = value;
+                OnPropertyChanged("SelectedNPCTemplateForRelation");
+            }
         }
 
         private void ChangeTemplateClick(object sender, RoutedEventArgs e)
         {
-            if (NPCTemplateRelationList.Count == 1)
+            if (this.SelectedNPCTemplateForRelation != null)
             {
-                BotTemplateRelation temp = NPCTemplateRelationList[0];
-                temp.templateid = currentBotTemplateSelection_forRelation.id;
-                temp.templatename = currentBotTemplateSelection_forRelation.name;
-                NPCTemplateRelationList.Clear();
-                NPCTemplateRelationList.Add(temp);
+                NPCTemplateRelation.templateid = SelectedNPCTemplateForRelation.id;
+                NPCTemplateRelation.templatename = SelectedNPCTemplateForRelation.name;
             }
         }
 
@@ -752,43 +1186,37 @@ namespace PerpTool
             try
             {
                 StringBuilder sb = new StringBuilder();
-                foreach (BotTemplateRelation relation in this.NPCTemplateRelationList)
+                string message = "Did NOT save =(";
+                string appendStr = NPCTemplateRelation.dBAction.ToString();
+                sb.AppendLine(RobotTemplatesTable.GetLookupStatement(NPCTemplateRelation.templatename));
+                sb.AppendLine(EntityDefaults.GetDeclStatement());
+                sb.AppendLine(SelectedBotForRelation.GetLookupStatement());
+                if (NPCTemplateRelation.dBAction == DBAction.UPDATE)
                 {
-                    sb.AppendLine(NPCTemplateRelations.Save(relation));
+                    sb.AppendLine(NPCTemplateRelations.Save(NPCTemplateRelation));
+                    message = "Saved Updated TemplateRelation!";
                 }
-
-                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + selectedNPCTemplateRelation.Name + "_template_relation.sql", sb.ToString());
-                MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
+                else if (NPCTemplateRelation.dBAction == DBAction.INSERT)
+                {
+                    sb.AppendLine(NPCTemplateRelations.Insert(NPCTemplateRelation));
+                    message = "Saved New TemplateRelation!";
+                }
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + NPCTemplateRelation.definitionname + "_template_relation_" + appendStr + Utilities.timestamp() + ".sql", sb.ToString());
+                MessageBox.Show(message, "Info", 0, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
             }
-
-        }
-
-
-        private void NPCTemplateRelation_Save_New_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                //TODO Insert on relation table.. requires unique def or templ?
-                throw new NotImplementedException();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
-            }
-
         }
         #endregion
 
         #region NPCGroup
 
 
-        //TODO hack, using observable collection for one item BAD
-        private ObservableCollection<NPCPresenceData> _selectedNPCPresence;
-        public ObservableCollection<NPCPresenceData> SelectedNPCPresence
+
+        private NPCPresenceData _selectedNPCPresence;
+        public NPCPresenceData SelectedNPCPresence
         {
             get
             {
@@ -801,7 +1229,7 @@ namespace PerpTool
             }
         }
 
-        //TODO hack, using observable collection for one item BAD
+
         private ObservableCollection<NPCFlockData> _flockList;
         public ObservableCollection<NPCFlockData> NPCFlockList
         {
@@ -816,49 +1244,74 @@ namespace PerpTool
             }
         }
 
-
-        public NPCPresenceData selectedPresence;
         private void ComboBox_DropDownClosed_NPCPresence(object sender, EventArgs e)
         {
-            NPCPresenceData item = (NPCPresenceData)npcgroupcombo.SelectedItem;
-            this.selectedPresence = item;
-            if (item == null) { return; }
+            if (SelectedNPCPresence == null) { return; }
             this.NPCFlockList.Clear();
-            List<NPCFlockData> flocks = NPCFlockTable.getByPresenceID(item.id);
+            List<NPCFlockData> flocks = NPCFlockTable.getByPresenceID(SelectedNPCPresence.id);
             foreach (NPCFlockData flock in flocks)
             {
                 this.NPCFlockList.Add(flock);
             }
-            SelectedNPCPresence.Clear();
-            SelectedNPCPresence.Add(item);
         }
 
-        public EntityItems selectedNPC;
-        private void ComboBox_DropDownClosed_NPCDef_forFlock(object sender, EventArgs e)
+        private EntityDefaults _selectedNPCForFlock;
+        public EntityDefaults selectedNPC
         {
-            EntityItems item = (EntityItems)editflockNPCdef.SelectedItem;
-            this.selectedNPC = item;
-            if (item == null) { return; }
+            get
+            {
+                return this._selectedNPCForFlock;
+            }
+            set
+            {
+                this._selectedNPCForFlock = value;
+                OnPropertyChanged("selectedNPC");
+            }
+        }
+        private NPCFlockData _editFlock;
+        public NPCFlockData FlockToEdit
+        {
+            get
+            {
+                return this._editFlock;
+            }
+            set
+            {
+                this._editFlock = value;
+                OnPropertyChanged("FlockToEdit");
+            }
+        }
+
+        private NPCFlockData _selectedFlock;
+        public NPCFlockData SelectedFlock
+        {
+            get
+            {
+                return this._selectedFlock;
+            }
+            set
+            {
+                this._selectedFlock = value;
+                OnPropertyChanged("SelectedFlock");
+            }
         }
 
         private void NPCFlock_Change_NPC(object sender, RoutedEventArgs e)
         {
-            NPCFlockData flock = (NPCFlockData)flockgrid.SelectedItem;
-
-            if (selectedNPC == null || flock == null) {
+            if (selectedNPC == null || FlockToEdit == null)
+            {
                 MessageBox.Show("Select NPC from dropdown, click on the flock you want to change, then press button.", "Warn", 0, MessageBoxImage.Error);
                 return;
             }
-            int index = this.NPCFlockList.IndexOf(flock);
-            if (index == -1) {
+            int index = this.NPCFlockList.IndexOf(FlockToEdit);
+            if (index == -1)
+            {
                 MessageBox.Show("Invalid Flock Selection?!", "Error", 0, MessageBoxImage.Error);
                 return;
             }
-            flock.definition = this.selectedNPC.Definition;
-            flock.NPCDefinitionName = this.selectedNPC.Name;
-            this.NPCFlockList[index] = flock;
-            
-
+            FlockToEdit.definition = this.selectedNPC.definition;
+            FlockToEdit.NPCDefinitionName = this.selectedNPC.definitionname;
+            this.NPCFlockList[index] = FlockToEdit;
         }
 
         private void NPCPresence_Save(object sender, RoutedEventArgs e)
@@ -866,15 +1319,32 @@ namespace PerpTool
             try
             {
                 StringBuilder sb = new StringBuilder();
-                foreach (NPCFlockData flock in this.NPCFlockList)
+                sb.AppendLine(NPCPresenceData.GetDeclStatement());
+                sb.AppendLine(SelectedNPCPresence.GetLookupStatement());
+                sb.AppendLine(NPCPresenceTable.Save(SelectedNPCPresence));
+                sb.AppendLine(flockSaver());
+                string filename = SelectedNPCPresence.name + "_NPCPresence_flocksUPDATE";
+                if (this.removeFlocks.Count > 0)
                 {
-                    sb.AppendLine(NPCFlockTable.Save(flock));
+                    filename += "_DELETE_";
                 }
-                foreach (NPCPresenceData pres in this.SelectedNPCPresence)
-                {
-                    sb.AppendLine(NPCPresenceTable.Save(pres));
-                }
-                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + selectedPresence.name + "_NPCPresence_flocks.sql", sb.ToString());
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + filename + Utilities.timestamp() + ".sql", sb.ToString());
+                MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
+                this.removeFlocks.Clear();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
+            }
+        }
+
+        private void NPCPresence_Save_New(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine(NPCPresenceTable.Insert(SelectedNPCPresence));
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + SelectedNPCPresence.name + "_NPCPresence_flocksINSERT" + Utilities.timestamp() + ".sql", sb.ToString());
                 MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
             }
             catch (Exception ex)
@@ -882,7 +1352,64 @@ namespace PerpTool
                 MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
             }
         }
+
+        private string flockSaver()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(NPCFlockData.GetDeclStatement());
+            sb.AppendLine(EntityDefaults.GetDeclStatement());
+            foreach (NPCFlockData flock in this.NPCFlockList)
+            {
+                sb.AppendLine(EntityDefaults.GetLookupStatement(flock.NPCDefinitionName));
+                if (flock.dBAction == DBAction.UPDATE)
+                {
+                    sb.AppendLine(NPCFlockTable.Save(flock));
+                }
+                else if (flock.dBAction == DBAction.INSERT)
+                {
+                    sb.AppendLine(NPCFlockTable.Insert(flock));
+                    flock.dBAction = DBAction.UPDATE;
+                }
+            }
+            foreach (NPCFlockData flock in this.removeFlocks)
+            {
+                if (flock.dBAction == DBAction.DELETE)
+                {
+                    sb.AppendLine(EntityDefaults.GetLookupStatement(flock.NPCDefinitionName));
+                    sb.AppendLine(NPCFlockTable.Delete(flock));
+                }
+            }
+            return sb.ToString();
+        }
+
+        public List<NPCFlockData> removeFlocks = new List<NPCFlockData>();
+        private void NPCPresence_RemoveFlock(object sender, RoutedEventArgs e)
+        {
+            if (this.NPCFlockList.Count > 0)
+            {
+                NPCFlockData flock = this.NPCFlockList.Last<NPCFlockData>();
+                if (flock.dBAction == DBAction.UPDATE)
+                {
+                    flock.dBAction = DBAction.DELETE;
+                    removeFlocks.Add(flock);
+                }
+                this.NPCFlockList.RemoveAt(this.NPCFlockList.Count - 1);
+            }
+        }
+
+
+        private void NPCPresence_AddFlock(object sender, RoutedEventArgs e)
+        {
+            NPCFlockData data = this.SelectedFlock.copy();
+            data.dBAction = DBAction.INSERT;
+            data.presenceid = this.SelectedNPCPresence.id;
+            data.name = "RENAME ME__UNIQUE__ REQD";
+            data.note = "NEW FLOCK, WRITE NOTE!";
+            this.NPCFlockList.Add(data);
+        }
+
         #endregion
+
 
         private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -897,7 +1424,7 @@ namespace PerpTool
                 // FIXME: load the record here for the user to edit it.
                 dlg.Close();
             }
-           
+
         }
     }
 }

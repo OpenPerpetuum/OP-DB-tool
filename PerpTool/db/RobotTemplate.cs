@@ -77,7 +77,7 @@ namespace Perptool.db
             robotTemplate.legID = Convert.ToInt32(lego);
 
             success = d.TryGetValue("container", out object cono) && success;
-            robotTemplate.legID = Convert.ToInt32(cono);
+            robotTemplate.containerID = Convert.ToInt32(cono);
 
             success = d.TryGetValue("headModules", out object hmod) && success;
             Dictionary<string, object> headmods = (Dictionary<string, object>)hmod;
@@ -470,6 +470,38 @@ namespace Perptool.db
                 }
             }
             return temps;
+        }
+
+        public string GetLookupStatement()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("DECLARE @templateID int");
+            sb.AppendLine("SET @templateID = (SELECT TOP 1 id from robottemplates WHERE [name] = '" + this.name + "' ORDER BY id DESC)");
+            return sb.ToString();
+        }
+
+        public static string GetLookupStatement(RobotTemplate template)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("DECLARE @templateID int");
+            sb.AppendLine("SET @templateID = (SELECT TOP 1 id from robottemplates WHERE [name] = '" + template.recordName + "' ORDER BY id DESC)");
+            return sb.ToString();
+        }
+
+        public static string GetLookupStatement(string tempname)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("DECLARE @templateID int");
+            sb.AppendLine("SET @templateID = (SELECT TOP 1 id from robottemplates WHERE [name] = '" + tempname + "' ORDER BY id DESC)");
+            return sb.ToString();
+        }
+
+        public static string GetLookupStatement(BotTemplateDropdownItem template)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("DECLARE @templateID int");
+            sb.AppendLine("SET @templateID = (SELECT TOP 1 id from robottemplates WHERE [name] = '" + template.name + "' ORDER BY id DESC)");
+            return sb.ToString();
         }
 
         protected void OnPropertyChanged(string name)

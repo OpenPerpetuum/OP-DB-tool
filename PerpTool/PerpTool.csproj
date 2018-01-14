@@ -67,6 +67,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="db\Extensions.cs" />
+    <Compile Include="db\Utilities.cs" />
     <Compile Include="Types\AttributeFlags.cs" />
     <Compile Include="Types\CategoryFlags.cs" />
     <Compile Include="Types\SlotFlags.cs" />

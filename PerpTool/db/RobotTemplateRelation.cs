@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PerpTool.db;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -12,33 +13,49 @@ namespace Perptool.db
 
     public class BotTemplateRelation : INotifyPropertyChanged
     {
-        public int definition { get; set; }
-        public string definitionname { get; set; }
-        public int templateid { get; set; }
-        public string templatename { get; set; }
-        public int itemscoresum { get; set; }
-        public int raceid { get; set; }
-        public int missionlevel { get; set; }
-        public int missionleveloverride { get; set; }
-        public int killep { get; set; }
-        public string note { get; set; }
-        //NULLABLE INTS FLAGGED AS -1
-        //CHECK ON SAVE/UPDATE - SAVE DB.NULL
+        private int _definition;
+        private string _definitionname;
+        private int _templateid;
+        private string _templatename;
+        private int _itemscoresum;
+        private int _raceid;
+        private int _missionlevel;
+        private int _missionleveloverride;
+        private int _killep;
+        private string _note;
 
-        public object getNullableInt(int v)
-        {
-            if (v < 0)
-            {
-                return (object)DBNull.Value;
-            }
-            return v;
-        }
+        public int definition { get { return _definition; } set { _definition = value; OnPropertyChanged("definition"); } }
+        public string definitionname { get { return _definitionname; } set { _definitionname = value; OnPropertyChanged("definitionname"); } }
+        public int templateid { get { return _templateid; } set { _templateid = value; OnPropertyChanged("templateid"); } }
+        public string templatename { get { return _templatename; } set { _templatename = value; OnPropertyChanged("templatename"); } }
+        public int itemscoresum { get { return _itemscoresum; } set { _itemscoresum = value; OnPropertyChanged("itemscoresum"); } }
+        public int raceid { get { return _raceid; } set { _raceid = value; OnPropertyChanged("raceid"); } }
+        public int missionlevel { get { return _missionlevel; } set { _missionlevel = value; OnPropertyChanged("missionlevel"); } }
+        public int missionleveloverride { get { return _missionleveloverride; } set { _missionleveloverride = value; OnPropertyChanged("missionleveloverride"); } }
+        public int killep { get { return _killep; } set { _killep = value; OnPropertyChanged("killep"); } }
+        public string note { get { return _note; } set { _note = value; OnPropertyChanged("note"); } }
+        public DBAction dBAction;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected void OnPropertyChanged(string name)
         {
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+        public bool isEmpty()
+        {
+            bool e = this.definition == 0;
+            e = this.definitionname == null && e;
+            e = this.templateid == 0 && e;
+            e = this.templatename == null && e;
+            e = this.itemscoresum == 0 && e;
+            e = this.raceid == 0 && e;
+            e = this.missionlevel == 0 && e;
+            e = this.missionleveloverride == 0 && e;
+            e = this.killep == 0 && e;
+            e = this.note == null && e;
+            return e;
         }
     }
 
@@ -189,18 +206,18 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append(@"UPDATE [dbo].[robottemplaterelation] SET [templateid] = @templateid,[itemscoresum] = @itemscoresum,[raceid] = @raceid,
-                [missionlevel] = @missionlevel,[missionleveloverride] = @levelOverride,[killep] = @killep ,[note] = @note WHERE [definition] = @definition;");
+                sqlCommand.Append(@"UPDATE [dbo].[robottemplaterelation] SET [templateid] = @templateID,[itemscoresum] = @itemscoresum,[raceid] = @raceid,
+                [missionlevel] = @missionlevel,[missionleveloverride] = @levelOverride,[killep] = @killep ,[note] = @note WHERE [definition] = @definitionID;");
 
                 command.CommandText = sqlCommand.ToString();
 
-                command.Parameters.AddWithValue("@definition", item.definition);
-                command.Parameters.AddWithValue("@templateid", item.templateid);
+                command.Parameters.AddWithValue("@definitionID", item.definition);
+                command.Parameters.AddWithValue("@templateID", item.templateid);
                 command.Parameters.AddWithValue("@itemscoresum", item.itemscoresum);
                 command.Parameters.AddWithValue("@raceid", item.raceid);
-                command.Parameters.AddWithValue("@missionlevel", item.getNullableInt(item.missionlevel));
-                command.Parameters.AddWithValue("@levelOverride", item.getNullableInt(item.missionleveloverride));
-                command.Parameters.AddWithValue("@killep", item.getNullableInt(item.killep));
+                command.Parameters.AddWithValue("@missionlevel", Utilities.getNullableInt(item.missionlevel));
+                command.Parameters.AddWithValue("@levelOverride", Utilities.getNullableInt(item.missionleveloverride));
+                command.Parameters.AddWithValue("@killep", Utilities.getNullableInt(item.killep));
                 command.Parameters.AddWithValue("@note", item.note);
 
                 SqlConnection conn = new SqlConnection(this.ConnString);
@@ -212,13 +229,62 @@ namespace Perptool.db
                 query = command.CommandText;
                 foreach (SqlParameter p in command.Parameters)
                 {
-                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    if (p.ParameterName == "@definitionID" || p.ParameterName == "@templateID")
+                    {
+                        continue;
+                    }
+                    else if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
                     {
                         query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
                     }
                     else
                     {
                         query = query.Replace(p.ParameterName, p.Value.ToString());
+                    }
+                }
+            }
+            return query;
+        }
+
+        public string Insert(BotTemplateRelation item)
+        {
+            string query = "";
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append(@"INSERT INTO [dbo].[robottemplaterelation] ([definition],[templateid],[itemscoresum],[raceid],[missionlevel],[missionleveloverride],[killep],[note])
+                VALUES (@definitionID,@templateID,@itemscoresum,@raceid,@missionlevel,@levelOverride,@killep,@note);");
+
+                command.CommandText = sqlCommand.ToString();
+
+                command.Parameters.AddWithValue("@definitionID", item.definition);
+                command.Parameters.AddWithValue("@templateID", item.templateid);
+                command.Parameters.AddWithValue("@itemscoresum", item.itemscoresum);
+                command.Parameters.AddWithValue("@raceid", item.raceid);
+                command.Parameters.AddWithValue("@missionlevel", Utilities.getNullableInt(item.missionlevel));
+                command.Parameters.AddWithValue("@levelOverride", Utilities.getNullableInt(item.missionleveloverride));
+                command.Parameters.AddWithValue("@killep", Utilities.getNullableInt(item.killep));
+                command.Parameters.AddWithValue("@note", item.note);
+
+                SqlConnection conn = new SqlConnection(this.ConnString);
+                conn.Open();
+                command.Connection = conn;
+                command.ExecuteNonQuery();
+                conn.Close();
+
+                query = command.CommandText;
+                foreach (SqlParameter p in command.Parameters)
+                {
+                    if (p.ParameterName != "@definitionID" && p.ParameterName != "@templateID")
+                    {
+                        if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                        {
+                            query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
+                        }
+                        else
+                        {
+                            query = query.Replace(p.ParameterName, p.Value.ToString());
+                        }
                     }
                 }
             }
@@ -253,9 +319,9 @@ namespace Perptool.db
                             temprelation.templatename = Convert.ToString(reader["name"]);
                             temprelation.itemscoresum = Convert.ToInt32(reader["itemscoresum"]);
                             temprelation.raceid = Convert.ToInt32(reader["raceid"]);
-                            temprelation.missionlevel = handleNullableInt(reader["missionlevel"]);
-                            temprelation.missionleveloverride = handleNullableInt(reader["missionleveloverride"]);
-                            temprelation.killep = handleNullableInt(reader["killep"]);
+                            temprelation.missionlevel = Utilities.handleNullableInt(reader["missionlevel"]);
+                            temprelation.missionleveloverride = Utilities.handleNullableInt(reader["missionleveloverride"]);
+                            temprelation.killep = Utilities.handleNullableInt(reader["killep"]);
                             temprelation.note = Convert.ToString(reader["note"]);
                         }
                     }
@@ -264,14 +330,6 @@ namespace Perptool.db
             return temprelation;
         }
 
-        private int handleNullableInt(object readValue)
-        {
-            if (DBNull.Value==readValue)
-            {
-                return -1;
-            }
-            return Convert.ToInt32(readValue);
-        }
 
         protected void OnPropertyChanged(string name)
         {
