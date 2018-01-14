@@ -25,13 +25,10 @@ namespace PerpTool.db
                 }
                 else if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
                 {
-                    System.Console.WriteLine(p.Value);
                     query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
                 }
                 else
                 {
-                    System.Console.WriteLine(p.Value);
-                    System.Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "{0}", p.Value));
                     query = query.Replace(p.ParameterName, String.Format(CultureInfo.InvariantCulture, "{0}", p.Value));
                 }
             }
