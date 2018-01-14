@@ -46,6 +46,7 @@ namespace PerpTool
             NPCTemplateRelations = new RobotTemplateRelation(Connstr);
             NPCPresenceTable = new NPCPresence(Connstr);
             NPCFlockTable = new NPCFlock(Connstr);
+            ExtensionsTable = new Extensions(Connstr);
 
             EntityItems = Entities.GetEntitiesWithFields();
             ZoneList = ZoneTbl.GetAllZones();
@@ -56,6 +57,7 @@ namespace PerpTool
             NPCTemplates = NPCBotTemplates.getAll();
             AllNPCPresences = NPCPresenceTable.getAll();
             AllNPCFlocks = NPCFlockTable.GetAllFlocks();
+            AllExtensions = ExtensionsTable.GetAll();
 
 
             this.CatFlags = this.GetAllCategoryFlags();
@@ -82,6 +84,7 @@ namespace PerpTool
         private RobotTemplateRelation NPCTemplateRelations { get; set; }
         private NPCPresence NPCPresenceTable { get; set; }
         private NPCFlock NPCFlockTable { get; set; }
+        private Extensions ExtensionsTable { get; set; }
 
         public List<EntityDefaults> AmmoList { get; set; }
         public List<EntityDefaults> ModuleList { get; set; }
@@ -90,6 +93,7 @@ namespace PerpTool
         public List<NPCPresenceData> AllNPCPresences { get; set; }
         public List<AggregateFields> AllAggregateFields { get; set; }
         public List<NPCFlockData> AllNPCFlocks { get; set; }
+        public List<Extensions> AllExtensions { get; set; }
 
 
 
@@ -262,14 +266,25 @@ namespace PerpTool
 
         private string handleAggregateFieldValuesSave(ObservableCollection<FieldValuesStuff> list)
         {
+            //TODO sql parameterization for outputs needed
             StringBuilder sb = new StringBuilder();
+            sb.AppendLine(FieldValuesStuff.GetDeclStatement());
+            sb.AppendLine(AggregateFields.GetDeclStatement());
             foreach (FieldValuesStuff item in list)
             {
                 AgFields.GetById(item.FieldId);
                 AgValues.GetById(item.ValueId);
+                StringBuilder sb2 = new StringBuilder();
+                sb2.AppendLine(AgFields.GetLookupStatement());
+                sb2.AppendLine(item.GetLookupStatement());
+                bool changed = item.FieldValue != AgValues.value || item.FieldFormula != AgFields.formula;
 
                 if (item.dBAction == DBAction.UPDATE)
                 {
+                    if (changed)
+                    {
+                        sb.AppendLine(sb2.ToString());
+                    }
                     if (item.FieldValue != AgValues.value)
                     {
                         AgValues.value = item.FieldValue;
@@ -277,11 +292,13 @@ namespace PerpTool
                     }
                     if (item.FieldFormula != AgFields.formula)
                     {
+                        sb.AppendLine(sb2.ToString());
                         sb.AppendLine(AgFields.Save(item));
                     }
                 }
                 else if (item.dBAction == DBAction.INSERT)
                 {
+                    sb.AppendLine(sb2.ToString());
                     sb.AppendLine(AgValues.Insert(item));
                     item.dBAction = DBAction.UPDATE;
                     if (item.FieldFormula != AgFields.formula)
@@ -328,6 +345,36 @@ namespace PerpTool
                 this.FieldValuesList.Add(fields);
             }
         }
+
+        private bool checkNullForSlots()
+        {
+            return this.SelectedEntity == null || this.SelectedEntity.options == null || this.SelectedEntity.options.Slots == null;
+        }
+
+        private void AddSlot_Click(object sender, EventArgs e)
+        {
+            if (!checkNullForSlots())
+            {
+                this.SelectedEntity.options.Slots.Add(new SlotFlagWrapper(this.SelectedEntity.options.Slots.Count, SlotFlags.chassis));
+            }
+            else
+            {
+                MessageBox.Show("Hey Jerk, you can't add a slot to that!", "Wrong Category", 0, MessageBoxImage.Warning);
+            }
+        }
+
+        private void RemoveSlot_Click(object sender, EventArgs e)
+        {
+            if (!checkNullForSlots() && this.SelectedEntity.options.Slots.Count>0)
+            {
+                this.SelectedEntity.options.Slots.RemoveAt(this.SelectedEntity.options.Slots.Count - 1);
+            }
+            else
+            {
+                MessageBox.Show("Hey Jerk, you can't remove a slot from that!", "Wrong Category or No more slots!", 0, MessageBoxImage.Warning);
+            }
+        }
+
 
         #endregion
 
@@ -858,6 +905,21 @@ namespace PerpTool
 
         }
 
+        public List<LootItem> copyLoots = new List<LootItem>();
+        private void Copy_Loots(object sender, EventArgs e)
+        {
+            copyLoots = new List<LootItem>(this.loots);
+        }
+
+        private void Paste_Loots(object sender, EventArgs e)
+        {
+            foreach (LootItem item in this.copyLoots)
+            {
+                item.dBAction = DBAction.INSERT;
+                this.loots.Add(item);
+            }
+        }
+
         public List<LootItem> removeLoot = new List<LootItem>();
         private void NPC_Loot_Remove_Button_Click(object sender, RoutedEventArgs e)
         {
@@ -922,6 +984,35 @@ namespace PerpTool
             }
         }
 
+        private Extensions _SelectedExtension;
+        public Extensions SelectedExtension
+        {
+            get
+            {
+                return this._SelectedExtension;
+            }
+            set
+            {
+                this._SelectedExtension = value;
+                OnPropertyChanged("SelectedExtension");
+            }
+        }
+
+        private AggregateFields _SelectedAggregateField;
+        public AggregateFields SelectedAggregateField
+        {
+            get
+            {
+                return this._SelectedAggregateField;
+
+            }
+            set
+            {
+                this._SelectedAggregateField = value;
+                OnPropertyChanged("SelectedAggregateField");
+            }
+        }
+
         private void Bot_ComboBox_DropDownClosed(object sender, EventArgs e)
         {
             if (SelectedBot == null) { return; }
@@ -933,11 +1024,33 @@ namespace PerpTool
             try
             {
                 StringBuilder sb = new StringBuilder();
+                sb.AppendLine(EntityDefaults.GetDeclStatement());
+                sb.AppendLine(Extensions.GetDeclStatement());
+                sb.AppendLine(AggregateFields.GetDeclStatement());
+                sb.AppendLine(BotBonusObj.GetDeclStatement());
                 foreach (BotBonusObj bonus in this.BotBonusList)
                 {
-                    sb.AppendLine(this.BotBonus.Save(bonus)); //TODO impl insert
+                    if (bonus.dBAction == DBAction.UPDATE)
+                    {
+                        sb.AppendLine(bonus.GetBonusStatement());
+                        sb.AppendLine(this.BotBonus.Save(bonus));
+                    }
+                    else if (bonus.dBAction == DBAction.INSERT)
+                    {
+                        sb.AppendLine(bonus.GetBonusStatement());
+                        sb.AppendLine(this.BotBonus.Insert(bonus));
+                    }
                 }
-                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + SelectedBot.definitionname + Utilities.timestamp() + ".sql", sb.ToString());
+
+                foreach(BotBonusObj bonus in this.removeBonuses)
+                {
+                    if (bonus.dBAction == DBAction.DELETE)
+                    {
+                        sb.AppendLine(bonus.GetBonusStatement());
+                        sb.AppendLine(this.BotBonus.Delete(bonus));
+                    }
+                }
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + SelectedBot.definitionname+"_bonuses" + Utilities.timestamp() + ".sql", sb.ToString());
                 MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
             }
             catch (Exception ex)
@@ -945,6 +1058,59 @@ namespace PerpTool
                 MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
             }
 
+        }
+
+        public List<BotBonusObj> bonusCopy = new List<BotBonusObj>();
+        private void Copy_Bonuses(object sender, EventArgs e)
+        {
+            bonusCopy = new List<BotBonusObj>(this.BotBonusList);
+        }
+
+        private void Paste_Bonuses(object sender, EventArgs e)
+        {
+            foreach (BotBonusObj item in this.bonusCopy)
+            {
+                item.dBAction = DBAction.INSERT;
+                this.BotBonusList.Add(item);
+            }
+        }
+
+        public List<BotBonusObj> removeBonuses = new List<BotBonusObj>();
+        private void Bot_Bonus_Remove_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.BotBonusList.Count > 0)
+            {
+                BotBonusObj bonus = this.BotBonusList.Last<BotBonusObj>();
+                if (bonus.dBAction != DBAction.INSERT)
+                {
+                    bonus.dBAction = DBAction.DELETE;
+                    removeBonuses.Add(bonus);
+                }
+                this.BotBonusList.RemoveAt(this.BotBonusList.Count - 1);
+            }
+        }
+
+        private void Bot_Bonus_Add_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                BotBonusObj bonus = new BotBonusObj();
+                bonus.aggFieldName = this.SelectedAggregateField.name;
+                bonus.bonus = 0;
+                bonus.dBAction = DBAction.INSERT;
+                bonus.definition = this.SelectedBot.definition;
+                bonus.definitionName = this.SelectedBot.definitionname;
+                bonus.effectenhancer = 0;
+                bonus.extension = this.SelectedExtension.extensionid;
+                bonus.extensionName = this.SelectedExtension.extensionname;
+                bonus.id = 0;
+                bonus.targetpropertyID = this.SelectedAggregateField.id;
+                this.BotBonusList.Add(bonus);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Doh! Make sure you Select a Skill and a Field from the drop-downs!!!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
+            }
         }
 
         #endregion
@@ -1022,6 +1188,9 @@ namespace PerpTool
                 StringBuilder sb = new StringBuilder();
                 string message = "Did NOT save =(";
                 string appendStr = NPCTemplateRelation.dBAction.ToString();
+                sb.AppendLine(RobotTemplatesTable.GetLookupStatement(NPCTemplateRelation.templatename));
+                sb.AppendLine(EntityDefaults.GetDeclStatement());
+                sb.AppendLine(SelectedBotForRelation.GetLookupStatement());
                 if (NPCTemplateRelation.dBAction == DBAction.UPDATE)
                 {
                     sb.AppendLine(NPCTemplateRelations.Save(NPCTemplateRelation));
@@ -1029,9 +1198,6 @@ namespace PerpTool
                 }
                 else if (NPCTemplateRelation.dBAction == DBAction.INSERT)
                 {
-                    sb.AppendLine(RobotTemplatesTable.GetLookupStatement(SelectedNPCTemplateForRelation));
-                    sb.AppendLine(EntityDefaults.GetDeclStatement());
-                    sb.AppendLine(SelectedBotForRelation.GetLookupStatement());
                     sb.AppendLine(NPCTemplateRelations.Insert(NPCTemplateRelation));
                     message = "Saved New TemplateRelation!";
                 }
@@ -1243,6 +1409,7 @@ namespace PerpTool
         }
 
         #endregion
+
 
         private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {

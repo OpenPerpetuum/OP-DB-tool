@@ -146,6 +146,19 @@ namespace Perptool.db
             }
         }
 
+        public static string IDkey = "@aggvalueID";
+
+        public static string GetDeclStatement()
+        {
+            return "DECLARE "+IDkey+" int;";
+        }
+
+        public string GetLookupStatement()
+        {
+            return "SET " + IDkey + " = (SELECT TOP 1 id from aggregatevalues WHERE [definition] = " + EntityDefaults.IDkey + " AND [field]=" + AggregateFields.IDkey + " ORDER BY definition DESC);";
+        }
+
+
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string name)
         {
@@ -291,11 +304,11 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE aggregatevalues SET definition=@definition, field=@field, value=@value WHERE id = @id;");
+                sqlCommand.Append("UPDATE aggregatevalues SET definition=" + EntityDefaults.IDkey + ", field="+AggregateFields.IDkey+", value=@value WHERE id =  " + FieldValuesStuff.IDkey + ";");
                 command.CommandText = sqlCommand.ToString();
-                command.Parameters.AddWithValue("@id", data.ValueId);
-                command.Parameters.AddWithValue("@definition", data.Definition);
-                command.Parameters.AddWithValue("@field", data.FieldId);
+                command.Parameters.AddWithValue(FieldValuesStuff.IDkey, data.ValueId);
+                command.Parameters.AddWithValue(EntityDefaults.IDkey, data.Definition);
+                command.Parameters.AddWithValue(AggregateFields.IDkey, data.FieldId);
                 command.Parameters.AddWithValue("@value", data.FieldValue);
 
                 SqlConnection conn = new SqlConnection(this.ConnString);
@@ -303,11 +316,7 @@ namespace Perptool.db
                 command.Connection = conn;
                 command.ExecuteNonQuery();
                 conn.Close();
-                query = command.CommandText;
-                foreach (SqlParameter p in command.Parameters)
-                {
-                    query = query.Replace(p.ParameterName, p.Value.ToString());
-                }
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { FieldValuesStuff.IDkey, AggregateFields.IDkey, EntityDefaults.IDkey}));
             }
             return query;
         }
@@ -384,10 +393,10 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("INSERT INTO [dbo].[aggregatevalues] ([definition],[field],[value]) VALUES (@definitionID, @field, @value);");
+                sqlCommand.Append("INSERT INTO [dbo].[aggregatevalues] ([definition],[field],[value]) VALUES ("+ EntityDefaults.IDkey + ", "+ AggregateFields.IDkey + ", @value);");
                 command.CommandText = sqlCommand.ToString();
-                command.Parameters.AddWithValue("@definitionID", data.Definition);
-                command.Parameters.AddWithValue("@field", data.FieldId);
+                command.Parameters.AddWithValue(EntityDefaults.IDkey, data.Definition);
+                command.Parameters.AddWithValue(AggregateFields.IDkey, data.FieldId);
                 command.Parameters.AddWithValue("@value", data.FieldValue);
 
                 SqlConnection conn = new SqlConnection(this.ConnString);
@@ -395,21 +404,8 @@ namespace Perptool.db
                 command.Connection = conn;
                 command.ExecuteNonQuery();
                 conn.Close();
-                query = command.CommandText;
-                foreach (SqlParameter p in command.Parameters)
-                {
-                    if (p.ParameterName != "@definitionID")
-                    {
-                        if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
-                        {
-                            query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
-                        }
-                        else
-                        {
-                            query = query.Replace(p.ParameterName, p.Value.ToString());
-                        }
-                    }
-                }
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { EntityDefaults.IDkey, AggregateFields.IDkey }));
+                
             }
             return query;
         }

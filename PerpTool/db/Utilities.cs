@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,6 +11,32 @@ namespace PerpTool.db
 {
     public static class Utilities
     {
+
+
+
+        public static string parseCommandString(SqlCommand command, List<string> ignoreParams)
+        {
+            string query = command.CommandText;
+            foreach (SqlParameter p in command.Parameters)
+            {
+                if (ignoreParams.Contains(p.ParameterName))
+                {
+                    continue;
+                }
+                else if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                {
+                    System.Console.WriteLine(p.Value);
+                    query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
+                }
+                else
+                {
+                    System.Console.WriteLine(p.Value);
+                    System.Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "{0}", p.Value));
+                    query = query.Replace(p.ParameterName, String.Format(CultureInfo.InvariantCulture, "{0}", p.Value));
+                }
+            }
+            return query;
+        }
 
         public static int handleNullableInt(object readValue)
         {
@@ -32,7 +61,7 @@ namespace PerpTool.db
         }
     }
 
-    
+
 
     public enum DBAction
     {

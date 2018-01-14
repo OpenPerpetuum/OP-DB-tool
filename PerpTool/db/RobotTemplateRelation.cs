@@ -206,13 +206,13 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append(@"UPDATE [dbo].[robottemplaterelation] SET [templateid] = @templateid,[itemscoresum] = @itemscoresum,[raceid] = @raceid,
-                [missionlevel] = @missionlevel,[missionleveloverride] = @levelOverride,[killep] = @killep ,[note] = @note WHERE [definition] = @definition;");
+                sqlCommand.Append(@"UPDATE [dbo].[robottemplaterelation] SET [templateid] = @templateID,[itemscoresum] = @itemscoresum,[raceid] = @raceid,
+                [missionlevel] = @missionlevel,[missionleveloverride] = @levelOverride,[killep] = @killep ,[note] = @note WHERE [definition] = @definitionID;");
 
                 command.CommandText = sqlCommand.ToString();
 
-                command.Parameters.AddWithValue("@definition", item.definition);
-                command.Parameters.AddWithValue("@templateid", item.templateid);
+                command.Parameters.AddWithValue("@definitionID", item.definition);
+                command.Parameters.AddWithValue("@templateID", item.templateid);
                 command.Parameters.AddWithValue("@itemscoresum", item.itemscoresum);
                 command.Parameters.AddWithValue("@raceid", item.raceid);
                 command.Parameters.AddWithValue("@missionlevel", Utilities.getNullableInt(item.missionlevel));
@@ -229,7 +229,11 @@ namespace Perptool.db
                 query = command.CommandText;
                 foreach (SqlParameter p in command.Parameters)
                 {
-                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
+                    if (p.ParameterName == "@definitionID" || p.ParameterName == "@templateID")
+                    {
+                        continue;
+                    }
+                    else if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
                     {
                         query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
                     }

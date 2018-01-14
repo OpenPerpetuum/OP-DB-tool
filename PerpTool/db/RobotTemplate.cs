@@ -488,6 +488,14 @@ namespace Perptool.db
             return sb.ToString();
         }
 
+        public static string GetLookupStatement(string tempname)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("DECLARE @templateID int");
+            sb.AppendLine("SET @templateID = (SELECT TOP 1 id from robottemplates WHERE [name] = '" + tempname + "' ORDER BY id DESC)");
+            return sb.ToString();
+        }
+
         public static string GetLookupStatement(BotTemplateDropdownItem template)
         {
             StringBuilder sb = new StringBuilder();

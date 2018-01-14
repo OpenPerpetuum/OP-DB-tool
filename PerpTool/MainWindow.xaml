@@ -145,8 +145,12 @@
 
                                 </DataGrid.Columns>
                             </DataGrid>
-                        </Expander>
 
+                        </Expander>
+                        <StackPanel Grid.Column="10"  Grid.ColumnSpan="1"  Grid.Row="6" Margin="5">
+                            <Button Margin="5" Content="Add Slot"  Click="AddSlot_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="90" />
+                            <Button Margin="5" Content="Remove Slot" Click="RemoveSlot_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="90" />
+                        </StackPanel>
                         <Expander Grid.Column="0"  Grid.ColumnSpan="10" Header="Modifier Fields and Values" Height="Auto" Grid.Row="7" Margin="5" >
                             <DataGrid Margin="5" Height="Auto" ItemsSource="{Binding FieldValuesList}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Visible" >
                                 <DataGrid.Columns>
@@ -176,10 +180,30 @@
 
             <TabItem Header="Bot Bonuses">
                 <ScrollViewer ScrollViewer.HorizontalScrollBarVisibility="Auto">
-                    <StackPanel Background="#FFE5E5E5">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                        <ComboBox x:Name="bot_combo_dropdown" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="600" ItemsSource="{Binding AllRobotComponents}" DisplayMemberPath="definitionname" SelectedValuePath="definition" SelectedItem="{Binding SelectedBot}" DropDownClosed="Bot_ComboBox_DropDownClosed"/>
-                        <DataGrid Margin="10,10,10,10" ItemsSource="{Binding BotBonusList}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Visible" Height="186" >
+                        <ComboBox  Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Height="26" Width="Auto" MinWidth="255" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5" x:Name="bot_combo_dropdown" ItemsSource="{Binding AllRobotComponents}" DisplayMemberPath="definitionname" SelectedValuePath="definition" SelectedItem="{Binding SelectedBot}" DropDownClosed="Bot_ComboBox_DropDownClosed"/>
+                        <DataGrid  Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4" Height="Auto" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5" ItemsSource="{Binding BotBonusList}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" VerticalScrollBarVisibility="Visible"  >
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="FieldName" Width="Auto" Binding="{Binding aggFieldName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
                                 <DataGridTextColumn Header="ExtensionName" Width="Auto" Binding="{Binding extensionName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
@@ -188,8 +212,16 @@
                             </DataGrid.Columns>
                         </DataGrid>
 
-                        <Button Content="Save Changes" Margin="274,0,0,0" Click="Bot_Bonus_Save_Click" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="80"/>
-                    </StackPanel>
+                        <Label   Grid.Row="2" Grid.Column="0" Height="26" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Extensions"/>
+                        <Label   Grid.Row="3" Grid.Column="0" Height="26" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Aggregate Fields"/>
+                        <ComboBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Height="26" Width="Auto" MinWidth="255" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5" x:Name="extensionscombo" ItemsSource="{Binding AllExtensions}" DisplayMemberPath="extensionname" SelectedValuePath="extensionid" SelectedItem="{Binding SelectedExtension}" />
+                        <ComboBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" Height="26" Width="Auto" MinWidth="255" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5" x:Name="extensionscombo_Copy" ItemsSource="{Binding AllAggregateFields}" DisplayMemberPath="name" SelectedValuePath="id" SelectedItem="{Binding SelectedAggregateField}"  />
+                        <Button Grid.Row="4" Grid.Column="0" Height="26" Width="100" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5" Content="Commit Changes"  Click="Bot_Bonus_Save_Click"/>
+                        <Button Grid.Row="4" Grid.Column="1" Height="26" Width="100" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5" Content="Add new row"  Click="Bot_Bonus_Add_Click" />
+                        <Button Grid.Row="4" Grid.Column="2" Height="26" Width="100" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5" Content="Remove last row" Click="Bot_Bonus_Remove_Click" />
+                        <Button Grid.Row="5" Grid.Column="2" Height="26" Width="100" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5" Content="Paste Bonuses" Click="Paste_Bonuses"  />
+                        <Button Grid.Row="5" Grid.Column="1" Height="26" Width="100" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5" Content="Copy Bonuses" Click="Copy_Bonuses"  />
+                    </Grid>
                 </ScrollViewer>
             </TabItem>
 
@@ -259,8 +291,8 @@
             <TabItem Header="NPC Loot Tables">
                 <ScrollViewer>
                     <Grid Background="#FFE5E5E5">
-                        <ComboBox x:Name="npclootcombo" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="600" ItemsSource="{Binding LootableBots}" DisplayMemberPath="definitionname" SelectedValuePath="definition" SelectedItem="{Binding SelectedLootableBot}" DropDownClosed="ComboBox_DropDownClosed_LootableNPCs"/>
-                        <DataGrid Margin="10,61,10,31" ItemsSource="{Binding loots}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" >
+                        <ComboBox x:Name="npclootcombo" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="400" ItemsSource="{Binding LootableBots}" DisplayMemberPath="definitionname" SelectedValuePath="definition" SelectedItem="{Binding SelectedLootableBot}" DropDownClosed="ComboBox_DropDownClosed_LootableNPCs"/>
+                        <DataGrid Margin="10,61,10,70" ItemsSource="{Binding loots}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" >
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="LootDefinitionName" Width="Auto" Binding="{Binding LootDefinitionName}"/>
                                 <DataGridTextColumn Header="Probability" Width="Auto" Binding="{Binding LootProbability}"/>
@@ -270,10 +302,12 @@
                                 <DataGridTextColumn Header="MinQuantity" Width="Auto" Binding="{Binding LootMinQuantity}"/>
                             </DataGrid.Columns>
                         </DataGrid>
-                        <Button Content="Save Changes" Margin="617,0,0,0" Click="NPC_Loot_Save_Button_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="90"/>
-                        <ComboBox x:Name="npcloot" HorizontalAlignment="Left" VerticalAlignment="Bottom"  Margin="216,0,0,0"  Width="299" Height="26" ItemsSource="{Binding LootableEntityDefaults}" DisplayMemberPath="definitionname" SelectedValuePath="definition"  SelectedItem="{Binding currentRowAddItem}" DropDownClosed="ComboBox_DropDownClosed_NPCLootableDefs"/>
-                        <Button Content="Add new row" Margin="111,0,0,0" Click="NPC_Loot_Add_Row_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100"/>
-                        <Button Content="Remove Row" Margin="10,0,0,0" Click="NPC_Loot_Remove_Button_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="90"/>
+                        <Button Content="Commit Changes" Margin="579,0,0,39" Click="NPC_Loot_Save_Button_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="128"/>
+                        <ComboBox x:Name="npcloot" HorizontalAlignment="Left" VerticalAlignment="Bottom"  Margin="10,0,0,39"  Width="299" Height="26" ItemsSource="{Binding LootableEntityDefaults}" DisplayMemberPath="definitionname" SelectedValuePath="definition"  SelectedItem="{Binding currentRowAddItem}" DropDownClosed="ComboBox_DropDownClosed_NPCLootableDefs"/>
+                        <Button Content="Add new row" Margin="314,0,0,39" Click="NPC_Loot_Add_Row_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100"/>
+                        <Button Content="Remove Row" Margin="314,0,0,8" Click="NPC_Loot_Remove_Button_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100"/>
+                        <Button Content="Paste Loots" Margin="419,0,0,8" Click="Paste_Loots" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="95" />
+                        <Button Content="Copy Loots" Margin="419,0,0,39" Click="Copy_Loots" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="95" RenderTransformOrigin="0.725,0.538"/>
                     </Grid>
                 </ScrollViewer>
             </TabItem>

@@ -5,6 +5,8 @@ using System.ComponentModel;
 using System.Data.SqlClient;
 using System.IO;
 using System.Text;
+using PerpTool.db;
+
 
 namespace Perptool.db
 {
@@ -20,6 +22,29 @@ namespace Perptool.db
         public string definitionName { get; set; }
         public string extensionName { get; set; }
         public string aggFieldName { get; set; }
+        public DBAction dBAction { get; set; }
+
+
+        public BotBonusObj()
+        {
+
+        }
+
+        public static string IDkey = "@chassisbonusID";
+
+        public static string GetDeclStatement()
+        {
+            return "DECLARE " + IDkey + " int;";
+        }
+
+        public string GetBonusStatement()
+        {
+            string statement = "SET @extensionID = (SELECT TOP 1 extensionid from dbo.extensions WHERE extensionname = '" + this.extensionName + "');\n";
+            statement += "SET @definitionID = (SELECT TOP 1 definition from entitydefaults WHERE [definitionname] = '" + this.definitionName + "' ORDER BY definition DESC);\n";
+            statement += "SET @aggfieldID = (SELECT TOP 1 id from aggregatefields WHERE[name] = '" + this.aggFieldName + "' ORDER BY [name] DESC);\n";
+            statement += " SET " + IDkey + " = (SELECT TOP 1 id from chassisbonus WHERE[definition] = @definitionID AND [extension] = @extensionID AND [targetpropertyID] = @aggfieldID ORDER BY [definition], [extension], [targetpropertyID] DESC);\n";
+            return statement;
+        }
     }
 
 
@@ -202,11 +227,70 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE chassisbonus SET effectenhancer=@effectenhancer, bonus=@bonus WHERE id = @id;");
+                sqlCommand.Append("UPDATE chassisbonus SET effectenhancer=@effectenhancer, bonus=@bonus WHERE id = " + BotBonusObj.IDkey + ";");
                 command.CommandText = sqlCommand.ToString();
-                command.Parameters.AddWithValue("@id", bonusChanges.id);
+                command.Parameters.AddWithValue(BotBonusObj.IDkey, bonusChanges.id);
                 command.Parameters.AddWithValue("@bonus", bonusChanges.bonus);
                 command.Parameters.AddWithValue("@effectenhancer", bonusChanges.effectenhancer);
+
+                SqlConnection conn = new SqlConnection(this.ConnString);
+                conn.Open();
+                command.Connection = conn;
+                command.ExecuteNonQuery();
+                conn.Close();
+                
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { BotBonusObj.IDkey }));
+            }
+            return query;
+        }
+
+
+        public string Insert(BotBonusObj b)  //TODO bug here? Requires unique triplet of keys...
+        {
+            string query = "";
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append(@"INSERT INTO [dbo].[chassisbonus] ([definition],[extension],[bonus],[note],[targetpropertyID],[effectenhancer])
+                VALUES ("+EntityDefaults.IDkey+", "+Extensions.IDkey+", @bonus, @note, "+AggregateFields.IDkey+", @effectenhancer);");
+                command.CommandText = sqlCommand.ToString();
+                command.Parameters.AddWithValue(EntityDefaults.IDkey, b.definition);
+                command.Parameters.AddWithValue(Extensions.IDkey, b.extension);
+                command.Parameters.AddWithValue("@bonus", b.bonus);
+                command.Parameters.AddWithValue(AggregateFields.IDkey, b.targetpropertyID);
+                command.Parameters.AddWithValue("@effectenhancer", b.effectenhancer);
+
+                if (b.note == null)
+                {
+                    command.Parameters.AddWithValue("@note", string.Empty);
+                }
+                else
+                {
+                    command.Parameters.AddWithValue("@note", b.note);
+                }
+
+                SqlConnection conn = new SqlConnection(this.ConnString);
+                conn.Open();
+                command.Connection = conn;
+                command.ExecuteNonQuery();
+                conn.Close();
+
+                
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { EntityDefaults.IDkey, Extensions.IDkey, AggregateFields.IDkey }));
+            }
+            return query;
+        }
+
+
+        public string Delete(BotBonusObj b)
+        {
+            string query = "";
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append(@"DELETE [dbo].[chassisbonus] WHERE id=@chassisbonusID;");
+                command.CommandText = sqlCommand.ToString();
+                command.Parameters.AddWithValue("@chassisbonusID", b.id);
 
                 SqlConnection conn = new SqlConnection(this.ConnString);
                 conn.Open();
@@ -216,6 +300,10 @@ namespace Perptool.db
                 query = command.CommandText;
                 foreach (SqlParameter p in command.Parameters)
                 {
+                    if (p.ParameterName == "@chassisbonusID")
+                    {
+                        continue;
+                    }
                     query = query.Replace(p.ParameterName, p.Value.ToString());
                 }
             }
@@ -226,6 +314,7 @@ namespace Perptool.db
 
         protected void OnPropertyChanged(string name)
         {
+
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
     }

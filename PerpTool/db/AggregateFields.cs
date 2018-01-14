@@ -20,6 +20,7 @@ namespace Perptool.db
     /// </summary>
     public class AggregateFields : INotifyPropertyChanged
     {
+        #region privates
         /// <summary>
         /// private field
         /// </summary>
@@ -74,7 +75,7 @@ namespace Perptool.db
         /// private field
         /// </summary>
         private string privatenote;
-
+        #endregion
         /// <summary>
         /// Initializes a new instance of the <see cref='aggregatefieldsTbl' /> class.
         /// </summary>
@@ -374,46 +375,6 @@ namespace Perptool.db
             return list;
         }
 
-        
-
-        /// <summary>
-        /// saves a new record
-        /// </summary>
-        public void SaveNewRecord()
-        {
-            using (SqlCommand command = new SqlCommand())
-            {
-                StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("Insert into aggregatefields ");
-                sqlCommand.Append("(`id`, `name`, `formula`, `measurementunit`, `measurementmultiplier`, `measurementoffset`, `category`, `digits`, `moreisbetter`, `usedinconfig`, `note`) ");
-                sqlCommand.Append(" Values ");
-                sqlCommand.Append("(@id, @name, @formula, @measurementunit, @measurementmultiplier, @measurementoffset, @category, @digits, @moreisbetter, @usedinconfig, @note) ;");
-
-                command.CommandText = sqlCommand.ToString();
-
-                command.Parameters.AddWithValue("@id", this.id);
-                command.Parameters.AddWithValue("@name", this.name);
-                command.Parameters.AddWithValue("@formula", this.formula);
-                command.Parameters.AddWithValue("@measurementunit", this.measurementunit);
-                command.Parameters.AddWithValue("@measurementmultiplier", this.measurementmultiplier);
-                command.Parameters.AddWithValue("@measurementoffset", this.measurementoffset);
-                command.Parameters.AddWithValue("@category", this.category);
-                command.Parameters.AddWithValue("@digits", this.digits);
-                command.Parameters.AddWithValue("@moreisbetter", Utilities.getNullableInt(this.moreisbetter));
-                command.Parameters.AddWithValue("@usedinconfig", Utilities.getNullableInt(this.usedinconfig));
-                command.Parameters.AddWithValue("@note", this.note);
-
-                SqlConnection conn = new SqlConnection(this.ConnString);
-                conn.Open();
-                command.Connection = conn;
-                command.ExecuteNonQuery();
-                conn.Close();
-            }
-        }
-
-        /// <summary>
-        /// saves existing record
-        /// </summary>
         public string Save(FieldValuesStuff data)
         {
             this.GetById(data.FieldId);
@@ -421,9 +382,9 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE aggregatefields SET [name]=@SQLname, [formula]=@formula, [measurementunit]=@measurementunit, [measurementmultiplier]=@measurementmultiplier, [measurementoffset]=@measurementoffset, [category]=@category, [digits]=@digits, [moreisbetter]=@moreisbetter, [usedinconfig]=@usedinconfig, [note]=@note WHERE id = @id;");
+                sqlCommand.Append("UPDATE aggregatefields SET [name]=@SQLname, [formula]=@formula, [measurementunit]=@measurementunit, [measurementmultiplier]=@measurementmultiplier, [measurementoffset]=@measurementoffset, [category]=@category, [digits]=@digits, [moreisbetter]=@moreisbetter, [usedinconfig]=@usedinconfig, [note]=@note WHERE id ="+AggregateFields.IDkey+";");
                 command.CommandText = sqlCommand.ToString();
-                command.Parameters.AddWithValue("@id", data.FieldId);
+                command.Parameters.AddWithValue(AggregateFields.IDkey, data.FieldId);
                 command.Parameters.AddWithValue("@SQLname", data.FieldName);
                 command.Parameters.AddWithValue("@formula", data.FieldFormula);
                 command.Parameters.AddWithValue("@measurementunit", data.FieldUnits);
@@ -446,18 +407,7 @@ namespace Perptool.db
                 command.Connection = conn;
                 command.ExecuteNonQuery();
                 conn.Close();
-                query = command.CommandText;
-                foreach (SqlParameter p in command.Parameters)
-                {
-                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
-                    {
-                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
-                    }
-                    else
-                    {
-                        query = query.Replace(p.ParameterName, p.Value.ToString());
-                    }
-                }
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { AggregateFields.IDkey }));
             }
             return query;
         }
@@ -470,6 +420,18 @@ namespace Perptool.db
         protected void OnPropertyChanged(string name)
         {
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+        public static string IDkey = "@aggfieldID";
+
+        public static string GetDeclStatement()
+        {
+            return "DECLARE "+ IDkey + " int;";
+        }
+
+        public string GetLookupStatement()
+        {
+            return "SET "+ IDkey + " = (SELECT TOP 1 id from aggregatefields WHERE [name] = '" + this.name + "' ORDER BY [name] DESC);";
         }
     }
 }

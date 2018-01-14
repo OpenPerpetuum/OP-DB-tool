@@ -1,4 +1,5 @@
 ﻿using Perpetuum.GenXY;
+using PerpTool.db;
 using PerpTool.Types;
 using System;
 using System.Collections.Generic;
@@ -6,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -56,7 +58,7 @@ namespace Perptool.db
         private bool _melee;
         private SlotFlags _flag;
 
-        
+
         public int Index { get; set; }
         public SlotFlags SlotFlag { get; set; }
         public bool Head
@@ -64,7 +66,7 @@ namespace Perptool.db
             get { return this._head; }
             set
             {
-                
+
                 this._head = value;
                 OnPropertyChanged("Head");
             }
@@ -74,7 +76,7 @@ namespace Perptool.db
             get { return this._chassis; }
             set
             {
-               
+
                 this._chassis = value;
                 OnPropertyChanged("Chassis");
             }
@@ -84,7 +86,7 @@ namespace Perptool.db
             get { return this._leg; }
             set
             {
-                
+
                 this._leg = value;
                 OnPropertyChanged("Leg");
             }
@@ -94,7 +96,7 @@ namespace Perptool.db
             get { return this._small; }
             set
             {
-                
+
                 this._small = value;
                 OnPropertyChanged("Small");
             }
@@ -104,7 +106,7 @@ namespace Perptool.db
             get { return this._medium; }
             set
             {
-                
+
                 this._medium = value;
                 OnPropertyChanged("Medium");
             }
@@ -114,7 +116,7 @@ namespace Perptool.db
             get { return this._large; }
             set
             {
-                
+
                 this._large = value;
                 OnPropertyChanged("Large");
             }
@@ -124,7 +126,7 @@ namespace Perptool.db
             get { return this._industrial; }
             set
             {
-                
+
                 this._industrial = value;
                 OnPropertyChanged("Industrial");
             }
@@ -134,7 +136,7 @@ namespace Perptool.db
             get { return this._ew_Eng; }
             set
             {
-                
+
                 this._ew_Eng = value;
                 OnPropertyChanged("EW_Eng");
             }
@@ -144,7 +146,7 @@ namespace Perptool.db
             get { return this._turret; }
             set
             {
-                
+
                 this._turret = value;
                 OnPropertyChanged("Turret");
             }
@@ -154,7 +156,7 @@ namespace Perptool.db
             get { return this._missile; }
             set
             {
-                
+
                 this._missile = value;
                 OnPropertyChanged("Missile");
             }
@@ -164,7 +166,7 @@ namespace Perptool.db
             get { return this._melee; }
             set
             {
-                
+
                 this._melee = value;
                 OnPropertyChanged("Melee");
             }
@@ -209,7 +211,6 @@ namespace Perptool.db
 
         public SlotFlags getFlags()
         {
-            System.Console.WriteLine(SlotFlag);
             SlotFlag = 0;
             this.updateFlag(SlotFlags.head, this.Head);
             this.updateFlag(SlotFlags.chassis, this.Chassis);
@@ -222,7 +223,6 @@ namespace Perptool.db
             this.updateFlag(SlotFlags.turret, this.Turret);
             this.updateFlag(SlotFlags.missile, this.Missile);
             this.updateFlag(SlotFlags.melee, this.Melee);
-            System.Console.WriteLine(SlotFlag);
             return SlotFlag;
         }
 
@@ -241,7 +241,7 @@ namespace Perptool.db
         private int pLeg;
         private int pInventory;
         private SlotFlags[] pslotFlags;
-        private float pheight;
+        private decimal pheight;
         private SlotFlags pmoduleFlag;
         private int pammoCapacity;
         private long pammoType;
@@ -332,7 +332,7 @@ namespace Perptool.db
                 OnPropertyChanged("slotFlags");
             }
         }
-        public float height
+        public decimal height
         {
             get
             {
@@ -412,7 +412,7 @@ namespace Perptool.db
             {
                 dictionary["height"] = this.height;
             }
-            if (this.slotFlags != null )
+            if (this.slotFlags != null)
             {
                 dictionary["slotFlags"] = this.getSlotArrary();
             }
@@ -436,10 +436,18 @@ namespace Perptool.db
             Dictionary<string, object> d = this.ToDictionary();
             string xy = "";
             if (d.Count > 0)
-            {
+            { 
                 xy = GenxyConverter.Serialize(d);
+                xy = hackFixFloatSerialize(xy);  //TODO --fix me (Genxy)
             }
             return reconcileOptionsString(xy, this.originalOptions);
+        }
+
+        private string hackFixFloatSerialize(string xy)
+        {
+            //TODO GenxyConverter.Serialize(d); converts floats and doubles to floatbytes -- doesnt break server but could corrupt height value? (if fails height=1 on server)
+            //TODO quick fix/hack interpret as decimal (genxy incompatible type, but correct value representation) and switch GenxyToekn flag on serialized string
+            return xy.Replace("#height=n", "#height=f");
         }
 
         private string reconcileOptionsString(string xy, string orig)
@@ -923,18 +931,7 @@ namespace Perptool.db
                 {
                     command.Parameters.AddWithValue("@note", this.note);
                 }
-                query = command.CommandText;
-                foreach (SqlParameter p in command.Parameters)
-                {
-                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
-                    {
-                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
-                    }
-                    else
-                    {
-                        query = query.Replace(p.ParameterName, p.Value.ToString());
-                    }
-                }
+                query = Utilities.parseCommandString(command, new List<string>());
             }
             return query;
         }
@@ -952,11 +949,11 @@ namespace Perptool.db
                 StringBuilder sqlCommand = new StringBuilder();
                 sqlCommand.Append(@"UPDATE entitydefaults Set definitionname=@defname, quantity=@quantity, attributeflags=@attributeflags, categoryflags=@categoryflags, options=@options, 
                 note=@note, enabled=@enabled, volume=@volume, mass=@mass, hidden=@hidden, health=@health, descriptiontoken=@descriptiontoken, purchasable=@purchasable, tiertype=@tiertype, 
-                tierlevel=@tierlevel where definition=@definitionID;");
+                tierlevel=@tierlevel where definition="+EntityDefaults.IDkey+";");
 
                 command.CommandText = sqlCommand.ToString();
 
-                command.Parameters.AddWithValue("@definitionID", this.definition);
+                command.Parameters.AddWithValue(EntityDefaults.IDkey, this.definition);
                 command.Parameters.AddWithValue("@defname", this.definitionname);
                 command.Parameters.AddWithValue("@quantity", this.quantity);
                 command.Parameters.AddWithValue("@attributeflags", this.attributeflags);
@@ -987,19 +984,7 @@ namespace Perptool.db
                 {
                     command.Parameters.AddWithValue("@note", this.note);
                 }
-                query = command.CommandText;
-                foreach (SqlParameter p in command.Parameters)
-                {
-                    if(p.ParameterName== "@definitionID") { continue; }
-                    else if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
-                    {
-                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
-                    }
-                    else
-                    {
-                        query = query.Replace(p.ParameterName, p.Value.ToString());
-                    }
-                }
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { EntityDefaults.IDkey }));
             }
             return query;
         }
@@ -1074,65 +1059,9 @@ namespace Perptool.db
             return item;
         }
 
-        public List<EntityItems> GetAllModules()
-        {
-            List<EntityItems> list = new List<EntityItems>();
-            SqlConnection conn = new SqlConnection(this.ConnString);
-            using (SqlCommand command = new SqlCommand())
-            {
-                StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("SELECT * FROM entitydefaults WHERE options like '%#module%';");
-                command.CommandText = sqlCommand.ToString();
-                command.Parameters.AddWithValue("@definition", definition);
-                command.Connection = conn;
-                conn.Open();
-                using (SqlDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        EntityItems item = new EntityItems();
-                        item.Definition = Convert.ToInt32(reader["definition"]);
-                        item.Name = Convert.ToString(reader["definitionname"]);
-                        item.Options = CreateFromOptions(Convert.ToString(reader["options"]));
-                        item.Volume = Convert.ToDecimal(reader["volume"]);
-                        item.Mass = Convert.ToDecimal(reader["mass"]);
-                        list.Add(item);
-                    }
-                }
-                conn.Dispose();
-            }
-            return list;
-        }
 
-        public List<EntityItems> GetAllAmmo()
-        {
-            List<EntityItems> list = new List<EntityItems>();
-            SqlConnection conn = new SqlConnection(this.ConnString);
-            using (SqlCommand command = new SqlCommand())
-            {
-                StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("SELECT * FROM entitydefaults WHERE definitionname like '%ammo%';");
-                command.CommandText = sqlCommand.ToString();
-                command.Parameters.AddWithValue("@definition", definition);
-                command.Connection = conn;
-                conn.Open();
-                using (SqlDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        EntityItems item = new EntityItems();
-                        item.Definition = Convert.ToInt32(reader["definition"]);
-                        item.Name = Convert.ToString(reader["definitionname"]);
-                        item.Options = CreateFromOptions(Convert.ToString(reader["options"]));
-                        item.Volume = Convert.ToDecimal(reader["volume"]);
-                        item.Mass = Convert.ToDecimal(reader["mass"]);
-                        list.Add(item);
-                    }
-                }
-                conn.Dispose();
-            }
-            return list;
-        }
+
+
 
         public string SaveWithEntityItemChange(EntityItems item)
         {
@@ -1140,11 +1069,11 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE entitydefaults SET options=@options, volume=@volume, mass=@mass WHERE definition=@definition;");
+                sqlCommand.Append("UPDATE entitydefaults SET options=@options, volume=@volume, mass=@mass WHERE definition=" + EntityDefaults.IDkey + ";");
 
                 command.CommandText = sqlCommand.ToString();
 
-                command.Parameters.AddWithValue("@definition", item.Definition);
+                command.Parameters.AddWithValue(EntityDefaults.IDkey, item.Definition);
                 command.Parameters.AddWithValue("@options", item.Options.ToGenXY());
                 command.Parameters.AddWithValue("@volume", item.Volume);
                 command.Parameters.AddWithValue("@mass", item.Mass);
@@ -1155,26 +1084,7 @@ namespace Perptool.db
                 command.ExecuteNonQuery();
                 conn.Close();
 
-                if (this.note == null)
-                {
-                    command.Parameters.AddWithValue("@note", string.Empty);
-                }
-                else
-                {
-                    command.Parameters.AddWithValue("@note", this.note);
-                }
-                query = command.CommandText;
-                foreach (SqlParameter p in command.Parameters)
-                {
-                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
-                    {
-                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
-                    }
-                    else
-                    {
-                        query = query.Replace(p.ParameterName, p.Value.ToString());
-                    }
-                }
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { EntityDefaults.IDkey }));
             }
             return query;
         }
@@ -1185,11 +1095,11 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE entitydefaults SET options=@options, volume=@volume, mass=@mass WHERE definition=@definition;");
+                sqlCommand.Append("UPDATE entitydefaults SET options=@options, volume=@volume, mass=@mass WHERE definition=" + EntityDefaults.IDkey + ";");
 
                 command.CommandText = sqlCommand.ToString();
 
-                command.Parameters.AddWithValue("@definition", item.Definition);
+                command.Parameters.AddWithValue(EntityDefaults.IDkey, item.Definition);
                 command.Parameters.AddWithValue("@options", item.Options.ToGenXY());
                 command.Parameters.AddWithValue("@volume", item.Volume);
                 command.Parameters.AddWithValue("@mass", item.Mass);
@@ -1208,18 +1118,7 @@ namespace Perptool.db
                 {
                     command.Parameters.AddWithValue("@note", this.note);
                 }
-                query = command.CommandText;
-                foreach (SqlParameter p in command.Parameters)
-                {
-                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
-                    {
-                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
-                    }
-                    else
-                    {
-                        query = query.Replace(p.ParameterName, p.Value.ToString());
-                    }
-                }
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { EntityDefaults.IDkey }));
             }
             return query;
         }
@@ -1579,7 +1478,7 @@ namespace Perptool.db
             {
                 EntityOpts.slotFlags = (SlotFlags[])slotflags;
                 EntityOpts.Slots = new ObservableCollection<SlotFlagWrapper>();
-                for (int i=0; i<EntityOpts.slotFlags.Length; i++)
+                for (int i = 0; i < EntityOpts.slotFlags.Length; i++)
                 {
                     EntityOpts.Slots.Add(new SlotFlagWrapper(i, EntityOpts.slotFlags[i]));
                 }
@@ -1598,25 +1497,27 @@ namespace Perptool.db
             }
             if (d.TryGetValue("height", out object height))
             {
-                EntityOpts.height = Convert.ToSingle(height);
+                EntityOpts.height = Convert.ToDecimal(height);
             }
             return EntityOpts;
         }
 
 
+        public static string IDkey = "@definitionID";
+
         public static string GetDeclStatement()
         {
-            return "DECLARE @definitionID int;";
+            return "DECLARE "+ IDkey + " int;";
         }
 
         public string GetLookupStatement()
         {
-            return "SET @definitionID = (SELECT TOP 1 definition from entitydefaults WHERE [definitionname] = '" + this.definitionname + "' ORDER BY definition DESC);";
+            return "SET "+ IDkey + " = (SELECT TOP 1 definition from entitydefaults WHERE [definitionname] = '" + this.definitionname + "' ORDER BY definition DESC);";
         }
 
         public static string GetLookupStatement(string defname)
         {
-            return "SET @definitionID = (SELECT TOP 1 definition from entitydefaults WHERE [definitionname] = '" + defname + "' ORDER BY definition DESC);";
+            return "SET "+ IDkey + " = (SELECT TOP 1 definition from entitydefaults WHERE [definitionname] = '" + defname + "' ORDER BY definition DESC);";
         }
         /// <summary>
         /// fires when properties are set.

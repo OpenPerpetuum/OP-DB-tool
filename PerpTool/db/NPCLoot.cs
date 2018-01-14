@@ -229,7 +229,6 @@ namespace Perptool.db
                         looties.Add(temp);
                     }
                 }
-
                 conn.Dispose();
             }
             return looties;
