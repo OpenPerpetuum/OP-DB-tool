@@ -640,9 +640,10 @@ namespace PerpTool
             try
             {
                 StringBuilder sb = new StringBuilder();
-
+                sb.AppendLine(RobotTemplatesTable.GetDeclStatement());
                 foreach (RobotTemplate temp in this.BotTemplate)
                 {
+                    sb.AppendLine(RobotTemplatesTable.GetLookupStatement(temp));
                     sb.AppendLine(NPCBotTemplates.SaveBotTemplate(temp));
                 }
                 File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + this.currentBotTemplateSelection.name + Utilities.timestamp() + ".sql", sb.ToString());
@@ -1188,6 +1189,7 @@ namespace PerpTool
                 StringBuilder sb = new StringBuilder();
                 string message = "Did NOT save =(";
                 string appendStr = NPCTemplateRelation.dBAction.ToString();
+                sb.AppendLine(RobotTemplatesTable.GetDeclStatement());
                 sb.AppendLine(RobotTemplatesTable.GetLookupStatement(NPCTemplateRelation.templatename));
                 sb.AppendLine(EntityDefaults.GetDeclStatement());
                 sb.AppendLine(SelectedBotForRelation.GetLookupStatement());

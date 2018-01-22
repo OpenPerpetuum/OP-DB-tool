@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Perpetuum;
 using Perpetuum.GenXY;
+using PerpTool.db;
 
 namespace Perptool.db
 {
@@ -352,11 +353,11 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("UPDATE robottemplates SET name=@name, description=@description, note=@note WHERE id=@id;");
+                sqlCommand.Append("UPDATE robottemplates SET name=@name, description=@description, note=@note WHERE id="+IDkey+";");
 
                 command.CommandText = sqlCommand.ToString();
 
-                command.Parameters.AddWithValue("@id", bot.recordID);
+                command.Parameters.AddWithValue(IDkey, bot.recordID);
                 command.Parameters.AddWithValue("@name", bot.recordName);
                 command.Parameters.AddWithValue("@description", bot.ToGenXY());
                 command.Parameters.AddWithValue("@note", bot.recordNote);
@@ -366,18 +367,7 @@ namespace Perptool.db
                 command.Connection = conn;
                 command.ExecuteNonQuery();
                 conn.Close();
-                query = command.CommandText;
-                foreach (SqlParameter p in command.Parameters)
-                {
-                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
-                    {
-                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
-                    }
-                    else
-                    {
-                        query = query.Replace(p.ParameterName, p.Value.ToString());
-                    }
-                }
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { IDkey}));
             }
             return query;
         }
@@ -401,18 +391,7 @@ namespace Perptool.db
                 command.Connection = conn;
                 command.ExecuteNonQuery();
                 conn.Close();
-                query = command.CommandText;
-                foreach (SqlParameter p in command.Parameters)
-                {
-                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
-                    {
-                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
-                    }
-                    else
-                    {
-                        query = query.Replace(p.ParameterName, p.Value.ToString());
-                    }
-                }
+                query = Utilities.parseCommandString(command, new List<string>());
             }
             return query;
         }
@@ -472,35 +451,38 @@ namespace Perptool.db
             return temps;
         }
 
+        public static string IDkey = "@templateID";
+
+        public static string GetDeclStatement()
+        {
+            return "DECLARE "+IDkey+" int";
+        }
+
         public string GetLookupStatement()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("DECLARE @templateID int");
-            sb.AppendLine("SET @templateID = (SELECT TOP 1 id from robottemplates WHERE [name] = '" + this.name + "' ORDER BY id DESC)");
+            sb.AppendLine("SET "+ IDkey + " = (SELECT TOP 1 id from robottemplates WHERE [name] = '" + this.name + "' ORDER BY id DESC)");
             return sb.ToString();
         }
 
         public static string GetLookupStatement(RobotTemplate template)
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("DECLARE @templateID int");
-            sb.AppendLine("SET @templateID = (SELECT TOP 1 id from robottemplates WHERE [name] = '" + template.recordName + "' ORDER BY id DESC)");
+            sb.AppendLine("SET " + IDkey + " = (SELECT TOP 1 id from robottemplates WHERE [name] = '" + template.recordName + "' ORDER BY id DESC)");
             return sb.ToString();
         }
 
         public static string GetLookupStatement(string tempname)
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("DECLARE @templateID int");
-            sb.AppendLine("SET @templateID = (SELECT TOP 1 id from robottemplates WHERE [name] = '" + tempname + "' ORDER BY id DESC)");
+            sb.AppendLine("SET " + IDkey + " = (SELECT TOP 1 id from robottemplates WHERE [name] = '" + tempname + "' ORDER BY id DESC)");
             return sb.ToString();
         }
 
         public static string GetLookupStatement(BotTemplateDropdownItem template)
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("DECLARE @templateID int");
-            sb.AppendLine("SET @templateID = (SELECT TOP 1 id from robottemplates WHERE [name] = '" + template.name + "' ORDER BY id DESC)");
+            sb.AppendLine("SET " + IDkey + " = (SELECT TOP 1 id from robottemplates WHERE [name] = '" + template.name + "' ORDER BY id DESC)");
             return sb.ToString();
         }
 
