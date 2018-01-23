@@ -174,6 +174,21 @@ namespace PerpTool
                 OnPropertyChanged("EntitiesList");
             }
         }
+
+        private FieldValuesStuff _toRemoveFieldValueStuff;
+        public FieldValuesStuff SelectedFieldValuesThing
+        {
+            get
+            {
+                return this._toRemoveFieldValueStuff;
+            }
+            set
+            {
+                this._toRemoveFieldValueStuff = value;
+                OnPropertyChanged("SelectedFieldValuesThing");
+            }
+        }
+
         private void ComboBox_DropDownClosed_CatFlag(object sender, EventArgs e)
         {
             //Still needs to perform query to grab entities by catflag at selection-confirm
@@ -215,9 +230,25 @@ namespace PerpTool
         public List<FieldValuesStuff> fieldValuesToDelete = new List<FieldValuesStuff>();
         private void AggFieldRemove_Click(object sender, EventArgs e)
         {
-            if (this.FieldValuesList.Count <= 0) { return; }
-            this.fieldValuesToDelete.Add(this.FieldValuesList.Last<FieldValuesStuff>());
-            this.FieldValuesList.RemoveAt(this.FieldValuesList.Count - 1);
+            if (this.FieldValuesList.Count > 0)
+            {
+                int index = this.FieldValuesList.Count - 1;
+                FieldValuesStuff data = this.FieldValuesList.Last<FieldValuesStuff>();
+                if (this.SelectedFieldValuesThing != null)
+                {
+                    index = this.FieldValuesList.IndexOf(SelectedFieldValuesThing);
+                    if (index >= 0)
+                    {
+                        data = this.FieldValuesList[index];
+                    }
+                }
+                if (data.dBAction != DBAction.INSERT)
+                {
+                    data.dBAction = DBAction.DELETE;
+                    this.fieldValuesToDelete.Add(data);
+                }
+                this.FieldValuesList.RemoveAt(index);
+            }
         }
 
         //Save/Insert
@@ -306,12 +337,19 @@ namespace PerpTool
                         sb.AppendLine(AgFields.Save(item));
                     }   //New AggValues use old AggFields -- this remains an update iff changed
                 }
-                else
-                {
-                    throw new NotImplementedException("DELETE Not impl'd geez");
-                }
-                //TODO implement DELETE!!!
             }
+            foreach (FieldValuesStuff item in fieldValuesToDelete)
+            {
+                if (item.dBAction == DBAction.DELETE)
+                {
+                    AgFields.GetById(item.FieldId);
+                    AgValues.GetById(item.ValueId);
+                    sb.AppendLine(AgFields.GetLookupStatement());
+                    sb.AppendLine(item.GetLookupStatement());
+                    sb.AppendLine(AgValues.Delete(item));
+                }
+            }
+            this.fieldValuesToDelete.Clear();
             return sb.ToString();
         }
 
@@ -365,7 +403,7 @@ namespace PerpTool
 
         private void RemoveSlot_Click(object sender, EventArgs e)
         {
-            if (!checkNullForSlots() && this.SelectedEntity.options.Slots.Count>0)
+            if (!checkNullForSlots() && this.SelectedEntity.options.Slots.Count > 0)
             {
                 this.SelectedEntity.options.Slots.RemoveAt(this.SelectedEntity.options.Slots.Count - 1);
             }
@@ -1014,6 +1052,20 @@ namespace PerpTool
             }
         }
 
+        private BotBonusObj _selectedBonus;
+        public BotBonusObj SelectedBonus
+        {
+            get
+            {
+                return this._selectedBonus;
+            }
+            set
+            {
+                this._selectedBonus = value;
+                OnPropertyChanged("SelectedBonus");
+            }
+        }
+
         private void Bot_ComboBox_DropDownClosed(object sender, EventArgs e)
         {
             if (SelectedBot == null) { return; }
@@ -1043,7 +1095,7 @@ namespace PerpTool
                     }
                 }
 
-                foreach(BotBonusObj bonus in this.removeBonuses)
+                foreach (BotBonusObj bonus in this.removeBonuses)
                 {
                     if (bonus.dBAction == DBAction.DELETE)
                     {
@@ -1051,7 +1103,7 @@ namespace PerpTool
                         sb.AppendLine(this.BotBonus.Delete(bonus));
                     }
                 }
-                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + SelectedBot.definitionname+"_bonuses" + Utilities.timestamp() + ".sql", sb.ToString());
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + SelectedBot.definitionname + "_bonuses" + Utilities.timestamp() + ".sql", sb.ToString());
                 MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
             }
             catch (Exception ex)
@@ -1081,13 +1133,22 @@ namespace PerpTool
         {
             if (this.BotBonusList.Count > 0)
             {
+                int index = this.BotBonusList.Count - 1;
                 BotBonusObj bonus = this.BotBonusList.Last<BotBonusObj>();
+                if (this.SelectedBonus != null)
+                {
+                    index = this.BotBonusList.IndexOf(SelectedBonus);
+                    if (index > -1)
+                    {
+                        bonus = this.BotBonusList[index];
+                    }
+                }
                 if (bonus.dBAction != DBAction.INSERT)
                 {
                     bonus.dBAction = DBAction.DELETE;
                     removeBonuses.Add(bonus);
                 }
-                this.BotBonusList.RemoveAt(this.BotBonusList.Count - 1);
+                this.BotBonusList.RemoveAt(index);
             }
         }
 

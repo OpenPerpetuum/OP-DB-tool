@@ -410,6 +410,28 @@ namespace Perptool.db
             return query;
         }
 
+        public string Delete(FieldValuesStuff data)
+        {
+            string query = "";
+
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append("DELETE FROM [dbo].[aggregatevalues] WHERE id=" + FieldValuesStuff.IDkey + ";");
+                command.CommandText = sqlCommand.ToString();
+                command.Parameters.AddWithValue(FieldValuesStuff.IDkey, data.ValueId);
+
+                SqlConnection conn = new SqlConnection(this.ConnString);
+                conn.Open();
+                command.Connection = conn;
+                command.ExecuteNonQuery();
+                conn.Close();
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { FieldValuesStuff.IDkey }));
+
+            }
+            return query;
+        }
+
         /// <summary>
         /// fires when properties are set.
         /// </summary>
