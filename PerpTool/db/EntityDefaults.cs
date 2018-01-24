@@ -245,6 +245,7 @@ namespace Perptool.db
         private SlotFlags pmoduleFlag;
         private int pammoCapacity;
         private long pammoType;
+        private string pTechLevel;
 
         public string originalOptions;
 
@@ -380,6 +381,18 @@ namespace Perptool.db
                 OnPropertyChanged("ammoType");
             }
         }
+        public string techLevel
+        {
+            get
+            {
+                return this.pTechLevel;
+            }
+            set
+            {
+                this.pTechLevel = value;
+                OnPropertyChanged("techLevel");
+            }
+        }
         #endregion
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -428,6 +441,10 @@ namespace Perptool.db
             {
                 dictionary["ammoType"] = this.ammoType;
             }
+            if (this.techLevel != null)
+            {
+                dictionary["tier"] = this.techLevel;
+            }
             return dictionary;
         }
 
@@ -436,7 +453,7 @@ namespace Perptool.db
             Dictionary<string, object> d = this.ToDictionary();
             string xy = "";
             if (d.Count > 0)
-            { 
+            {
                 xy = GenxyConverter.Serialize(d);
                 xy = hackFixFloatSerialize(xy);  //TODO --fix me (Genxy)
             }
@@ -949,7 +966,7 @@ namespace Perptool.db
                 StringBuilder sqlCommand = new StringBuilder();
                 sqlCommand.Append(@"UPDATE entitydefaults Set definitionname=@defname, quantity=@quantity, attributeflags=@attributeflags, categoryflags=@categoryflags, options=@options, 
                 note=@note, enabled=@enabled, volume=@volume, mass=@mass, hidden=@hidden, health=@health, descriptiontoken=@descriptiontoken, purchasable=@purchasable, tiertype=@tiertype, 
-                tierlevel=@tierlevel where definition="+EntityDefaults.IDkey+";");
+                tierlevel=@tierlevel where definition=" + EntityDefaults.IDkey + ";");
 
                 command.CommandText = sqlCommand.ToString();
 
@@ -1499,6 +1516,10 @@ namespace Perptool.db
             {
                 EntityOpts.height = Convert.ToDecimal(height);
             }
+            if (d.TryGetValue("tier", out object tier))
+            {
+                EntityOpts.techLevel = Convert.ToString(tier);
+            }
             return EntityOpts;
         }
 
@@ -1507,17 +1528,17 @@ namespace Perptool.db
 
         public static string GetDeclStatement()
         {
-            return "DECLARE "+ IDkey + " int;";
+            return "DECLARE " + IDkey + " int;";
         }
 
         public string GetLookupStatement()
         {
-            return "SET "+ IDkey + " = (SELECT TOP 1 definition from entitydefaults WHERE [definitionname] = '" + this.definitionname + "' ORDER BY definition DESC);";
+            return "SET " + IDkey + " = (SELECT TOP 1 definition from entitydefaults WHERE [definitionname] = '" + this.definitionname + "' ORDER BY definition DESC);";
         }
 
         public static string GetLookupStatement(string defname)
         {
-            return "SET "+ IDkey + " = (SELECT TOP 1 definition from entitydefaults WHERE [definitionname] = '" + defname + "' ORDER BY definition DESC);";
+            return "SET " + IDkey + " = (SELECT TOP 1 definition from entitydefaults WHERE [definitionname] = '" + defname + "' ORDER BY definition DESC);";
         }
         /// <summary>
         /// fires when properties are set.
