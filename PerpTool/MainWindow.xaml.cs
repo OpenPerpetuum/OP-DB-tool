@@ -10,6 +10,8 @@ using System.Collections.ObjectModel;
 using PerpTool.Types;
 using System.Linq;
 using PerpTool.db;
+using System.Globalization;
+using System.Threading;
 
 namespace PerpTool
 {
@@ -30,6 +32,8 @@ namespace PerpTool
 
         public MainWindow()
         {
+            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
             InitializeComponent();
 
             AgModifiers = new AggregateModifiers(Connstr);
@@ -52,7 +56,14 @@ namespace PerpTool
             ZoneList = ZoneTbl.GetAllZones();
             SpawnList = Spawn.GetAllSpawns();
             LootableBots = Entities.GetEntitiesByCategory(CategoryFlags.cf_npc);
-            LootableEntityDefaults = Entities.GetLootableEntities();
+            LootableEntityDefaults = Entities.GetEntitiesByCategory(CategoryFlags.cf_reactor_plasma);
+            LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_kernels));
+            LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_robotshards));
+            LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_research_kits));
+            LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_reactor_cores));
+            LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_npc_eggs));
+            LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_raw_material));
+            LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_robot_equipment));
             AllRobotComponents = Entities.GetEntitiesByCategory(CategoryFlags.cf_robot_components);
             NPCTemplates = NPCBotTemplates.getAll();
             AllNPCPresences = NPCPresenceTable.getAll();
@@ -69,6 +80,9 @@ namespace PerpTool
             this.NPCFlockList = new ObservableCollection<NPCFlockData>();
             this.BotTemplate = new ObservableCollection<RobotTemplate>();
             this.DataContext = this;
+
+            var f = CategoryFlags.cf_calibration_programs;
+            var r = Entities.GetCategoryFlagsMask(f);
         }
 
         public IEnumerable<CategoryFlags> CatFlags { get; set; }
@@ -261,6 +275,7 @@ namespace PerpTool
                     EntityDefaults entity = this.SelectedEntity;
                     StringBuilder sb = new StringBuilder();
                     sb.AppendLine(entity.SaveNewRecord());
+                    sb.AppendLine();
                     File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + entity.definitionname + "INSERT" + Utilities.timestamp() + ".sql", sb.ToString());
                     MessageBox.Show("Saved NEW EntityDefault Record!", "Info", 0, MessageBoxImage.Information);
                 }
@@ -282,8 +297,11 @@ namespace PerpTool
                     StringBuilder sb = new StringBuilder();
                     sb.AppendLine(EntityDefaults.GetDeclStatement());
                     sb.AppendLine(entity.GetLookupStatement());
+                    sb.AppendLine();
                     sb.AppendLine(entity.Save());
+                    sb.AppendLine();
                     sb.AppendLine(handleAggregateFieldValuesSave(FieldValuesList));
+                    sb.AppendLine();
                     File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + entity.definitionname + Utilities.timestamp() + ".sql", sb.ToString());
                     MessageBox.Show("Saved Entity and FieldValues!", "Info", 0, MessageBoxImage.Information);
                 }
@@ -308,6 +326,7 @@ namespace PerpTool
                 StringBuilder sb2 = new StringBuilder();
                 sb2.AppendLine(AgFields.GetLookupStatement());
                 sb2.AppendLine(item.GetLookupStatement());
+                sb2.AppendLine();
                 bool changed = item.FieldValue != AgValues.value || item.FieldFormula != AgFields.formula;
 
                 if (item.dBAction == DBAction.UPDATE)
@@ -320,11 +339,13 @@ namespace PerpTool
                     {
                         AgValues.value = item.FieldValue;
                         sb.AppendLine(AgValues.Save(item));
+                        sb.AppendLine();
                     }
-                    if (item.FieldFormula != AgFields.formula)
+                    if (item.FieldFormula != AgFields.formula || item.FieldMultiplier != AgFields.measurementmultiplier || item.FieldOffset != AgFields.measurementoffset)
                     {
                         sb.AppendLine(sb2.ToString());
                         sb.AppendLine(AgFields.Save(item));
+                        sb.AppendLine();
                     }
                 }
                 else if (item.dBAction == DBAction.INSERT)
@@ -346,7 +367,9 @@ namespace PerpTool
                     AgValues.GetById(item.ValueId);
                     sb.AppendLine(AgFields.GetLookupStatement());
                     sb.AppendLine(item.GetLookupStatement());
+                    sb.AppendLine();
                     sb.AppendLine(AgValues.Delete(item));
+                    sb.AppendLine();
                 }
             }
             this.fieldValuesToDelete.Clear();
@@ -683,6 +706,7 @@ namespace PerpTool
                 {
                     sb.AppendLine(RobotTemplatesTable.GetLookupStatement(temp));
                     sb.AppendLine(NPCBotTemplates.SaveBotTemplate(temp));
+                    sb.AppendLine();
                 }
                 File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + this.currentBotTemplateSelection.name + Utilities.timestamp() + ".sql", sb.ToString());
                 MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
@@ -915,12 +939,14 @@ namespace PerpTool
                         sb.AppendLine(item.GetLootDefinitionLookupStatement());
                         sb.AppendLine(item.GetLookupStatement());
                         sb.AppendLine(Loot.Save());
+                        sb.AppendLine();
                     }
                     else if (item.dBAction == DBAction.INSERT)
                     {
                         Loot.updateSelf(item);
                         sb.AppendLine(item.GetLootDefinitionLookupStatement());
                         sb.AppendLine(Loot.Insert());
+                        sb.AppendLine();
                     }
                 }
 
@@ -932,6 +958,7 @@ namespace PerpTool
                         sb.AppendLine(item.GetLookupStatement());
                         Loot.updateSelf(item);
                         sb.AppendLine(Loot.Delete());
+                        sb.AppendLine();
                     }
                 }
                 File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + SelectedLootableBot.definitionname + "_loot" + Utilities.timestamp() + ".sql", sb.ToString());
@@ -959,18 +986,36 @@ namespace PerpTool
             }
         }
 
+        private LootItem _privateSelectedLoot;
+        public LootItem SelectedLoot
+        {
+            get
+            {
+                return _privateSelectedLoot;
+            }
+            set
+            {
+                _privateSelectedLoot = value;
+                OnPropertyChanged("SelectedLoot");
+            }
+        }
+
         public List<LootItem> removeLoot = new List<LootItem>();
         private void NPC_Loot_Remove_Button_Click(object sender, RoutedEventArgs e)
         {
             if (this.loots.Count > 0)
             {
-                LootItem loots = this.loots.Last<LootItem>();
-                if (loots.dBAction != DBAction.INSERT)
+                LootItem lootToRemove = this.loots.Last<LootItem>();
+                if (this.SelectedLoot != null)
                 {
-                    loots.dBAction = DBAction.DELETE;
-                    removeLoot.Add(loots);
+                    lootToRemove = SelectedLoot;
                 }
-                this.loots.RemoveAt(this.loots.Count - 1);
+                if (lootToRemove.dBAction != DBAction.INSERT)
+                {
+                    lootToRemove.dBAction = DBAction.DELETE;
+                    removeLoot.Add(lootToRemove);
+                }
+                this.loots.Remove(lootToRemove);
             }
         }
 
@@ -1081,17 +1126,20 @@ namespace PerpTool
                 sb.AppendLine(Extensions.GetDeclStatement());
                 sb.AppendLine(AggregateFields.GetDeclStatement());
                 sb.AppendLine(BotBonusObj.GetDeclStatement());
+                sb.AppendLine();
                 foreach (BotBonusObj bonus in this.BotBonusList)
                 {
                     if (bonus.dBAction == DBAction.UPDATE)
                     {
                         sb.AppendLine(bonus.GetBonusStatement());
                         sb.AppendLine(this.BotBonus.Save(bonus));
+                        sb.AppendLine();
                     }
                     else if (bonus.dBAction == DBAction.INSERT)
                     {
                         sb.AppendLine(bonus.GetBonusStatement());
                         sb.AppendLine(this.BotBonus.Insert(bonus));
+                        sb.AppendLine();
                     }
                 }
 
@@ -1101,6 +1149,7 @@ namespace PerpTool
                     {
                         sb.AppendLine(bonus.GetBonusStatement());
                         sb.AppendLine(this.BotBonus.Delete(bonus));
+                        sb.AppendLine();
                     }
                 }
                 File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + SelectedBot.definitionname + "_bonuses" + Utilities.timestamp() + ".sql", sb.ToString());
@@ -1110,7 +1159,7 @@ namespace PerpTool
             {
                 MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
             }
-
+            this.removeBonuses.Clear();
         }
 
         public List<BotBonusObj> bonusCopy = new List<BotBonusObj>();
@@ -1147,6 +1196,7 @@ namespace PerpTool
                 {
                     bonus.dBAction = DBAction.DELETE;
                     removeBonuses.Add(bonus);
+
                 }
                 this.BotBonusList.RemoveAt(index);
             }
@@ -1254,14 +1304,17 @@ namespace PerpTool
                 sb.AppendLine(RobotTemplatesTable.GetLookupStatement(NPCTemplateRelation.templatename));
                 sb.AppendLine(EntityDefaults.GetDeclStatement());
                 sb.AppendLine(SelectedBotForRelation.GetLookupStatement());
+                sb.AppendLine();
                 if (NPCTemplateRelation.dBAction == DBAction.UPDATE)
                 {
                     sb.AppendLine(NPCTemplateRelations.Save(NPCTemplateRelation));
+                    sb.AppendLine();
                     message = "Saved Updated TemplateRelation!";
                 }
                 else if (NPCTemplateRelation.dBAction == DBAction.INSERT)
                 {
                     sb.AppendLine(NPCTemplateRelations.Insert(NPCTemplateRelation));
+                    sb.AppendLine();
                     message = "Saved New TemplateRelation!";
                 }
                 File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + NPCTemplateRelation.definitionname + "_template_relation_" + appendStr + Utilities.timestamp() + ".sql", sb.ToString());
@@ -1385,7 +1438,9 @@ namespace PerpTool
                 sb.AppendLine(NPCPresenceData.GetDeclStatement());
                 sb.AppendLine(SelectedNPCPresence.GetLookupStatement());
                 sb.AppendLine(NPCPresenceTable.Save(SelectedNPCPresence));
+                sb.AppendLine();
                 sb.AppendLine(flockSaver());
+                sb.AppendLine();
                 string filename = SelectedNPCPresence.name + "_NPCPresence_flocksUPDATE";
                 if (this.removeFlocks.Count > 0)
                 {
@@ -1407,6 +1462,7 @@ namespace PerpTool
             {
                 StringBuilder sb = new StringBuilder();
                 sb.AppendLine(NPCPresenceTable.Insert(SelectedNPCPresence));
+                sb.AppendLine();
                 File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + SelectedNPCPresence.name + "_NPCPresence_flocksINSERT" + Utilities.timestamp() + ".sql", sb.ToString());
                 MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
             }
@@ -1421,16 +1477,20 @@ namespace PerpTool
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(NPCFlockData.GetDeclStatement());
             sb.AppendLine(EntityDefaults.GetDeclStatement());
+            sb.AppendLine();
             foreach (NPCFlockData flock in this.NPCFlockList)
             {
                 sb.AppendLine(EntityDefaults.GetLookupStatement(flock.NPCDefinitionName));
+                sb.AppendLine(flock.GetLookupStatement());
                 if (flock.dBAction == DBAction.UPDATE)
                 {
                     sb.AppendLine(NPCFlockTable.Save(flock));
+                    sb.AppendLine();
                 }
                 else if (flock.dBAction == DBAction.INSERT)
                 {
                     sb.AppendLine(NPCFlockTable.Insert(flock));
+                    sb.AppendLine();
                     flock.dBAction = DBAction.UPDATE;
                 }
             }
@@ -1438,8 +1498,10 @@ namespace PerpTool
             {
                 if (flock.dBAction == DBAction.DELETE)
                 {
+                    sb.AppendLine(flock.GetLookupStatement());
                     sb.AppendLine(EntityDefaults.GetLookupStatement(flock.NPCDefinitionName));
                     sb.AppendLine(NPCFlockTable.Delete(flock));
+                    sb.AppendLine();
                 }
             }
             return sb.ToString();

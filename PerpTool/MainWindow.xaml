@@ -157,8 +157,8 @@
                                     <DataGridTextColumn Header="Field" Width="Auto" Binding="{Binding FieldName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
                                     <DataGridTextColumn Header="Value" Width="Auto" Binding="{Binding FieldValue}"/>
                                     <DataGridTextColumn Header="Units" Width="Auto" Binding="{Binding FieldUnits}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                                    <DataGridTextColumn Header="Offset" Width="Auto" Binding="{Binding FieldOffset}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
-                                    <DataGridTextColumn Header="Multipler" Width="Auto" Binding="{Binding FieldMultiplier}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                    <DataGridTextColumn Header="Offset" Width="Auto" Binding="{Binding FieldOffset}"/>
+                                    <DataGridTextColumn Header="Multipler" Width="Auto" Binding="{Binding FieldMultiplier}" />
                                     <DataGridTextColumn Header="Formula" Width="Auto" Binding="{Binding FieldFormula}"/>
                                 </DataGrid.Columns>
                             </DataGrid>
@@ -293,7 +293,7 @@
                 <ScrollViewer>
                     <Grid Background="#FFE5E5E5">
                         <ComboBox x:Name="npclootcombo" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="400" ItemsSource="{Binding LootableBots}" DisplayMemberPath="definitionname" SelectedValuePath="definition" SelectedItem="{Binding SelectedLootableBot}" DropDownClosed="ComboBox_DropDownClosed_LootableNPCs"/>
-                        <DataGrid Margin="10,61,10,70" ItemsSource="{Binding loots}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" >
+                        <DataGrid Margin="10,61,10,70" ItemsSource="{Binding loots}" SelectedItem="{Binding SelectedLoot}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" >
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="LootDefinitionName" Width="Auto" Binding="{Binding LootDefinitionName}"/>
                                 <DataGridTextColumn Header="Probability" Width="Auto" Binding="{Binding LootProbability}"/>

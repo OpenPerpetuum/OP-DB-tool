@@ -99,12 +99,12 @@ namespace Perptool.db
 
         public static string GetDeclStatement()
         {
-            return "DECLARE "+ IDkey + " int;";
+            return "DECLARE " + IDkey + " int;";
         }
 
         public string GetLookupStatement()
         {
-            return "SET "+ IDkey + " = (SELECT TOP 1 id from npcflock WHERE [name] = '" + this.name + "' ORDER BY id DESC);";
+            return "SET " + IDkey + " = (SELECT TOP 1 id from npcflock WHERE [name] = '" + this.name + "' ORDER BY id DESC);";
         }
 
         public NPCFlockData copy()
@@ -495,17 +495,17 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append(@"UPDATE [dbo].[npcflock] SET [name] = @name ,[presenceid] = "+ NPCPresence.IDkey + ", [flockmembercount] = @flockmembercount, [definition] = @definitionID, " +
+                sqlCommand.Append(@"UPDATE [dbo].[npcflock] SET [name] = @name ,[presenceid] = " + NPCPresence.IDkey + ", [flockmembercount] = @flockmembercount, [definition] = " + EntityDefaults.IDkey + ", " +
                     "[spawnoriginX] = @spawnoriginX, [spawnoriginY] = @spawnoriginY ,[spawnrangeMin] = @spawnrangeMin, [spawnrangeMax] = @spawnrangeMax,[respawnseconds] = @respawnseconds, " +
                     "[totalspawncount] = @totalspawncount, [homerange] = @homerange ,[note] = @note, [respawnmultiplierlow] = @respawnmultiplierlow, [enabled] = @enabled, " +
-                    "[iscallforhelp] = @iscallforhelp, [behaviorType] = @behaviorType WHERE id="+NPCFlock.IDkey+";");
+                    "[iscallforhelp] = @iscallforhelp, [behaviorType] = @behaviorType WHERE id=" + NPCFlock.IDkey + ";");
                 command.CommandText = sqlCommand.ToString();
 
                 command.Parameters.AddWithValue(NPCFlock.IDkey, item.id);
                 command.Parameters.AddWithValue("@name", item.name);
                 command.Parameters.AddWithValue(NPCPresence.IDkey, item.presenceid);
                 command.Parameters.AddWithValue("@flockmembercount", item.flockmembercount);
-                command.Parameters.AddWithValue("@definitionID", item.definition);
+                command.Parameters.AddWithValue(EntityDefaults.IDkey, item.definition);
                 command.Parameters.AddWithValue("@spawnoriginX", item.spawnoriginX);
                 command.Parameters.AddWithValue("@spawnoriginY", item.spawnoriginY);
                 command.Parameters.AddWithValue("@spawnrangeMin", item.spawnrangeMin);
@@ -525,7 +525,7 @@ namespace Perptool.db
                 command.ExecuteNonQuery();
                 conn.Close();
 
-                query = Utilities.parseCommandString(command, new List<string>(new string[] { NPCFlock.IDkey, NPCPresence.IDkey }));
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { NPCFlock.IDkey, NPCPresence.IDkey, EntityDefaults.IDkey }));
             }
             return query;
         }
@@ -539,14 +539,14 @@ namespace Perptool.db
                 StringBuilder sqlCommand = new StringBuilder();
                 sqlCommand.Append(@"INSERT INTO[dbo].[npcflock]([name],[presenceid],[flockmembercount],[definition],[spawnoriginX],[spawnoriginY],[spawnrangeMin],[spawnrangeMax],[respawnseconds]
                 ,[totalspawncount],[homerange],[note],[respawnmultiplierlow],[enabled],[iscallforhelp],[behaviorType]) VALUES
-                (@name, @presenceID, @flockmembercount, @definitionID, @spawnoriginX, @spawnoriginY, @spawnrangeMin, @spawnrangeMax, @respawnseconds, @totalspawncount,
-                 @homerange, @note, @respawnmultiplierlow, @enabled, @iscallforhelp, @behaviorType);");
+                (@name, @presenceID, @flockmembercount, " + EntityDefaults.IDkey + ", @spawnoriginX, @spawnoriginY, @spawnrangeMin, @spawnrangeMax, @respawnseconds, @totalspawncount,"+
+                " @homerange, @note, @respawnmultiplierlow, @enabled, @iscallforhelp, @behaviorType); ");
                 command.CommandText = sqlCommand.ToString();
 
                 command.Parameters.AddWithValue("@name", item.name);
                 command.Parameters.AddWithValue(NPCPresence.IDkey, item.presenceid);
                 command.Parameters.AddWithValue("@flockmembercount", item.flockmembercount);
-                command.Parameters.AddWithValue("@definitionID", item.definition);
+                command.Parameters.AddWithValue(EntityDefaults.IDkey, item.definition);
                 command.Parameters.AddWithValue("@spawnoriginX", item.spawnoriginX);
                 command.Parameters.AddWithValue("@spawnoriginY", item.spawnoriginY);
                 command.Parameters.AddWithValue("@spawnrangeMin", item.spawnrangeMin);
@@ -566,7 +566,7 @@ namespace Perptool.db
                 command.ExecuteNonQuery();
                 conn.Close();
 
-                query = Utilities.parseCommandString(command, new List<string>(new string[] { NPCPresence.IDkey }));
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { NPCPresence.IDkey, EntityDefaults.IDkey }));
             }
             return query;
         }
@@ -577,7 +577,7 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append(@"" + data.GetLookupStatement() + "\nDELETE FROM [dbo].[npcflock] WHERE id="+NPCFlockData.IDkey+";");
+                sqlCommand.Append(@"" + data.GetLookupStatement() + "\nDELETE FROM [dbo].[npcflock] WHERE id=" + NPCFlockData.IDkey + ";");
                 command.CommandText = sqlCommand.ToString();
                 SqlConnection conn = new SqlConnection(this.ConnString);
 
@@ -1024,7 +1024,7 @@ namespace Perptool.db
                 SET [name] = @name,[topx] = @topx,[topy] = @topy,[bottomx] = @bottomx,[bottomy] = @bottomy,[note] = @note,[spawnid] = @spawnid,[enabled] = @enabled,[roaming] = @roaming
                 ,[roamingrespawnseconds] = @roamingrespawnseconds,[presencetype] = @presencetype,[maxrandomflock] = @maxrandomflock,[randomcenterx] = @randomcenterx,[randomcentery] = @randomcentery
                 ,[randomradius] = @randomradius,[dynamiclifetime] = @dynamiclifetime ,[isbodypull] = @isbodypull,[isrespawnallowed] = @isrespawnallowed,[safebodypull] = @safebodypull
-                WHERE id="+NPCPresence.IDkey+";");
+                WHERE id=" + NPCPresence.IDkey + ";");
                 command.CommandText = sqlCommand.ToString();
 
                 command.Parameters.AddWithValue(NPCPresence.IDkey, item.id);
@@ -1106,12 +1106,12 @@ namespace Perptool.db
 
         public static string GetDeclStatement()
         {
-            return "DECLARE "+IDkey+" int";
+            return "DECLARE " + IDkey + " int";
         }
 
         public string GetLookupStatement()
         {
-            return "SET "+ IDkey + " = (SELECT TOP 1 id from npcpresence WHERE [name] = '" + this.name + "' ORDER BY id DESC)";
+            return "SET " + IDkey + " = (SELECT TOP 1 id from npcpresence WHERE [name] = '" + this.name + "' ORDER BY id DESC)";
         }
 
         protected void OnPropertyChanged(string name)

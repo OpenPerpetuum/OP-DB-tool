@@ -1306,7 +1306,7 @@ namespace Perptool.db
         }
 
 
-        private CategoryFlags GetCategoryFlagsMask(CategoryFlags categoryFlags)
+        public CategoryFlags GetCategoryFlagsMask(CategoryFlags categoryFlags)
         {
             ulong num = ulong.MaxValue;
             while ((categoryFlags & (CategoryFlags)num) > CategoryFlags.undefined)
