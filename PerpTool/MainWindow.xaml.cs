@@ -1627,41 +1627,43 @@ namespace PerpTool
             {
                 //TODO
                 StringBuilder sb = new StringBuilder();
-                sb.AppendLine(EntityDefaults.GetDeclStatement());
-                sb.AppendLine(SelectedLootableBot.GetLookupStatement());
-                sb.AppendLine(LootItem.GetLootDeclStatment());
-                sb.AppendLine(LootItem.GetDeclStatement());
-                foreach (LootItem item in this.loots)
+                //Set the artifacttype = same for all updates on one 'page'
+                sb.AppendLine(ArtifactLootItem.GetLootDeclStatment());
+                sb.AppendLine(ArtifactLootItem.GetDeclStatement());
+                sb.AppendLine(ArtifactType.GetArtifactTypeDeclStatement());
+                sb.AppendLine(SelectedArtifactType.GetArtifactTypeDefinitionLokupStatement());
+
+                foreach (ArtifactLootItem item in this.ArtifactLoots)
                 {
                     if (item.dBAction == DBAction.UPDATE)
                     {
-                        Loot.updateSelf(item);
+                        ArtifactLoot.updateSelf(item);
                         sb.AppendLine(item.GetLootDefinitionLookupStatement());
                         sb.AppendLine(item.GetLookupStatement());
-                        sb.AppendLine(Loot.Save());
+                        sb.AppendLine(ArtifactLoot.Save());
                         sb.AppendLine();
                     }
                     else if (item.dBAction == DBAction.INSERT)
                     {
-                        Loot.updateSelf(item);
+                        ArtifactLoot.updateSelf(item);
                         sb.AppendLine(item.GetLootDefinitionLookupStatement());
-                        sb.AppendLine(Loot.Insert());
+                        sb.AppendLine(ArtifactLoot.Insert());
                         sb.AppendLine();
                     }
                 }
 
-                foreach (LootItem item in removeLoot)
+                foreach (ArtifactLootItem item in this.removeArtifactLoots)
                 {
                     if (item.dBAction == DBAction.DELETE)
                     {
                         sb.AppendLine(item.GetLootDefinitionLookupStatement());
                         sb.AppendLine(item.GetLookupStatement());
-                        Loot.updateSelf(item);
-                        sb.AppendLine(Loot.Delete());
+                        ArtifactLoot.updateSelf(item);
+                        sb.AppendLine(ArtifactLoot.Delete());
                         sb.AppendLine();
                     }
                 }
-                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + SelectedLootableBot.definitionname + "_loot" + Utilities.timestamp() + ".sql", sb.ToString());
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + SelectedArtifactType.name + "_loot" + Utilities.timestamp() + ".sql", sb.ToString());
                 MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
             }
             catch (Exception ex)

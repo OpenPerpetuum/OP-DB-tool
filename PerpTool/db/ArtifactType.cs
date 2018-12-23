@@ -21,6 +21,20 @@ namespace PerpTool.db
         private int privateminimumloot;
         private int privatedynamic;
 
+        public static string IDKey = "@artifactTypeID";
+
+
+        //SQL helpers
+        public static string GetArtifactTypeDeclStatement()
+        {
+            return "DECLARE " + IDKey + " int;";
+        }
+
+        public string GetArtifactTypeDefinitionLokupStatement()
+        {
+            return "SET " + IDKey + " = (SELECT TOP 1 id from artifacttypes WHERE [name] = '" + this.name + "');";
+        }
+
         public ArtifactType(string connectionString)
         {
             this.ConnString = connectionString;

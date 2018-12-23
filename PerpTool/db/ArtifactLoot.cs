@@ -6,13 +6,14 @@ using System.Text;
 using System.Data.SqlClient;
 using System.Collections.ObjectModel;
 using PerpTool.db;
+using System.Collections.Generic;
 
 namespace Perptool.db
 {
     public class ArtifactLootItem
     {
         public int LootID { get; set; }
-        public int ArtifactType { get; set; }
+        public int ArtifactTypeID { get; set; }
         public string ArtifactTypeName { get; set; }
         public int LootDefinition { get; set; }
         public string LootDefinitionName { get; set; }
@@ -22,40 +23,37 @@ namespace Perptool.db
         public int LootRepackaged { get; set; }
         public DBAction dBAction { get; set; }
 
+        public static string IDKey = "@artifactLootID";
+
         public static string GetLootDeclStatment()
         {
-            return "DECLARE @lootdefinitionID int;";
+            return "DECLARE " + EntityDefaults.IDkey + " int;";
         }
 
         public static string GetDeclStatement()
         {
-            return "DECLARE @artifactLootID int;";
-        }
-
-        public static string GetArtifactTypeDeclStatement()
-        {
-            return "DECLARE @artifactTypeID int;";
+            return "DECLARE " + IDKey + " int;";
         }
 
         public string GetArtifactTypeDefinitionLokupStatement()
         {
-            return "SET @artifactTypeID = (SELECT TOP 1 id from artifacttypes WHERE [name] = '" + this.ArtifactTypeName + "');";
+            return "SET " + ArtifactType.IDKey + " = (SELECT TOP 1 id from artifacttypes WHERE [name] = '" + this.ArtifactTypeName + "');";
         }
 
         public string GetLootDefinitionLookupStatement()
         {
-            return "SET @lootdefinitionID = (SELECT TOP 1 definition from entitydefaults WHERE [definitionname] = '" + this.LootDefinitionName + "' ORDER BY definition DESC);";
+            return "SET " + EntityDefaults.IDkey + " = (SELECT TOP 1 definition from entitydefaults WHERE [definitionname] = '" + this.LootDefinitionName + "');";
         }
 
         public string GetLookupStatement()
         {
-            return "SET @artifactLootID = (SELECT TOP 1 id FROM artifactloot WHERE definition = @lootdefinitionID  AND artifacttype= '" + this.ArtifactType + "'ORDER BY definition DESC);";
+            return "SET " + ArtifactLootItem.IDKey + " = (SELECT TOP 1 id FROM artifactloot WHERE definition = " + EntityDefaults.IDkey + "  AND artifacttype = " + ArtifactType.IDKey + ");";
         }
 
         public static ArtifactLootItem CreateNewForArtifactType(ArtifactType _type, EntityDefaults entity)
         {
             ArtifactLootItem item = new ArtifactLootItem();
-            item.ArtifactType = _type.id;
+            item.ArtifactTypeID = _type.id;
             item.ArtifactTypeName = _type.name;
             item.dBAction = DBAction.INSERT;
             item.LootDefinition = entity.definition;
@@ -273,7 +271,7 @@ namespace Perptool.db
                         while (reader.Read())
                         {
                             ArtifactLootItem tmp = new ArtifactLootItem();
-                            tmp.ArtifactType = artifactType;
+                            tmp.ArtifactTypeID = artifactType;
                             tmp.LootID = Convert.ToInt32(reader["id"]);
                             tmp.LootDefinitionName = Convert.ToString(reader["definitionname"]);
                             tmp.ArtifactTypeName = Convert.ToString(reader["name"]);
@@ -301,19 +299,14 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append(@"UPDATE artifactloot 
-                SET [definition]=@lootdefinitionID, 
-                [artifacttype]=@artifacttype,
-                [minquanaity]=@minquantity, 
-                [maxquanaity]=@maxquantity, 
-                [chance]=@chance, 
-                [packed]=@packed, 
-                WHERE [id]=@artifactLootID;");
+                sqlCommand.Append(@"UPDATE artifactloot SET 
+                [definition]="+ EntityDefaults.IDkey+",[artifacttype]="+ ArtifactType.IDKey+",[minquantity]=@minquantity,[maxquantity]=@maxquantity,[chance]=@chance,[packed]=@packed " +
+                "WHERE [id]="+ ArtifactLootItem.IDKey + ";");
                 command.CommandText = sqlCommand.ToString();
 
-                command.Parameters.AddWithValue("@artifactLootID", this.id);
-                command.Parameters.AddWithValue("@lootdefinitionID", this.lootdefinition);
-                command.Parameters.AddWithValue("@artifacttype", this.artifactType);
+                command.Parameters.AddWithValue(ArtifactLootItem.IDKey, this.id);
+                command.Parameters.AddWithValue(EntityDefaults.IDkey, this.lootdefinition);
+                command.Parameters.AddWithValue(ArtifactType.IDKey, this.artifactType);
                 command.Parameters.AddWithValue("@minquantity", this.minquantity);
                 command.Parameters.AddWithValue("@maxquantity", this.maxquantity);
                 command.Parameters.AddWithValue("@chance", this.chance);
@@ -325,22 +318,7 @@ namespace Perptool.db
                 command.ExecuteNonQuery();
                 conn.Close();
 
-                query = command.CommandText;
-                foreach (SqlParameter p in command.Parameters)
-                {
-                    if (p.ParameterName == "@lootdefinitionID" || p.ParameterName == "@artifactLootID")
-                    {
-                        continue;
-                    }
-                    else if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
-                    {
-                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
-                    }
-                    else
-                    {
-                        query = query.Replace(p.ParameterName, p.Value.ToString());
-                    }
-                }
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { EntityDefaults.IDkey, ArtifactLootItem.IDKey, ArtifactType.IDKey}));
             }
             return query;
         }
@@ -352,11 +330,11 @@ namespace Perptool.db
             {
                 StringBuilder sqlCommand = new StringBuilder();
                 sqlCommand.Append(@"INSERT INTO[dbo].[artifactloot] ([artifacttype],[definition],[minquantity],[maxquantity],[chance],[packed])
-                VALUES (@artifacttype, @definition, @minquantity, @maxquantity, @chance, @packed)");
+                VALUES ("+ ArtifactType.IDKey + ", "+ EntityDefaults.IDkey + ", @minquantity, @maxquantity, @chance, @packed)");
                 command.CommandText = sqlCommand.ToString();
 
-                command.Parameters.AddWithValue("@artifacttype", this.artifactType);
-                command.Parameters.AddWithValue("@definition", this.lootdefinition);
+                command.Parameters.AddWithValue(EntityDefaults.IDkey, this.lootdefinition);
+                command.Parameters.AddWithValue(ArtifactType.IDKey, this.artifactType);
                 command.Parameters.AddWithValue("@minquantity", this.minquantity);
                 command.Parameters.AddWithValue("@maxquantity", this.maxquantity);
                 command.Parameters.AddWithValue("@chance", this.chance);
@@ -368,22 +346,7 @@ namespace Perptool.db
                 command.ExecuteNonQuery();
                 conn.Close();
 
-                query = command.CommandText;
-                foreach (SqlParameter p in command.Parameters)
-                {
-                    if (p.ParameterName == "@lootdefinitionID" || p.ParameterName == "@artifacttype")
-                    {
-                        continue;
-                    }
-                    else if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
-                    {
-                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
-                    }
-                    else
-                    {
-                        query = query.Replace(p.ParameterName, p.Value.ToString());
-                    }
-                }
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { EntityDefaults.IDkey, ArtifactType.IDKey }));
             }
             return query;
         }
@@ -394,10 +357,10 @@ namespace Perptool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("DELETE FROM [dbo].[artifactloot] WHERE id=@artifactlootID;");
+                sqlCommand.Append("DELETE FROM [dbo].[artifactloot] WHERE id="+ ArtifactLootItem.IDKey+";");
                 command.CommandText = sqlCommand.ToString();
 
-                command.Parameters.AddWithValue("@artifactLootID", this.id);
+                command.Parameters.AddWithValue(ArtifactLootItem.IDKey, this.id);
 
                 SqlConnection conn = new SqlConnection(this.ConnString);
                 conn.Open();
@@ -405,22 +368,7 @@ namespace Perptool.db
                 command.ExecuteNonQuery();
                 conn.Close();
 
-                query = command.CommandText;
-                foreach (SqlParameter p in command.Parameters)
-                {
-                    if (p.ParameterName == "@artifactLootID")
-                    {
-                        continue;
-                    }
-                    else if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
-                    {
-                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
-                    }
-                    else
-                    {
-                        query = query.Replace(p.ParameterName, p.Value.ToString());
-                    }
-                }
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { ArtifactLootItem.IDKey}));
             }
             return query;
         }
