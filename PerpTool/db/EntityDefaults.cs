@@ -552,7 +552,7 @@ namespace Perptool.db
         /// <summary>
         /// private field
         /// </summary>
-        private string privatehidden;
+        private int privatehidden;
 
         /// <summary>
         /// private field
@@ -774,7 +774,7 @@ namespace Perptool.db
         /// <summary>
         /// Gets or sets public field hidden
         /// </summary>
-        public string hidden
+        public int hidden
         {
             get
             {
@@ -895,7 +895,7 @@ namespace Perptool.db
             this.enabled = 0;
             this.volume = 0;
             this.mass = 0;
-            this.hidden = string.Empty;
+            this.hidden = 0;
             this.health = 0;
             this.descriptiontoken = string.Empty;
             this.purchasable = 0;
@@ -1035,7 +1035,7 @@ namespace Perptool.db
                         this.enabled = Convert.ToInt32(reader["enabled"]);
                         this.volume = Convert.ToDecimal(reader["volume"]);
                         this.mass = Convert.ToDecimal(reader["mass"]);
-                        this.hidden = Convert.ToString(reader["hidden"]);
+                        this.hidden = Convert.ToInt32(reader["hidden"]);
                         this.health = Convert.ToDecimal(reader["health"]);
                         this.descriptiontoken = Convert.ToString(reader["descriptiontoken"]);
                         this.purchasable = Convert.ToInt32(reader["purchasable"]);
@@ -1223,7 +1223,7 @@ namespace Perptool.db
                         entity.enabled = Convert.ToInt32(reader["enabled"]);
                         entity.volume = Convert.ToDecimal(reader["volume"]);
                         entity.mass = Convert.ToDecimal(reader["mass"]);
-                        entity.hidden = Convert.ToString(reader["hidden"]);
+                        entity.hidden = Convert.ToInt32(reader["hidden"]);
                         entity.health = Convert.ToDecimal(reader["health"]);
                         entity.descriptiontoken = Convert.ToString(reader["descriptiontoken"]);
                         entity.purchasable = Convert.ToInt32(reader["purchasable"]);
@@ -1316,7 +1316,53 @@ namespace Perptool.db
             return (CategoryFlags)(~(CategoryFlags)num);
         }
 
+        //Returns all purchasable, unhidden, enabled entities
+        public List<EntityDefaults> GetPurchasableEntities()
+        {
+            List<EntityDefaults> list = new List<EntityDefaults>();
+            using (SqlConnection conn = new SqlConnection(this.ConnString))
+            {
+                using (SqlCommand command = new SqlCommand())
+                {
+                    StringBuilder sqlCommand = new StringBuilder();
+                    sqlCommand.Append("SELECT * FROM entitydefaults WHERE hidden=0 AND purchasable=1 AND enabled=1");
 
+                    command.CommandText = sqlCommand.ToString();
+                    command.Connection = conn;
+                    conn.Open();
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            EntityDefaults tmp = new EntityDefaults(this.ConnString);
+
+                            tmp.definition = Convert.ToInt32(reader["definition"]);
+                            tmp.definitionname = Convert.ToString(reader["definitionname"]);
+                            tmp.quantity = Convert.ToInt32(reader["quantity"]);
+                            tmp.attributeflags = Convert.ToInt64(reader["attributeflags"]);
+                            tmp.categoryflags = Convert.ToInt64(reader["categoryflags"]);
+                            tmp.options = CreateFromOptions(Convert.ToString(reader["options"]));
+                            tmp.note = Convert.ToString(reader["note"]);
+                            tmp.enabled = Convert.ToInt32(reader["enabled"]);
+                            tmp.volume = Convert.ToDecimal(reader["volume"]);
+                            tmp.mass = Convert.ToDecimal(reader["mass"]);
+                            tmp.hidden = Convert.ToInt32(reader["hidden"]);
+                            tmp.health = Convert.ToDecimal(reader["health"]);
+                            tmp.descriptiontoken = Convert.ToString(reader["descriptiontoken"]);
+                            tmp.purchasable = Convert.ToInt32(reader["purchasable"]);
+                            if (reader["tiertype"] != DBNull.Value) { tmp.tiertype = Convert.ToInt32(reader["tiertype"]); }
+                            if (reader["tierlevel"] != DBNull.Value) { tmp.tierlevel = Convert.ToInt32(reader["tierlevel"]); }
+                            if(tmp.hidden==0 && tmp.purchasable!=0 && tmp.enabled!=0)
+                            {
+                                list.Add(tmp);
+                            }
+                                
+                        }
+                    }
+                }
+            }
+            return list;
+        }
 
         public List<EntityDefaults> GetEntitiesByCategory(CategoryFlags CategoryFlag)
         {
@@ -1349,7 +1395,7 @@ namespace Perptool.db
                             tmp.enabled = Convert.ToInt32(reader["enabled"]);
                             tmp.volume = Convert.ToDecimal(reader["volume"]);
                             tmp.mass = Convert.ToDecimal(reader["mass"]);
-                            tmp.hidden = Convert.ToString(reader["hidden"]);
+                            tmp.hidden = Convert.ToInt32(reader["hidden"]);
                             tmp.health = Convert.ToDecimal(reader["health"]);
                             tmp.descriptiontoken = Convert.ToString(reader["descriptiontoken"]);
                             tmp.purchasable = Convert.ToInt32(reader["purchasable"]);
@@ -1395,7 +1441,7 @@ namespace Perptool.db
                             tmp.enabled = Convert.ToInt32(reader["enabled"]);
                             tmp.volume = Convert.ToDecimal(reader["volume"]);
                             tmp.mass = Convert.ToDecimal(reader["mass"]);
-                            tmp.hidden = Convert.ToString(reader["hidden"]);
+                            tmp.hidden = Convert.ToInt32(reader["hidden"]);
                             tmp.health = Convert.ToDecimal(reader["health"]);
                             tmp.descriptiontoken = Convert.ToString(reader["descriptiontoken"]);
                             tmp.purchasable = Convert.ToInt32(reader["purchasable"]);
@@ -1444,7 +1490,7 @@ namespace Perptool.db
                             tmp.enabled = Convert.ToInt32(reader["enabled"]);
                             tmp.volume = Convert.ToDecimal(reader["volume"]);
                             tmp.mass = Convert.ToDecimal(reader["mass"]);
-                            tmp.hidden = Convert.ToString(reader["hidden"]);
+                            tmp.hidden = Convert.ToInt32(reader["hidden"]);
                             tmp.health = Convert.ToDecimal(reader["health"]);
                             tmp.descriptiontoken = Convert.ToString(reader["descriptiontoken"]);
                             tmp.purchasable = Convert.ToInt32(reader["purchasable"]);

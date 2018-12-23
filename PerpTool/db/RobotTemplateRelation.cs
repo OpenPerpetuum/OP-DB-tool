@@ -211,8 +211,8 @@ namespace Perptool.db
 
                 command.CommandText = sqlCommand.ToString();
 
-                command.Parameters.AddWithValue("@definitionID", item.definition);
-                command.Parameters.AddWithValue("@templateID", item.templateid);
+                command.Parameters.AddWithValue(EntityDefaults.IDkey, item.definition);
+                command.Parameters.AddWithValue(RobotTemplatesTable.IDkey, item.templateid);
                 command.Parameters.AddWithValue("@itemscoresum", item.itemscoresum);
                 command.Parameters.AddWithValue("@raceid", item.raceid);
                 command.Parameters.AddWithValue("@missionlevel", Utilities.getNullableInt(item.missionlevel));
@@ -226,22 +226,7 @@ namespace Perptool.db
                 command.ExecuteNonQuery();
                 conn.Close();
 
-                query = command.CommandText;
-                foreach (SqlParameter p in command.Parameters)
-                {
-                    if (p.ParameterName == "@definitionID" || p.ParameterName == "@templateID")
-                    {
-                        continue;
-                    }
-                    else if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
-                    {
-                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
-                    }
-                    else
-                    {
-                        query = query.Replace(p.ParameterName, p.Value.ToString());
-                    }
-                }
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { EntityDefaults.IDkey, RobotTemplatesTable.IDkey }));
             }
             return query;
         }
@@ -253,12 +238,12 @@ namespace Perptool.db
             {
                 StringBuilder sqlCommand = new StringBuilder();
                 sqlCommand.Append(@"INSERT INTO [dbo].[robottemplaterelation] ([definition],[templateid],[itemscoresum],[raceid],[missionlevel],[missionleveloverride],[killep],[note])
-                VALUES (@definitionID,@templateID,@itemscoresum,@raceid,@missionlevel,@levelOverride,@killep,@note);");
+                VALUES ("+EntityDefaults.IDkey+ ","+RobotTemplatesTable.IDkey+",@itemscoresum,@raceid,@missionlevel,@levelOverride,@killep,@note);");
 
                 command.CommandText = sqlCommand.ToString();
 
-                command.Parameters.AddWithValue("@definitionID", item.definition);
-                command.Parameters.AddWithValue("@templateID", item.templateid);
+                command.Parameters.AddWithValue(EntityDefaults.IDkey, item.definition);
+                command.Parameters.AddWithValue(RobotTemplatesTable.IDkey, item.templateid);
                 command.Parameters.AddWithValue("@itemscoresum", item.itemscoresum);
                 command.Parameters.AddWithValue("@raceid", item.raceid);
                 command.Parameters.AddWithValue("@missionlevel", Utilities.getNullableInt(item.missionlevel));
@@ -272,21 +257,7 @@ namespace Perptool.db
                 command.ExecuteNonQuery();
                 conn.Close();
 
-                query = command.CommandText;
-                foreach (SqlParameter p in command.Parameters)
-                {
-                    if (p.ParameterName != "@definitionID" && p.ParameterName != "@templateID")
-                    {
-                        if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
-                        {
-                            query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
-                        }
-                        else
-                        {
-                            query = query.Replace(p.ParameterName, p.Value.ToString());
-                        }
-                    }
-                }
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { EntityDefaults.IDkey, RobotTemplatesTable.IDkey }));
             }
             return query;
         }

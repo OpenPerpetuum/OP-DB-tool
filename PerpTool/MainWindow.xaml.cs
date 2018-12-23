@@ -51,24 +51,28 @@ namespace PerpTool
             NPCPresenceTable = new NPCPresence(Connstr);
             NPCFlockTable = new NPCFlock(Connstr);
             ExtensionsTable = new Extensions(Connstr);
+            ArtifactLoot = new ArtifactLoot(Connstr);
+            ArtifactType = new ArtifactType(Connstr);
 
             EntityItems = Entities.GetEntitiesWithFields();
             ZoneList = ZoneTbl.GetAllZones();
             SpawnList = Spawn.GetAllSpawns();
             LootableBots = Entities.GetEntitiesByCategory(CategoryFlags.cf_npc);
-            LootableEntityDefaults = Entities.GetEntitiesByCategory(CategoryFlags.cf_reactor_plasma);
-            LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_kernels));
-            LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_robotshards));
-            LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_research_kits));
-            LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_reactor_cores));
-            LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_npc_eggs));
-            LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_raw_material));
-            LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_robot_equipment));
+            LootableEntityDefaults = Entities.GetPurchasableEntities();
+            //LootableEntityDefaults = Entities.GetEntitiesByCategory(CategoryFlags.cf_reactor_plasma);
+            //LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_kernels));
+            //LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_robotshards));
+            //LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_research_kits));
+            //LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_reactor_cores));
+            //LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_npc_eggs));
+            //LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_raw_material));
+            //LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_robot_equipment));
             AllRobotComponents = Entities.GetEntitiesByCategory(CategoryFlags.cf_robot_components);
             NPCTemplates = NPCBotTemplates.getAll();
             AllNPCPresences = NPCPresenceTable.getAll();
             AllNPCFlocks = NPCFlockTable.GetAllFlocks();
             AllExtensions = ExtensionsTable.GetAll();
+            ArtifactTypes = ArtifactType.GetAll();
 
 
             this.CatFlags = this.GetAllCategoryFlags();
@@ -80,9 +84,6 @@ namespace PerpTool
             this.NPCFlockList = new ObservableCollection<NPCFlockData>();
             this.BotTemplate = new ObservableCollection<RobotTemplate>();
             this.DataContext = this;
-
-            var f = CategoryFlags.cf_calibration_programs;
-            var r = Entities.GetCategoryFlagsMask(f);
         }
 
         public IEnumerable<CategoryFlags> CatFlags { get; set; }
@@ -1325,6 +1326,31 @@ namespace PerpTool
                 MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
             }
         }
+
+        private void NPCTemplateRelation_Insert_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                StringBuilder sb = new StringBuilder();
+                string message = "Did NOT save =(";
+                string appendStr = NPCTemplateRelation.dBAction.ToString();
+                sb.AppendLine(RobotTemplatesTable.GetDeclStatement());
+                sb.AppendLine(RobotTemplatesTable.GetLookupStatement(NPCTemplateRelation.templatename));
+                sb.AppendLine(EntityDefaults.GetDeclStatement());
+                sb.AppendLine(SelectedBotForRelation.GetLookupStatement());
+                sb.AppendLine();
+                sb.AppendLine(NPCTemplateRelations.Insert(NPCTemplateRelation));
+                sb.AppendLine();
+                message = "Saved New TemplateRelation!";
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + NPCTemplateRelation.definitionname + "_template_relation_INSERT_" + appendStr + Utilities.timestamp() + ".sql", sb.ToString());
+                MessageBox.Show(message, "Info", 0, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
+            }
+        }
+
         #endregion
 
         #region NPCGroup
@@ -1535,6 +1561,179 @@ namespace PerpTool
 
         #endregion
 
+
+        #region ArtifactLoot
+        public ArtifactLoot ArtifactLoot { get; set; }
+        public ArtifactType ArtifactType { get; set; }
+
+        private ObservableCollection<ArtifactLootItem> _artilootdata;
+        public ObservableCollection<ArtifactLootItem> ArtifactLoots
+        {
+            get
+            {
+                return _artilootdata;
+            }
+            set
+            {
+                _artilootdata = value;
+                OnPropertyChanged("ArtifactLoots");
+            }
+        }
+
+        private List<ArtifactType> _artifactTypes;
+        public List<ArtifactType> ArtifactTypes
+        {
+            get
+            {
+                return _artifactTypes;
+            }
+            set
+            {
+                _artifactTypes = value;
+                OnPropertyChanged("ArtifactTypes");
+            }
+        }
+
+
+        private ArtifactType _selectedArtifactType;
+        public ArtifactType SelectedArtifactType
+        {
+            get
+            {
+                return this._selectedArtifactType;
+            }
+            set
+            {
+                this._selectedArtifactType = value;
+                OnPropertyChanged("SelectedArtifactType");
+            }
+        }
+
+        private void ComboBox_DropDownClosed_ArtifactType(object sender, EventArgs e)
+        {
+            if (SelectedArtifactType == null) { return; }
+            this.ArtifactLoots = ArtifactLoot.GetLootByArtifactTypeID(SelectedArtifactType.id);
+        }
+
+
+        private void ComboBox_DropDownClosed_ArtifactLoots(object sender, EventArgs e)
+        {
+            System.Console.WriteLine(currentRowAddItem);
+        }
+
+        private void ArtifactLoots_Save_Button_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                //TODO
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine(EntityDefaults.GetDeclStatement());
+                sb.AppendLine(SelectedLootableBot.GetLookupStatement());
+                sb.AppendLine(LootItem.GetLootDeclStatment());
+                sb.AppendLine(LootItem.GetDeclStatement());
+                foreach (LootItem item in this.loots)
+                {
+                    if (item.dBAction == DBAction.UPDATE)
+                    {
+                        Loot.updateSelf(item);
+                        sb.AppendLine(item.GetLootDefinitionLookupStatement());
+                        sb.AppendLine(item.GetLookupStatement());
+                        sb.AppendLine(Loot.Save());
+                        sb.AppendLine();
+                    }
+                    else if (item.dBAction == DBAction.INSERT)
+                    {
+                        Loot.updateSelf(item);
+                        sb.AppendLine(item.GetLootDefinitionLookupStatement());
+                        sb.AppendLine(Loot.Insert());
+                        sb.AppendLine();
+                    }
+                }
+
+                foreach (LootItem item in removeLoot)
+                {
+                    if (item.dBAction == DBAction.DELETE)
+                    {
+                        sb.AppendLine(item.GetLootDefinitionLookupStatement());
+                        sb.AppendLine(item.GetLookupStatement());
+                        Loot.updateSelf(item);
+                        sb.AppendLine(Loot.Delete());
+                        sb.AppendLine();
+                    }
+                }
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + SelectedLootableBot.definitionname + "_loot" + Utilities.timestamp() + ".sql", sb.ToString());
+                MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
+            }
+
+        }
+
+        public List<ArtifactLootItem> copyArtifactLoots = new List<ArtifactLootItem>();
+        private void Copy_ArtifactLoots(object sender, EventArgs e)
+        {
+            copyArtifactLoots = new List<ArtifactLootItem>(this.ArtifactLoots);
+        }
+
+        private void Paste_ArtifactLoots(object sender, EventArgs e)
+        {
+            foreach (ArtifactLootItem item in this.copyArtifactLoots)
+            {
+                item.dBAction = DBAction.INSERT;
+                this.ArtifactLoots.Add(item);
+            }
+        }
+
+        private ArtifactLootItem _privateSelectedArtifactLoot;
+        public ArtifactLootItem SelectedArtifactLoot
+        {
+            get
+            {
+                return _privateSelectedArtifactLoot;
+            }
+            set
+            {
+                _privateSelectedArtifactLoot = value;
+                OnPropertyChanged("SelectedArtifactLoot");
+            }
+        }
+
+        public List<ArtifactLootItem> removeArtifactLoots = new List<ArtifactLootItem>();
+        private void ArtifactLoots_Remove_Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.ArtifactLoots.Count > 0)
+            {
+                ArtifactLootItem lootToRemove = this.ArtifactLoots.Last<ArtifactLootItem>();
+                if (this.SelectedArtifactLoot != null)
+                {
+                    lootToRemove = SelectedArtifactLoot;
+                }
+                if (lootToRemove.dBAction != DBAction.INSERT)
+                {
+                    lootToRemove.dBAction = DBAction.DELETE;
+                    removeArtifactLoots.Add(lootToRemove);
+                }
+                this.ArtifactLoots.Remove(lootToRemove);
+            }
+        }
+
+        private void ArtifactLoots_Add_Row_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                ArtifactLootItem loot = ArtifactLootItem.CreateNewForArtifactType(this.SelectedArtifactType, this.currentRowAddItem);
+                loot.dBAction = DBAction.INSERT;
+                this.ArtifactLoots.Add(loot);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
+            }
+        }
+
+        #endregion
 
         private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {

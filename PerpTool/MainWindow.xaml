@@ -165,7 +165,7 @@
                         </Expander>
 
                         <Grid Grid.Column="0"  Grid.ColumnSpan="10" Grid.Row="8" Margin="5" >
-                            
+
                             <ComboBox x:Name="AggFieldCombo" HorizontalAlignment="Left" VerticalAlignment="Bottom"  Margin="10,0,0,10"  Width="278" Height="26" ItemsSource="{Binding AllAggregateFields}" DisplayMemberPath="name" SelectedValuePath="id" DropDownClosed="ComboBox_DropDownClosed_AggField"/>
                             <Button Content="Remove Field" Margin="293,0,0,41" Click="AggFieldRemove_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100" />
                             <Button Content="Add New Field" Margin="293,0,0,10" Click="AggFieldAdd_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100" />
@@ -460,6 +460,7 @@
                         <ComboBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="5" Margin="5" x:Name="npctemplaterelation_change"  Height="23" ItemsSource="{Binding NPCTemplates}" SelectedItem="{Binding SelectedNPCTemplateForRelation}" DisplayMemberPath="name" SelectedValuePath="id"/>
                         <Button Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" Content="Change Template of Relation" Click="ChangeTemplateClick"/>
                         <Button Grid.Row="4" Grid.Column="6" Margin="5" Content="SAVE" Click="NPCTemplateRelation_Save_Click"/>
+                        <Button Grid.Row="4" Grid.Column="5" Margin="5" Content="SAVE AS NEW" Click="NPCTemplateRelation_Insert_Click"/>
 
 
                     </Grid>
@@ -568,6 +569,33 @@
                 </ScrollViewer>
             </TabItem>
 
+
+            <TabItem Header="Artifact Loot Tables">
+                <ScrollViewer>
+                    <Grid Background="#FFE5E5E5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="168*"/>
+                            <ColumnDefinition Width="71*"/>
+                        </Grid.ColumnDefinitions>
+                        <ComboBox x:Name="artifactlootcombo" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="400" ItemsSource="{Binding ArtifactTypes}" DisplayMemberPath="name" SelectedValuePath="id" SelectedItem="{Binding SelectedArtifactType}" DropDownClosed="ComboBox_DropDownClosed_ArtifactType"/>
+                        <DataGrid Margin="10,61,10,70" ItemsSource="{Binding ArtifactLoots}" SelectedItem="{Binding SelectedArtifactLoot}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Grid.ColumnSpan="2" >
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="LootDefinitionName" Width="Auto" Binding="{Binding LootDefinitionName}"/>
+                                <DataGridTextColumn Header="MinQuantity" Width="Auto" Binding="{Binding LootMinQuantity}"/>
+                                <DataGridTextColumn Header="MaxQuantity" Width="Auto" Binding="{Binding LootMaxQuantity}"/>
+                                <DataGridTextColumn Header="MaxQuantity" Width="Auto" Binding="{Binding LootProbability}"/>
+                                <DataGridTextColumn Header="Repackaged" Width="Auto" Binding="{Binding LootRepackaged}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <Button Content="Commit Changes" Margin="75,0,0,39" Click="ArtifactLoots_Save_Button_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="128" Grid.Column="1"/>
+                        <ComboBox x:Name="artifactloot" HorizontalAlignment="Left" VerticalAlignment="Bottom"  Margin="10,0,0,39"  Width="299" Height="26" ItemsSource="{Binding LootableEntityDefaults}" DisplayMemberPath="definitionname" SelectedValuePath="definition"  SelectedItem="{Binding currentRowAddItem}" DropDownClosed="ComboBox_DropDownClosed_ArtifactLoots"/>
+                        <Button Content="Add new row" Margin="314,0,0,39" Click="ArtifactLoots_Add_Row_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100"/>
+                        <Button Content="Remove Row" Margin="314,0,0,8" Click="ArtifactLoots_Remove_Button_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100"/>
+                        <Button Content="Paste Loots" Margin="419,0,0,8" Click="Paste_ArtifactLoots" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="95" Grid.ColumnSpan="2" />
+                        <Button Content="Copy Loots" Margin="419,0,0,39" Click="Copy_ArtifactLoots" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="95" RenderTransformOrigin="0.725,0.538" Grid.ColumnSpan="2"/>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
 
         </TabControl>
     </Grid>

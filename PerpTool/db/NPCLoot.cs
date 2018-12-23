@@ -261,7 +261,6 @@ namespace Perptool.db
                 {
                     while (reader.Read())
                     {
-                        NPCLoot temp = new NPCLoot(this.ConnString);
                         this.id = Convert.ToInt32(reader["id"]);
                         this.definition = Convert.ToInt32(reader["definition"]);
                         this.lootdefinition = Convert.ToInt32(reader["lootdefinition"]);

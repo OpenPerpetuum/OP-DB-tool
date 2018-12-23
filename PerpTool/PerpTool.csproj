@@ -67,6 +67,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="db\ArtifactLoot.cs" />
+    <Compile Include="db\ArtifactSpawnInfo.cs" />
+    <Compile Include="db\ArtifactType.cs" />
     <Compile Include="db\Extensions.cs" />
     <Compile Include="db\Utilities.cs" />
     <Compile Include="Types\AttributeFlags.cs" />
