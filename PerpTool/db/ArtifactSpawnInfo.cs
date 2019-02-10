@@ -250,7 +250,7 @@ namespace PerpTool.db
                 command.ExecuteNonQuery();
                 conn.Close();
 
-                query = Utilities.parseCommandString(command, new List<string>(new string[] { ArtifactSpawnInfoRecord.IDKey, Zones.IDKey }));
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { ArtifactSpawnInfoRecord.IDKey, Zones.IDKey, ArtifactTypeRecord.IDKey }));
             }
             return query;
         }
@@ -262,10 +262,10 @@ namespace PerpTool.db
             {
                 StringBuilder sqlCommand = new StringBuilder();
                 sqlCommand.Append(@"INSERT INTO [dbo].[artifactspawninfo] ([artifacttype],[zoneid],[rate])
-                 VALUES (" + ArtifactSpawnInfoRecord.IDKey + "," + Zones.IDKey + ",@rate);");
+                 VALUES (" + ArtifactTypeRecord.IDKey + "," + Zones.IDKey + ",@rate);");
                 command.CommandText = sqlCommand.ToString();
 
-                command.Parameters.AddWithValue(ArtifactSpawnInfoRecord.IDKey, this.artifacttype);
+                command.Parameters.AddWithValue(ArtifactTypeRecord.IDKey, this.artifacttype);
                 command.Parameters.AddWithValue(Zones.IDKey, this.zoneid);
                 command.Parameters.AddWithValue("@rate", this.rate);
 
@@ -275,7 +275,7 @@ namespace PerpTool.db
                 command.ExecuteNonQuery();
                 conn.Close();
 
-                query = Utilities.parseCommandString(command, new List<string>(new string[] { ArtifactSpawnInfoRecord.IDKey, Zones.IDKey }));
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { ArtifactTypeRecord.IDKey, Zones.IDKey }));
             }
             return query;
         }
