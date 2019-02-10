@@ -816,7 +816,7 @@ namespace Perptool.db
                             tmp.state = Convert.ToInt32(reader["state"]);
                             tmp.accLevel = Convert.ToInt32(reader["accLevel"]);
                             tmp.totalMinsOnline = Convert.ToInt32(reader["totalMinsOnline"]);
-                            tmp.lastLoggedIn = Convert.ToDateTime(reader["lastLoggedIn"]);
+                            if (reader["lastLoggedIn"] != DBNull.Value) { tmp.lastLoggedIn = Convert.ToDateTime(reader["lastLoggedIn"]); }
                             tmp.creation = Convert.ToDateTime(reader["creation"]);
                             tmp.clientType = Convert.ToInt32(reader["clientType"]);
                             tmp.isLoggedIn = Convert.ToInt32(reader["isLoggedIn"]);

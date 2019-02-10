@@ -35,6 +35,24 @@ namespace PerpTool.db
             return query;
         }
 
+        public static string handleNullableString(object readValue)
+        {
+            if (DBNull.Value == readValue)
+            {
+                return "NULL";
+            }
+            return Convert.ToString(readValue);
+        }
+
+        public static object getNullableString(string s)
+        {
+            if (s=="NULL")
+            {
+                return (object)DBNull.Value;
+            }
+            return s;
+        }
+
         public static int handleNullableInt(object readValue)
         {
             if (DBNull.Value == readValue)

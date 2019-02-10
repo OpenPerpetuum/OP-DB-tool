@@ -52,7 +52,7 @@ namespace PerpTool
             NPCFlockTable = new NPCFlock(Connstr);
             ExtensionsTable = new Extensions(Connstr);
             ArtifactLoot = new ArtifactLoot(Connstr);
-            ArtifactType = new ArtifactType(Connstr);
+            ArtifactType = new ArtifactTypes(Connstr);
 
             EntityItems = Entities.GetEntitiesWithFields();
             ZoneList = ZoneTbl.GetAllZones();
@@ -1564,7 +1564,7 @@ namespace PerpTool
 
         #region ArtifactLoot
         public ArtifactLoot ArtifactLoot { get; set; }
-        public ArtifactType ArtifactType { get; set; }
+        public ArtifactTypes ArtifactType { get; set; }
 
         private ObservableCollection<ArtifactLootItem> _artilootdata;
         public ObservableCollection<ArtifactLootItem> ArtifactLoots
@@ -1580,8 +1580,8 @@ namespace PerpTool
             }
         }
 
-        private List<ArtifactType> _artifactTypes;
-        public List<ArtifactType> ArtifactTypes
+        private List<ArtifactTypes> _artifactTypes;
+        public List<ArtifactTypes> ArtifactTypes
         {
             get
             {
@@ -1595,8 +1595,8 @@ namespace PerpTool
         }
 
 
-        private ArtifactType _selectedArtifactType;
-        public ArtifactType SelectedArtifactType
+        private ArtifactTypes _selectedArtifactType;
+        public ArtifactTypes SelectedArtifactType
         {
             get
             {
@@ -1630,7 +1630,7 @@ namespace PerpTool
                 //Set the artifacttype = same for all updates on one 'page'
                 sb.AppendLine(ArtifactLootItem.GetLootDeclStatment());
                 sb.AppendLine(ArtifactLootItem.GetDeclStatement());
-                sb.AppendLine(ArtifactType.GetArtifactTypeDeclStatement());
+                sb.AppendLine(db.ArtifactTypes.GetArtifactTypeDeclStatement());
                 sb.AppendLine(SelectedArtifactType.GetArtifactTypeDefinitionLokupStatement());
 
                 foreach (ArtifactLootItem item in this.ArtifactLoots)

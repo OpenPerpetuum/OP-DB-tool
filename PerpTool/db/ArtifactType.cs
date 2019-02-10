@@ -6,11 +6,44 @@ using System.Data.SqlClient;
 using System.Collections.ObjectModel;
 using PerpTool.db;
 using System.Collections.Generic;
+using Perptool.db;
 
 namespace PerpTool.db
 {
 
-    public class ArtifactType : INotifyPropertyChanged
+    public class ArtifactType
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int GoalRange { get; set; }
+        public int NpcPresenceID { get; set; }
+        public string NpcPresenceName { get; set; }
+        public int Persistent { get; set; }
+        public int MinimumLoot { get; set; }
+        public int Dynamic { get; set; }
+
+        public ArtifactType()
+        {
+
+
+        }
+
+        public ArtifactTypes toTable(string connstring)
+        {
+            ArtifactTypes a = new ArtifactTypes(connstring);
+            a.id = this.Id;
+            a.name = this.Name;
+            a.goalrange = this.GoalRange;
+            a.npcpresence = this.NpcPresenceID;
+            a.persistent = this.Persistent;
+            a.minimumloot = this.MinimumLoot;
+            a.dynamic = this.Dynamic;
+            return a;
+        }
+
+    }
+
+    public class ArtifactTypes : INotifyPropertyChanged
     {
 
         private int privateid;
@@ -35,7 +68,7 @@ namespace PerpTool.db
             return "SET " + IDKey + " = (SELECT TOP 1 id from artifacttypes WHERE [name] = '" + this.name + "');";
         }
 
-        public ArtifactType(string connectionString)
+        public ArtifactTypes(string connectionString)
         {
             this.ConnString = connectionString;
         }
@@ -193,23 +226,56 @@ namespace PerpTool.db
             }
         }
 
-        public List<ArtifactType> GetAll()
+
+        public ObservableCollection<ArtifactType> GetAllTypes()
         {
-            List<ArtifactType> types = new List<ArtifactType>();
+            ObservableCollection<ArtifactType> types = new ObservableCollection<ArtifactType>();
             SqlConnection conn = new SqlConnection(this.ConnString);
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("SELECT * FROM artifacttypes");
+                sqlCommand.Append(@"SELECT artifacttypes.*, npcpresence.name AS npcpresencename FROM artifacttypes
+                LEFT JOIN npcpresence ON(npcpresence.id = artifacttypes.npcpresenceid);");
                 command.CommandText = sqlCommand.ToString();
-                command.Parameters.AddWithValue("@id", id);
                 command.Connection = conn;
                 conn.Open();
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        ArtifactType a = new ArtifactType(this.ConnString);
+                        ArtifactType a = new ArtifactType();
+                        a.Id = Convert.ToInt32(reader["id"]);
+                        a.Name = Convert.ToString(reader["name"]);
+                        a.GoalRange = Convert.ToInt32(reader["goalrange"]);
+                        a.NpcPresenceID = Utilities.handleNullableInt(reader["npcpresenceid"]);
+                        a.NpcPresenceName = Utilities.handleNullableString(reader["npcpresencename"]);
+                        a.Persistent = Convert.ToInt32(reader["persistent"]);
+                        a.MinimumLoot = Convert.ToInt32(reader["minimumloot"]);
+                        a.Dynamic = Convert.ToInt32(reader["dynamic"]);
+                        types.Add(a);
+                    }
+                }
+                conn.Dispose();
+            }
+            return types;
+        }
+
+        public List<ArtifactTypes> GetAll()
+        {
+            List<ArtifactTypes> types = new List<ArtifactTypes>();
+            SqlConnection conn = new SqlConnection(this.ConnString);
+            using (SqlCommand command = new SqlCommand())
+            {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.Append("SELECT * FROM artifacttypes");
+                command.CommandText = sqlCommand.ToString();
+                command.Connection = conn;
+                conn.Open();
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        ArtifactTypes a = new ArtifactTypes(this.ConnString);
                         a.id = Convert.ToInt32(reader["id"]);
                         a.name = Convert.ToString(reader["name"]);
                         a.goalrange = Convert.ToInt32(reader["goalrange"]);
@@ -223,6 +289,13 @@ namespace PerpTool.db
                 conn.Dispose();
             }
             return types;
+        }
+
+
+        public string Save(ArtifactType a, string connstring)
+        {
+            ArtifactTypes table = a.toTable(connstring);
+            return table.Save();
         }
 
 
@@ -259,20 +332,15 @@ namespace PerpTool.db
                 command.ExecuteNonQuery();
                 conn.Close();
 
-                query = command.CommandText;
-                foreach (SqlParameter p in command.Parameters)
-                {
-                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
-                    {
-                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
-                    }
-                    else
-                    {
-                        query = query.Replace(p.ParameterName, p.Value.ToString());
-                    }
-                }
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { IDKey }));//TODO
             }
             return query;
+        }
+
+        public string Insert(ArtifactType a, string connstring)
+        {
+            ArtifactTypes table = a.toTable(connstring);
+            return table.Insert();
         }
 
         public string Insert()
@@ -298,24 +366,15 @@ namespace PerpTool.db
                 command.ExecuteNonQuery();
                 conn.Close();
 
-                query = command.CommandText;
-                foreach (SqlParameter p in command.Parameters)
-                {
-                    if (p.ParameterName == "@lootdefinitionID" || p.ParameterName == "@artifacttype")
-                    {
-                        continue;
-                    }
-                    else if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
-                    {
-                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
-                    }
-                    else
-                    {
-                        query = query.Replace(p.ParameterName, p.Value.ToString());
-                    }
-                }
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { }));//TODO
             }
             return query;
+        }
+
+        public string Delete(ArtifactType a, string connstring)
+        {
+            ArtifactTypes table = a.toTable(connstring);
+            return table.Delete();
         }
 
         public string Delete()
@@ -336,17 +395,7 @@ namespace PerpTool.db
                 conn.Close();
 
                 query = command.CommandText;
-                foreach (SqlParameter p in command.Parameters)
-                {
-                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
-                    {
-                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
-                    }
-                    else
-                    {
-                        query = query.Replace(p.ParameterName, p.Value.ToString());
-                    }
-                }
+                query = Utilities.parseCommandString(command, new List<string>(new string[] {  }));//TODO
             }
             return query;
         }
