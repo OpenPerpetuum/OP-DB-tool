@@ -579,7 +579,7 @@
                                 <DataGridTextColumn Header="LootDefinitionName" Width="Auto" Binding="{Binding LootDefinitionName}"/>
                                 <DataGridTextColumn Header="MinQuantity" Width="Auto" Binding="{Binding LootMinQuantity}"/>
                                 <DataGridTextColumn Header="MaxQuantity" Width="Auto" Binding="{Binding LootMaxQuantity}"/>
-                                <DataGridTextColumn Header="MaxQuantity" Width="Auto" Binding="{Binding LootProbability}"/>
+                                <DataGridTextColumn Header="Probability" Width="Auto" Binding="{Binding LootProbability}"/>
                                 <DataGridTextColumn Header="Repackaged" Width="Auto" Binding="{Binding LootRepackaged}"/>
                             </DataGrid.Columns>
                         </DataGrid>
