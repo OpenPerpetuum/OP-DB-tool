@@ -37,7 +37,7 @@ namespace Perptool.db
 
         public string GetArtifactTypeDefinitionLokupStatement()
         {
-            return "SET " + ArtifactTypes.IDKey + " = (SELECT TOP 1 id from artifacttypes WHERE [name] = '" + this.ArtifactTypeName + "');";
+            return "SET " + ArtifactTypesTable.IDKey + " = (SELECT TOP 1 id from artifacttypes WHERE [name] = '" + this.ArtifactTypeName + "');";
         }
 
         public string GetLootDefinitionLookupStatement()
@@ -47,10 +47,10 @@ namespace Perptool.db
 
         public string GetLookupStatement()
         {
-            return "SET " + ArtifactLootItem.IDKey + " = (SELECT TOP 1 id FROM artifactloot WHERE definition = " + EntityDefaults.IDkey + "  AND artifacttype = " + ArtifactTypes.IDKey + ");";
+            return "SET " + ArtifactLootItem.IDKey + " = (SELECT TOP 1 id FROM artifactloot WHERE definition = " + EntityDefaults.IDkey + "  AND artifacttype = " + ArtifactTypesTable.IDKey + ");";
         }
 
-        public static ArtifactLootItem CreateNewForArtifactType(ArtifactTypes _type, EntityDefaults entity)
+        public static ArtifactLootItem CreateNewForArtifactType(ArtifactTypesTable _type, EntityDefaults entity)
         {
             ArtifactLootItem item = new ArtifactLootItem();
             item.ArtifactTypeID = _type.id;
@@ -300,13 +300,13 @@ namespace Perptool.db
             {
                 StringBuilder sqlCommand = new StringBuilder();
                 sqlCommand.Append(@"UPDATE artifactloot SET 
-                [definition]="+ EntityDefaults.IDkey+",[artifacttype]="+ ArtifactTypes.IDKey+",[minquantity]=@minquantity,[maxquantity]=@maxquantity,[chance]=@chance,[packed]=@packed " +
+                [definition]="+ EntityDefaults.IDkey+",[artifacttype]="+ ArtifactTypesTable.IDKey+",[minquantity]=@minquantity,[maxquantity]=@maxquantity,[chance]=@chance,[packed]=@packed " +
                 "WHERE [id]="+ ArtifactLootItem.IDKey + ";");
                 command.CommandText = sqlCommand.ToString();
 
                 command.Parameters.AddWithValue(ArtifactLootItem.IDKey, this.id);
                 command.Parameters.AddWithValue(EntityDefaults.IDkey, this.lootdefinition);
-                command.Parameters.AddWithValue(ArtifactTypes.IDKey, this.artifactType);
+                command.Parameters.AddWithValue(ArtifactTypesTable.IDKey, this.artifactType);
                 command.Parameters.AddWithValue("@minquantity", this.minquantity);
                 command.Parameters.AddWithValue("@maxquantity", this.maxquantity);
                 command.Parameters.AddWithValue("@chance", this.chance);
@@ -318,7 +318,7 @@ namespace Perptool.db
                 command.ExecuteNonQuery();
                 conn.Close();
 
-                query = Utilities.parseCommandString(command, new List<string>(new string[] { EntityDefaults.IDkey, ArtifactLootItem.IDKey, ArtifactTypes.IDKey}));
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { EntityDefaults.IDkey, ArtifactLootItem.IDKey, ArtifactTypesTable.IDKey}));
             }
             return query;
         }
@@ -330,11 +330,11 @@ namespace Perptool.db
             {
                 StringBuilder sqlCommand = new StringBuilder();
                 sqlCommand.Append(@"INSERT INTO[dbo].[artifactloot] ([artifacttype],[definition],[minquantity],[maxquantity],[chance],[packed])
-                VALUES ("+ ArtifactTypes.IDKey + ", "+ EntityDefaults.IDkey + ", @minquantity, @maxquantity, @chance, @packed)");
+                VALUES ("+ ArtifactTypesTable.IDKey + ", "+ EntityDefaults.IDkey + ", @minquantity, @maxquantity, @chance, @packed)");
                 command.CommandText = sqlCommand.ToString();
 
                 command.Parameters.AddWithValue(EntityDefaults.IDkey, this.lootdefinition);
-                command.Parameters.AddWithValue(ArtifactTypes.IDKey, this.artifactType);
+                command.Parameters.AddWithValue(ArtifactTypesTable.IDKey, this.artifactType);
                 command.Parameters.AddWithValue("@minquantity", this.minquantity);
                 command.Parameters.AddWithValue("@maxquantity", this.maxquantity);
                 command.Parameters.AddWithValue("@chance", this.chance);
@@ -346,7 +346,7 @@ namespace Perptool.db
                 command.ExecuteNonQuery();
                 conn.Close();
 
-                query = Utilities.parseCommandString(command, new List<string>(new string[] { EntityDefaults.IDkey, ArtifactTypes.IDKey }));
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { EntityDefaults.IDkey, ArtifactTypesTable.IDKey }));
             }
             return query;
         }

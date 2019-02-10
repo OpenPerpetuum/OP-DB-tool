@@ -9,11 +9,28 @@ using System.Data.SqlClient;
 
 namespace Perptool.db
 {
+
     /// <summary>
     /// Table Class
     /// </summary>
     public class Zones : INotifyPropertyChanged
     {
+
+        public static string IDKey = "@zoneID";
+
+
+        //SQL helpers
+        public static string GetZoneDeclStatement()
+        {
+            return "DECLARE " + IDKey + " int;";
+        }
+
+        public string GetZoneLookupStatement()
+        {
+            return "SET " + IDKey + " = (SELECT TOP 1 id from zones WHERE [name] = '" + this.name + "' AND [note] = '" + this.note + "');";
+        }
+
+
         /// <summary>
         /// private field
         /// </summary>

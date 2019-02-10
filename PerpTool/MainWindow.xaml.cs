@@ -52,21 +52,14 @@ namespace PerpTool
             NPCFlockTable = new NPCFlock(Connstr);
             ExtensionsTable = new Extensions(Connstr);
             ArtifactLoot = new ArtifactLoot(Connstr);
-            ArtifactType = new ArtifactTypes(Connstr);
+            ArtifactType = new ArtifactTypesTable(Connstr);
+            ArtifactSpawnInfoTable = new ArtifactSpawnInfo(Connstr);
 
             EntityItems = Entities.GetEntitiesWithFields();
             ZoneList = ZoneTbl.GetAllZones();
             SpawnList = Spawn.GetAllSpawns();
             LootableBots = Entities.GetEntitiesByCategory(CategoryFlags.cf_npc);
             LootableEntityDefaults = Entities.GetPurchasableEntities();
-            //LootableEntityDefaults = Entities.GetEntitiesByCategory(CategoryFlags.cf_reactor_plasma);
-            //LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_kernels));
-            //LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_robotshards));
-            //LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_research_kits));
-            //LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_reactor_cores));
-            //LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_npc_eggs));
-            //LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_raw_material));
-            //LootableEntityDefaults.AddRange(Entities.GetEntitiesByCategory(CategoryFlags.cf_robot_equipment));
             AllRobotComponents = Entities.GetEntitiesByCategory(CategoryFlags.cf_robot_components);
             NPCTemplates = NPCBotTemplates.getAll();
             AllNPCPresences = NPCPresenceTable.getAll();
@@ -100,6 +93,7 @@ namespace PerpTool
         private NPCPresence NPCPresenceTable { get; set; }
         private NPCFlock NPCFlockTable { get; set; }
         private Extensions ExtensionsTable { get; set; }
+        private ArtifactSpawnInfo ArtifactSpawnInfoTable { get; set; }
 
         public List<EntityDefaults> AmmoList { get; set; }
         public List<EntityDefaults> ModuleList { get; set; }
@@ -1564,7 +1558,7 @@ namespace PerpTool
 
         #region ArtifactLoot
         public ArtifactLoot ArtifactLoot { get; set; }
-        public ArtifactTypes ArtifactType { get; set; }
+        public ArtifactTypesTable ArtifactType { get; set; }
 
         private ObservableCollection<ArtifactLootItem> _artilootdata;
         public ObservableCollection<ArtifactLootItem> ArtifactLoots
@@ -1580,8 +1574,8 @@ namespace PerpTool
             }
         }
 
-        private List<ArtifactTypes> _artifactTypes;
-        public List<ArtifactTypes> ArtifactTypes
+        private List<ArtifactTypesTable> _artifactTypes;
+        public List<ArtifactTypesTable> ArtifactTypes
         {
             get
             {
@@ -1595,8 +1589,8 @@ namespace PerpTool
         }
 
 
-        private ArtifactTypes _selectedArtifactType;
-        public ArtifactTypes SelectedArtifactType
+        private ArtifactTypesTable _selectedArtifactType;
+        public ArtifactTypesTable SelectedArtifactType
         {
             get
             {
@@ -1625,12 +1619,11 @@ namespace PerpTool
         {
             try
             {
-                //TODO
                 StringBuilder sb = new StringBuilder();
                 //Set the artifacttype = same for all updates on one 'page'
                 sb.AppendLine(ArtifactLootItem.GetLootDeclStatment());
                 sb.AppendLine(ArtifactLootItem.GetDeclStatement());
-                sb.AppendLine(db.ArtifactTypes.GetArtifactTypeDeclStatement());
+                sb.AppendLine(db.ArtifactTypesTable.GetArtifactTypeDeclStatement());
                 sb.AppendLine(SelectedArtifactType.GetArtifactTypeDefinitionLokupStatement());
 
                 foreach (ArtifactLootItem item in this.ArtifactLoots)
@@ -1728,6 +1721,144 @@ namespace PerpTool
                 ArtifactLootItem loot = ArtifactLootItem.CreateNewForArtifactType(this.SelectedArtifactType, this.currentRowAddItem);
                 loot.dBAction = DBAction.INSERT;
                 this.ArtifactLoots.Add(loot);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
+            }
+        }
+
+        #endregion
+
+
+        #region ArtifactSpawnInfo
+
+        private ObservableCollection<ArtifactSpawnInfoRecord> _artifactSpawnInfos;
+        public ObservableCollection<ArtifactSpawnInfoRecord> ArtifactSpawnInfos
+        {
+            get
+            {
+                return this._artifactSpawnInfos;
+            }
+            set
+            {
+                this._artifactSpawnInfos = value;
+                OnPropertyChanged("ArtifactSpawnInfos");
+            }
+        }
+
+        private ArtifactSpawnInfoRecord _selectedArtifactSpawnInfo;
+        public ArtifactSpawnInfoRecord SelectedArtifactSpawnInfo
+        {
+            get
+            {
+                return this._selectedArtifactSpawnInfo;
+            }
+            set
+            {
+                this._selectedArtifactSpawnInfo = value;
+                OnPropertyChanged("SelectedArtifactSpawnInfo");
+            }
+        }
+
+        private void ComboBox_DropDownClosed_Zone(object sender, EventArgs e)
+        {
+            if (SelectedZone == null) { return; }
+            this.ArtifactSpawnInfos = this.ArtifactSpawnInfoTable.GetAllByZone(SelectedZone);
+        }
+
+
+
+        private void ArtifactSpawnInfo_Save_Button_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                StringBuilder sb = new StringBuilder();
+                //Set the zone for the "page" of artifactspawninfos
+                sb.AppendLine(Zones.GetZoneDeclStatement());
+                sb.AppendLine(ArtifactTypeRecord.GetDeclStatement());
+                sb.AppendLine(SelectedZone.GetZoneLookupStatement());
+
+                sb.AppendLine(ArtifactSpawnInfoRecord.GetDeclStatement());
+
+                foreach (ArtifactSpawnInfoRecord info in this.ArtifactSpawnInfos)
+                {
+                    ArtifactSpawnInfo infoTable = info.ToTable(this.Connstr);
+                    sb.AppendLine(new ArtifactTypeRecord { Name = info.ArtifactTypeName }.GetArtifactTypeLookupStatement());
+                    if (info.dBAction == DBAction.UPDATE)
+                    {
+                        sb.AppendLine(info.GetArtifactSpawnInfoLookupStatement());
+                        sb.AppendLine(infoTable.Save());
+                        sb.AppendLine();
+                    }
+                    else if (info.dBAction == DBAction.INSERT)
+                    {
+                        sb.AppendLine(infoTable.Insert());
+                        sb.AppendLine();
+                    }
+                }
+
+                foreach (ArtifactSpawnInfoRecord info in this.removeArtifactSpawnInfo)
+                {
+                    ArtifactSpawnInfo infoTable = info.ToTable(this.Connstr);
+                    sb.AppendLine(new ArtifactTypeRecord { Name = info.ArtifactTypeName }.GetArtifactTypeLookupStatement());
+                    if (info.dBAction == DBAction.DELETE)
+                    {
+                        sb.AppendLine(info.GetArtifactSpawnInfoLookupStatement());
+                        sb.AppendLine(infoTable.Delete());
+                        sb.AppendLine();
+                    }
+                }
+                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\ArtifactSpawnInfo_" + SelectedZone.ConcatZoneIDName + "_" + Utilities.timestamp() + ".sql", sb.ToString());
+                MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Doh! Could not save somthing!\n" + ex.Message, "Error", 0, MessageBoxImage.Error);
+            }
+
+        }
+
+        public List<ArtifactSpawnInfoRecord> copyArtifactSpawnInfos = new List<ArtifactSpawnInfoRecord>();
+        private void Copy_ArtifactSpawnInfo(object sender, EventArgs e)
+        {
+            copyArtifactSpawnInfos = new List<ArtifactSpawnInfoRecord>(this.ArtifactSpawnInfos);
+        }
+
+        private void Paste_ArtifactSpawnInfo(object sender, EventArgs e)
+        {
+            foreach (ArtifactSpawnInfoRecord item in this.copyArtifactSpawnInfos)
+            {
+                item.dBAction = DBAction.INSERT;
+                this.ArtifactSpawnInfos.Add(item);
+            }
+        }
+
+        public List<ArtifactSpawnInfoRecord> removeArtifactSpawnInfo = new List<ArtifactSpawnInfoRecord>();
+        private void ArtifactSpawnInfo_Remove_Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.ArtifactSpawnInfos.Count > 0)
+            {
+                ArtifactSpawnInfoRecord infoToRemove = this.ArtifactSpawnInfos.Last<ArtifactSpawnInfoRecord>();
+                if (this.SelectedArtifactSpawnInfo != null)
+                {
+                    infoToRemove = SelectedArtifactSpawnInfo;
+                }
+                if (infoToRemove.dBAction != DBAction.INSERT)
+                {
+                    infoToRemove.dBAction = DBAction.DELETE;
+                    removeArtifactSpawnInfo.Add(infoToRemove);
+                }
+                this.ArtifactSpawnInfos.Remove(infoToRemove);
+            }
+        }
+
+        private void ArtifactSpawnInfo_Add_Row_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                ArtifactSpawnInfoRecord info = ArtifactSpawnInfoRecord.CreateNewForZone(this.SelectedArtifactType, this.SelectedZone);
+                this.ArtifactSpawnInfos.Add(info);
             }
             catch (Exception ex)
             {

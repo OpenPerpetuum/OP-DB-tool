@@ -6,9 +6,75 @@ using System.Data.SqlClient;
 using System.Collections.ObjectModel;
 using PerpTool.db;
 using System.Collections.Generic;
+using Perptool.db;
 
 namespace PerpTool.db
 {
+
+    public class ArtifactSpawnInfoRecord : INotifyPropertyChanged
+    {
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public int Id { get; set; }
+        public int ArtifactType { get; set; }
+        public string ArtifactTypeName { get; set; }
+        public int ZoneId { get; set; }
+        public string ZoneName { get; set; }
+        public double Rate { get; set; }
+        public DBAction dBAction { get; set; }
+
+        public ArtifactSpawnInfoRecord()
+        {
+
+        }
+
+        public static string IDKey = "@artifactSpawnInfo";
+
+        public static string GetDeclStatement()
+        {
+            return "DECLARE " + IDKey + " int;";
+        }
+
+        public string GetArtifactSpawnInfoLookupStatement()
+        {
+            return "SET " + IDKey + " = (SELECT id FROM artifactspawninfo WHERE zoneid=" + Zones.IDKey + " AND artifacttype=" + ArtifactTypesTable.IDKey + ");"; ;
+        }
+
+
+        public static ArtifactSpawnInfoRecord CreateNewForZone(ArtifactTypesTable artifactType, Zones zone)
+        {
+            ArtifactSpawnInfoRecord a = new ArtifactSpawnInfoRecord
+            {
+                ArtifactType = artifactType.id,
+                ArtifactTypeName = artifactType.name,
+                ZoneId = zone.id,
+                ZoneName = zone.ConcatZoneIDName,
+                Rate = 1.0,
+                dBAction = DBAction.INSERT
+            };
+            return a;
+        }
+
+        public ArtifactSpawnInfo ToTable(string connString)
+        {
+            ArtifactSpawnInfo info = new ArtifactSpawnInfo(connString);
+            info.id = this.Id;
+            info.zoneid = this.ZoneId;
+            info.artifacttype = this.ArtifactType;
+            info.rate = this.Rate;
+            return info;
+        }
+
+        /// <summary>
+        /// fires when properties are set.
+        /// </summary>
+        /// <param name='name'>name of property being changed</param>
+        protected void OnPropertyChanged(string name)
+        {
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+    }
 
     public class ArtifactSpawnInfo : INotifyPropertyChanged
     {
@@ -16,7 +82,7 @@ namespace PerpTool.db
         private int privateid;
         private int privateartifacttype;
         private int privatezoneid;
-        private int privaterate;
+        private double privaterate;
 
         public ArtifactSpawnInfo(string connectionString)
         {
@@ -68,7 +134,7 @@ namespace PerpTool.db
             }
         }
 
-        public int rate
+        public double rate
         {
             get
             {
@@ -119,34 +185,39 @@ namespace PerpTool.db
                         this.id = Convert.ToInt32(reader["id"]);
                         this.artifacttype = Convert.ToInt32(reader["artifacttype"]);
                         this.zoneid = Convert.ToInt32(reader["zoneid"]);
-                        this.rate = Convert.ToInt32(reader["rate"]);
+                        this.rate = Convert.ToDouble(reader["rate"]);
                     }
                 }
                 conn.Dispose();
             }
         }
 
-        public List<ArtifactSpawnInfo> GetAll()
+        public ObservableCollection<ArtifactSpawnInfoRecord> GetAllByZone(Zones z)
         {
-            List<ArtifactSpawnInfo> spawns = new List<ArtifactSpawnInfo>();
+            ObservableCollection<ArtifactSpawnInfoRecord> spawns = new ObservableCollection<ArtifactSpawnInfoRecord>();
             SqlConnection conn = new SqlConnection(this.ConnString);
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("SELECT * FROM artifactspawninfo");
+                sqlCommand.Append(@"SELECT artifactspawninfo.id, artifactspawninfo.artifacttype, artifacttypes.name as ArtifactTypeName, artifactspawninfo.rate,artifactspawninfo.zoneid, CONCAT(zones.name, ' - ', zones.note) as ZoneName from artifactspawninfo
+                JOIN zones ON artifactspawninfo.zoneid=zones.id
+                JOIN artifacttypes ON artifacttypes.id = artifactspawninfo.artifacttype
+                WHERE artifactspawninfo.zoneid=@zoneID; ");
                 command.CommandText = sqlCommand.ToString();
-                command.Parameters.AddWithValue("@id", id);
+                command.Parameters.AddWithValue("@zoneID", z.id);
                 command.Connection = conn;
                 conn.Open();
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        ArtifactSpawnInfo a = new ArtifactSpawnInfo(this.ConnString);
-                        a.id = Convert.ToInt32(reader["id"]);
-                        a.artifacttype = Convert.ToInt32(reader["artifacttype"]);
-                        a.zoneid = Convert.ToInt32(reader["zoneid"]);
-                        a.rate = Convert.ToInt32(reader["rate"]);
+                        ArtifactSpawnInfoRecord a = new ArtifactSpawnInfoRecord();
+                        a.Id = Convert.ToInt32(reader["id"]);
+                        a.ArtifactType = Convert.ToInt32(reader["artifacttype"]);
+                        a.ArtifactTypeName = Convert.ToString(reader["ArtifactTypeName"]);
+                        a.ZoneId = Convert.ToInt32(reader["zoneid"]);
+                        a.ZoneName = Convert.ToString(reader["ZoneName"]);
+                        a.Rate = Convert.ToDouble(reader["rate"]);
                         spawns.Add(a);
                     }
                 }
@@ -154,7 +225,6 @@ namespace PerpTool.db
             }
             return spawns;
         }
-
 
         /// <summary>
         /// saves existing record
@@ -166,15 +236,12 @@ namespace PerpTool.db
             {
                 StringBuilder sqlCommand = new StringBuilder();
                 sqlCommand.Append(@"UPDATE [dbo].[artifactspawninfo]
-                SET [artifacttype] = @artifacttype
-                ,[zoneid] = @zoneid
-                ,[rate] = @rate
-                WHERE id=@id; ");
+                SET [artifacttype] = " + ArtifactTypeRecord.IDKey + ",[zoneid] = " + Zones.IDKey + ",[rate] = @rate WHERE id=" + ArtifactSpawnInfoRecord.IDKey + "; ");
                 command.CommandText = sqlCommand.ToString();
 
-                command.Parameters.AddWithValue("@id", this.id);
-                command.Parameters.AddWithValue("@artifacttype", this.artifacttype);
-                command.Parameters.AddWithValue("@zoneid", this.zoneid);
+                command.Parameters.AddWithValue(ArtifactSpawnInfoRecord.IDKey, this.id);
+                command.Parameters.AddWithValue(ArtifactTypeRecord.IDKey, this.artifacttype);
+                command.Parameters.AddWithValue(Zones.IDKey, this.zoneid);
                 command.Parameters.AddWithValue("@rate", this.rate);
 
                 SqlConnection conn = new SqlConnection(this.ConnString);
@@ -183,18 +250,7 @@ namespace PerpTool.db
                 command.ExecuteNonQuery();
                 conn.Close();
 
-                query = command.CommandText;
-                foreach (SqlParameter p in command.Parameters)
-                {
-                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
-                    {
-                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
-                    }
-                    else
-                    {
-                        query = query.Replace(p.ParameterName, p.Value.ToString());
-                    }
-                }
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { ArtifactSpawnInfoRecord.IDKey, Zones.IDKey }));
             }
             return query;
         }
@@ -206,12 +262,11 @@ namespace PerpTool.db
             {
                 StringBuilder sqlCommand = new StringBuilder();
                 sqlCommand.Append(@"INSERT INTO [dbo].[artifactspawninfo] ([artifacttype],[zoneid],[rate])
-                 VALUES (@artifacttype,@zoneid,@rate);");
+                 VALUES (" + ArtifactSpawnInfoRecord.IDKey + "," + Zones.IDKey + ",@rate);");
                 command.CommandText = sqlCommand.ToString();
 
-                command.Parameters.AddWithValue("@name", this.id);
-                command.Parameters.AddWithValue("@artifacttype", this.artifacttype);
-                command.Parameters.AddWithValue("@zoneid", this.zoneid);
+                command.Parameters.AddWithValue(ArtifactSpawnInfoRecord.IDKey, this.artifacttype);
+                command.Parameters.AddWithValue(Zones.IDKey, this.zoneid);
                 command.Parameters.AddWithValue("@rate", this.rate);
 
                 SqlConnection conn = new SqlConnection(this.ConnString);
@@ -220,19 +275,7 @@ namespace PerpTool.db
                 command.ExecuteNonQuery();
                 conn.Close();
 
-                query = command.CommandText;
-                foreach (SqlParameter p in command.Parameters)
-                {
-
-                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
-                    {
-                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
-                    }
-                    else
-                    {
-                        query = query.Replace(p.ParameterName, p.Value.ToString());
-                    }
-                }
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { ArtifactSpawnInfoRecord.IDKey, Zones.IDKey }));
             }
             return query;
         }
@@ -243,10 +286,10 @@ namespace PerpTool.db
             using (SqlCommand command = new SqlCommand())
             {
                 StringBuilder sqlCommand = new StringBuilder();
-                sqlCommand.Append("DELETE FROM [dbo].[artifactspawninfo] WHERE id=@id;");
+                sqlCommand.Append("DELETE FROM [dbo].[artifactspawninfo] WHERE id=" + ArtifactSpawnInfoRecord.IDKey + ";");
                 command.CommandText = sqlCommand.ToString();
 
-                command.Parameters.AddWithValue("@id", this.id);
+                command.Parameters.AddWithValue(ArtifactSpawnInfoRecord.IDKey, this.id);
 
                 SqlConnection conn = new SqlConnection(this.ConnString);
                 conn.Open();
@@ -254,18 +297,7 @@ namespace PerpTool.db
                 command.ExecuteNonQuery();
                 conn.Close();
 
-                query = command.CommandText;
-                foreach (SqlParameter p in command.Parameters)
-                {
-                    if (SqlDbType.NVarChar.Equals(p.SqlDbType) || SqlDbType.VarChar.Equals(p.SqlDbType))
-                    {
-                        query = query.Replace(p.ParameterName, "'" + p.Value.ToString() + "'");
-                    }
-                    else
-                    {
-                        query = query.Replace(p.ParameterName, p.Value.ToString());
-                    }
-                }
+                query = Utilities.parseCommandString(command, new List<string>(new string[] { ArtifactSpawnInfoRecord.IDKey }));
             }
             return query;
         }

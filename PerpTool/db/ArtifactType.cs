@@ -11,7 +11,7 @@ using Perptool.db;
 namespace PerpTool.db
 {
 
-    public class ArtifactType
+    public class ArtifactTypeRecord
     {
         public int Id { get; set; }
         public string Name { get; set; }
@@ -22,15 +22,27 @@ namespace PerpTool.db
         public int MinimumLoot { get; set; }
         public int Dynamic { get; set; }
 
-        public ArtifactType()
+        public ArtifactTypeRecord()
         {
 
 
         }
 
-        public ArtifactTypes toTable(string connstring)
+        public static string IDKey = "@artifactTypeID";
+
+        public static string GetDeclStatement()
         {
-            ArtifactTypes a = new ArtifactTypes(connstring);
+            return "DECLARE " + IDKey + " int;";
+        }
+
+        public string GetArtifactTypeLookupStatement()
+        {
+            return "SET " + IDKey + " = (SELECT id FROM artifacttypes WHERE name='" + this.Name + "');";
+        }
+
+        public ArtifactTypesTable toTable(string connstring)
+        {
+            ArtifactTypesTable a = new ArtifactTypesTable(connstring);
             a.id = this.Id;
             a.name = this.Name;
             a.goalrange = this.GoalRange;
@@ -43,7 +55,7 @@ namespace PerpTool.db
 
     }
 
-    public class ArtifactTypes : INotifyPropertyChanged
+    public class ArtifactTypesTable : INotifyPropertyChanged
     {
 
         private int privateid;
@@ -68,7 +80,7 @@ namespace PerpTool.db
             return "SET " + IDKey + " = (SELECT TOP 1 id from artifacttypes WHERE [name] = '" + this.name + "');";
         }
 
-        public ArtifactTypes(string connectionString)
+        public ArtifactTypesTable(string connectionString)
         {
             this.ConnString = connectionString;
         }
@@ -227,9 +239,9 @@ namespace PerpTool.db
         }
 
 
-        public ObservableCollection<ArtifactType> GetAllTypes()
+        public ObservableCollection<ArtifactTypeRecord> GetAllTypes()
         {
-            ObservableCollection<ArtifactType> types = new ObservableCollection<ArtifactType>();
+            ObservableCollection<ArtifactTypeRecord> types = new ObservableCollection<ArtifactTypeRecord>();
             SqlConnection conn = new SqlConnection(this.ConnString);
             using (SqlCommand command = new SqlCommand())
             {
@@ -243,7 +255,7 @@ namespace PerpTool.db
                 {
                     while (reader.Read())
                     {
-                        ArtifactType a = new ArtifactType();
+                        ArtifactTypeRecord a = new ArtifactTypeRecord();
                         a.Id = Convert.ToInt32(reader["id"]);
                         a.Name = Convert.ToString(reader["name"]);
                         a.GoalRange = Convert.ToInt32(reader["goalrange"]);
@@ -260,9 +272,9 @@ namespace PerpTool.db
             return types;
         }
 
-        public List<ArtifactTypes> GetAll()
+        public List<ArtifactTypesTable> GetAll()
         {
-            List<ArtifactTypes> types = new List<ArtifactTypes>();
+            List<ArtifactTypesTable> types = new List<ArtifactTypesTable>();
             SqlConnection conn = new SqlConnection(this.ConnString);
             using (SqlCommand command = new SqlCommand())
             {
@@ -275,7 +287,7 @@ namespace PerpTool.db
                 {
                     while (reader.Read())
                     {
-                        ArtifactTypes a = new ArtifactTypes(this.ConnString);
+                        ArtifactTypesTable a = new ArtifactTypesTable(this.ConnString);
                         a.id = Convert.ToInt32(reader["id"]);
                         a.name = Convert.ToString(reader["name"]);
                         a.goalrange = Convert.ToInt32(reader["goalrange"]);
@@ -292,9 +304,9 @@ namespace PerpTool.db
         }
 
 
-        public string Save(ArtifactType a, string connstring)
+        public string Save(ArtifactTypeRecord a, string connstring)
         {
-            ArtifactTypes table = a.toTable(connstring);
+            ArtifactTypesTable table = a.toTable(connstring);
             return table.Save();
         }
 
@@ -337,9 +349,9 @@ namespace PerpTool.db
             return query;
         }
 
-        public string Insert(ArtifactType a, string connstring)
+        public string Insert(ArtifactTypeRecord a, string connstring)
         {
-            ArtifactTypes table = a.toTable(connstring);
+            ArtifactTypesTable table = a.toTable(connstring);
             return table.Insert();
         }
 
@@ -371,9 +383,9 @@ namespace PerpTool.db
             return query;
         }
 
-        public string Delete(ArtifactType a, string connstring)
+        public string Delete(ArtifactTypeRecord a, string connstring)
         {
-            ArtifactTypes table = a.toTable(connstring);
+            ArtifactTypesTable table = a.toTable(connstring);
             return table.Delete();
         }
 

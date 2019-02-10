@@ -71,7 +71,7 @@
                         <ComboBox Grid.Row="2" Grid.Column="1"  Grid.ColumnSpan="7" Margin="5"  x:Name="combo" ItemsSource="{Binding EntitiesList}" DisplayMemberPath="definitionname" SelectedValuePath="definition" SelectedItem="{Binding SelectedEntity}"  DropDownClosed="ComboBox_DropDownClosed_EntitySelect" />
 
                         <Label   Grid.Row="3" Grid.Column="0" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="definition"/>
-                        <TextBox Grid.Row="4" Grid.Column="0" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.definition}" TextWrapping="Wrap"/>
+                        <TextBox Grid.Row="4" Grid.Column="0" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.definition}" TextWrapping="Wrap" IsReadOnly="True"/>
                         <Label   Grid.Row="3" Grid.Column="1" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="definitionname"/>
                         <TextBox Grid.Row="4" Grid.Column="1" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedEntity.definitionname}" TextWrapping="Wrap"/>
                         <Label   Grid.Row="3" Grid.Column="2" Height="23" Width="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" Content="note"/>
@@ -509,7 +509,7 @@
                         <Label   Grid.Row="0" Grid.Column="0" Height="23" Width="Auto" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Presence:"/>
                         <ComboBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="5" Margin="5" x:Name="npcgroupcombo" ItemsSource="{Binding AllNPCPresences}" SelectedItem="{Binding SelectedNPCPresence}" DisplayMemberPath="name" SelectedValuePath="id" DropDownClosed="ComboBox_DropDownClosed_NPCPresence"/>
                         <Label   Grid.Row="1" Grid.Column="0" Height="23" Width="Auto" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" Content="id"/>
-                        <TextBox Grid.Row="2" Grid.Column="0" Height="23" Width="Auto" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedNPCPresence.id}" TextWrapping="Wrap"/>
+                        <TextBox Grid.Row="2" Grid.Column="0" Height="23" Width="Auto" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedNPCPresence.id}" TextWrapping="Wrap" IsReadOnly="True"/>
                         <Label   Grid.Row="1" Grid.Column="1" Height="23" Width="Auto" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" Content="name"/>
                         <TextBox Grid.Row="2" Grid.Column="1" Height="23" Width="Auto" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding SelectedNPCPresence.name}" TextWrapping="Wrap"/>
                         <Label   Grid.Row="1" Grid.Column="2" Height="23" Width="Auto" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" Content="topx"/>
@@ -576,7 +576,7 @@
                         <ComboBox x:Name="artifactlootcombo" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="400" ItemsSource="{Binding ArtifactTypes}" DisplayMemberPath="name" SelectedValuePath="id" SelectedItem="{Binding SelectedArtifactType}" DropDownClosed="ComboBox_DropDownClosed_ArtifactType" Grid.ColumnSpan="2" Height="22"/>
                         <DataGrid Margin="10,61,10,70" ItemsSource="{Binding ArtifactLoots}" SelectedItem="{Binding SelectedArtifactLoot}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Grid.ColumnSpan="4" >
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="LootDefinitionName" Width="Auto" Binding="{Binding LootDefinitionName}"/>
+                                <DataGridTextColumn Header="LootDefinitionName" Width="Auto" Binding="{Binding LootDefinitionName}" IsReadOnly="True"/>
                                 <DataGridTextColumn Header="MinQuantity" Width="Auto" Binding="{Binding LootMinQuantity}"/>
                                 <DataGridTextColumn Header="MaxQuantity" Width="Auto" Binding="{Binding LootMaxQuantity}"/>
                                 <DataGridTextColumn Header="Probability" Width="Auto" Binding="{Binding LootProbability}"/>
@@ -589,6 +589,29 @@
                         <Button Content="Remove Row" Margin="314,0,0,8" Click="ArtifactLoots_Remove_Button_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100" Grid.Column="1"/>
                         <Button Content="Paste Loots" Margin="419,0,0,8" Click="Paste_ArtifactLoots" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="95" Grid.Column="2" Grid.ColumnSpan="2" />
                         <Button Content="Copy Loots" Margin="419,0,0,39" Click="Copy_ArtifactLoots" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="95" RenderTransformOrigin="0.725,0.538" Grid.Column="2" Grid.ColumnSpan="2"/>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+
+            <TabItem Header="Artifact SpawnInfo">
+                <ScrollViewer>
+                    <Grid Background="#FFE5E5E5">
+                        <ComboBox HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="400" ItemsSource="{Binding ZoneList}" DisplayMemberPath="ConcatZoneIDName" SelectedValuePath="id" SelectedItem="{Binding SelectedZone}" DropDownClosed="ComboBox_DropDownClosed_Zone" Grid.ColumnSpan="2" Height="22"/>
+                        <DataGrid Margin="10,61,10,70" ItemsSource="{Binding ArtifactSpawnInfos}" SelectedItem="{Binding SelectedArtifactSpawnInfo}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionChanged="DataGrid_SelectionChanged" Grid.ColumnSpan="4" >
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Id" Width="Auto" Binding="{Binding Id}" IsReadOnly="True"/>
+                                <DataGridTextColumn Header="ArtifactType" Width="Auto" Binding="{Binding ArtifactTypeName}" IsReadOnly="True"/>
+                                <DataGridTextColumn Header="ZoneName" Width="Auto" Binding="{Binding ZoneName}" IsReadOnly="True"/>
+                                <DataGridTextColumn Header="Rate" Width="Auto" Binding="{Binding Rate}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <Button Content="Commit Changes" Margin="579,0,0,39" Click="ArtifactSpawnInfo_Save_Button_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="128" Grid.Column="3"/>
+                        <ComboBox x:Name="artifacttypecombo" HorizontalAlignment="Left" VerticalAlignment="Bottom"  Margin="10,0,0,39"  Width="299" Height="26" ItemsSource="{Binding ArtifactTypes}" DisplayMemberPath="name" SelectedValuePath="id"  SelectedItem="{Binding SelectedArtifactType}" DropDownClosed="ComboBox_DropDownClosed_ArtifactType" Grid.ColumnSpan="2"/>
+                        <Button Content="Add new row" Margin="314,0,0,39" Click="ArtifactSpawnInfo_Add_Row_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100" Grid.Column="1"/>
+                        <Button Content="Remove Row" Margin="314,0,0,8" Click="ArtifactSpawnInfo_Remove_Button_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100" Grid.Column="1"/>
+                        <Button Content="Paste Loots" Margin="419,0,0,8" Click="Paste_ArtifactSpawnInfo" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="95" Grid.Column="2" Grid.ColumnSpan="2" />
+                        <Button Content="Copy Loots" Margin="419,0,0,39" Click="Copy_ArtifactSpawnInfo" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="95" RenderTransformOrigin="0.725,0.538" Grid.Column="2" Grid.ColumnSpan="2"/>
                     </Grid>
                 </ScrollViewer>
             </TabItem>
