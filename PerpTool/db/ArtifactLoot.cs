@@ -209,6 +209,7 @@ namespace Perptool.db
         public void updateSelf(ArtifactLootItem loot)
         {
             this.id = loot.LootID;
+            this.artifactType = loot.ArtifactTypeID;
             this.lootdefinition = loot.LootDefinition;
             this.minquantity = loot.LootMinQuantity;
             this.maxquantity = loot.LootMaxQuantity;
@@ -231,7 +232,6 @@ namespace Perptool.db
                 {
                     while (reader.Read())
                     {
-                        NPCLoot temp = new NPCLoot(this.ConnString);
                         this.id = Convert.ToInt32(reader["id"]);
                         this.artifactType = Convert.ToInt32(reader["artifacttype"]);
                         this.lootdefinition = Convert.ToInt32(reader["definition"]);

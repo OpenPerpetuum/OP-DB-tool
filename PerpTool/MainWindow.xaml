@@ -610,8 +610,8 @@
                         <ComboBox x:Name="artifacttypecombo" HorizontalAlignment="Left" VerticalAlignment="Bottom"  Margin="10,0,0,39"  Width="299" Height="26" ItemsSource="{Binding ArtifactTypes}" DisplayMemberPath="name" SelectedValuePath="id"  SelectedItem="{Binding SelectedArtifactType}" DropDownClosed="ComboBox_DropDownClosed_ArtifactType" Grid.ColumnSpan="2"/>
                         <Button Content="Add new row" Margin="314,0,0,39" Click="ArtifactSpawnInfo_Add_Row_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100" Grid.Column="1"/>
                         <Button Content="Remove Row" Margin="314,0,0,8" Click="ArtifactSpawnInfo_Remove_Button_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100" Grid.Column="1"/>
-                        <Button Content="Paste Loots" Margin="419,0,0,8" Click="Paste_ArtifactSpawnInfo" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="95" Grid.Column="2" Grid.ColumnSpan="2" />
-                        <Button Content="Copy Loots" Margin="419,0,0,39" Click="Copy_ArtifactSpawnInfo" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="95" RenderTransformOrigin="0.725,0.538" Grid.Column="2" Grid.ColumnSpan="2"/>
+                        <Button Content="Paste infos" Margin="419,0,0,8" Click="Paste_ArtifactSpawnInfo" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="95" Grid.Column="2" Grid.ColumnSpan="2" />
+                        <Button Content="Copy infos" Margin="419,0,0,39" Click="Copy_ArtifactSpawnInfo" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="95" RenderTransformOrigin="0.725,0.538" Grid.Column="2" Grid.ColumnSpan="2"/>
                     </Grid>
                 </ScrollViewer>
             </TabItem>

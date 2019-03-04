@@ -897,6 +897,7 @@ namespace PerpTool
         {
             if (SelectedLootableBot == null) { return; }
             this.loots = Loot.GetLootByDefinition(SelectedLootableBot.definition);
+            this.removeLoot.Clear();
         }
 
         private EntityDefaults _currentRowAddItem;
@@ -956,6 +957,7 @@ namespace PerpTool
                         sb.AppendLine();
                     }
                 }
+                this.removeLoot.Clear();
                 File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + SelectedLootableBot.definitionname + "_loot" + Utilities.timestamp() + ".sql", sb.ToString());
                 MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
             }
@@ -1110,6 +1112,7 @@ namespace PerpTool
         {
             if (SelectedBot == null) { return; }
             this.BotBonusList = BotBonus.getByEntity(SelectedBot.definition);
+            this.removeBonuses.Clear();
         }
 
         private void Bot_Bonus_Save_Click(object sender, RoutedEventArgs e)
@@ -1147,6 +1150,7 @@ namespace PerpTool
                         sb.AppendLine();
                     }
                 }
+                this.removeBonuses.Clear();
                 File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + SelectedBot.definitionname + "_bonuses" + Utilities.timestamp() + ".sql", sb.ToString());
                 MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
             }
@@ -1524,6 +1528,7 @@ namespace PerpTool
                     sb.AppendLine();
                 }
             }
+            this.removeFlocks.Clear();
             return sb.ToString();
         }
 
@@ -1607,6 +1612,7 @@ namespace PerpTool
         {
             if (SelectedArtifactType == null) { return; }
             this.ArtifactLoots = ArtifactLoot.GetLootByArtifactTypeID(SelectedArtifactType.id);
+            this.removeArtifactLoots.Clear();
         }
 
 
@@ -1656,6 +1662,7 @@ namespace PerpTool
                         sb.AppendLine();
                     }
                 }
+                this.removeArtifactLoots.Clear();
                 File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\" + SelectedArtifactType.name + "_loot" + Utilities.timestamp() + ".sql", sb.ToString());
                 MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
             }
@@ -1765,6 +1772,7 @@ namespace PerpTool
         {
             if (SelectedZone == null) { return; }
             this.ArtifactSpawnInfos = this.ArtifactSpawnInfoTable.GetAllByZone(SelectedZone);
+            this.removeArtifactSpawnInfo.Clear();
         }
 
 
@@ -1809,6 +1817,7 @@ namespace PerpTool
                         sb.AppendLine();
                     }
                 }
+                this.removeArtifactSpawnInfo.Clear();
                 File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + @"\ArtifactSpawnInfo_" + SelectedZone.ConcatZoneIDName + "_" + Utilities.timestamp() + ".sql", sb.ToString());
                 MessageBox.Show("Saved!", "Info", 0, MessageBoxImage.Information);
             }
