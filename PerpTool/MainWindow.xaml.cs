@@ -655,10 +655,21 @@ namespace PerpTool
             if (item == null) { return; }
             this.BotTemplate.Clear();
             RobotTemplate robotTemp = NPCBotTemplates.GetById(item.id);
-            robotTemp.robotName = Entities.GetEntityByID(robotTemp.robotID).Name;
-            robotTemp.headName = Entities.GetEntityByID(robotTemp.headID).Name;
-            robotTemp.chassisName = Entities.GetEntityByID(robotTemp.chassisID).Name;
-            robotTemp.legName = Entities.GetEntityByID(robotTemp.legID).Name;
+            var bot = Entities.GetEntityByID(robotTemp.robotID);
+            var head = Entities.GetEntityByID(robotTemp.headID);
+            var chassis = Entities.GetEntityByID(robotTemp.chassisID);
+            var leg = Entities.GetEntityByID(robotTemp.legID);
+            var cargo = Entities.GetEntityByID(robotTemp.containerID);
+            robotTemp.robotName = bot.Name;
+            robotTemp.robotID = bot.Definition;
+            robotTemp.headName = head.Name;
+            robotTemp.headID = head.Definition;
+            robotTemp.chassisName = chassis.Name;
+            robotTemp.chassisID = chassis.Definition;
+            robotTemp.legName = leg.Name;
+            robotTemp.legID = leg.Definition;
+            robotTemp.containerName = cargo.Name;
+            robotTemp.containerID = cargo.Definition;
             foreach (ModuleTemplate mod in robotTemp.headModules)
             {
                 mod.definitionName = Entities.GetEntityByID(mod.definition).Name;

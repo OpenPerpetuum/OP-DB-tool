@@ -353,10 +353,15 @@
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Name" Width="Auto" Binding="{Binding recordName}"/>
                                 <DataGridTextColumn Header="Bot" Width="Auto" Binding="{Binding robotName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                <DataGridTextColumn Header="BotID" Width="Auto" Binding="{Binding robotID}"/>
                                 <DataGridTextColumn Header="Head" Width="Auto" Binding="{Binding headName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                <DataGridTextColumn Header="HeadID" Width="Auto" Binding="{Binding headID}"/>
                                 <DataGridTextColumn Header="Chassis" Width="Auto" Binding="{Binding chassisName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                <DataGridTextColumn Header="ChassisID" Width="Auto" Binding="{Binding chassisID}"/>
                                 <DataGridTextColumn Header="Legs" Width="Auto" Binding="{Binding legName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                <DataGridTextColumn Header="LegsID" Width="Auto" Binding="{Binding legID}"/>
                                 <DataGridTextColumn Header="Cargo" Width="Auto" Binding="{Binding containerName}" IsReadOnly="True" CellStyle="{StaticResource readonlystyle}"/>
+                                <DataGridTextColumn Header="CargoID" Width="Auto" Binding="{Binding containerID}"/>
                                 <DataGridTextColumn Header="Note" Width="Auto" Binding="{Binding recordNote}"/>
                             </DataGrid.Columns>
                         </DataGrid>
